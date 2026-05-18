@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import Link from "next/link"
 import { AuthProvider } from "@/components/auth/AuthProvider"
 import { AuthStatus } from "@/components/auth/AuthStatus"
+import { SettingsProvider } from "@/lib/settings/context"
 import "./globals.css"
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="app-root">
         <AuthProvider>
+        <SettingsProvider>
           <header className="app-header">
             <div className="header-top-line" />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-6">
@@ -40,6 +42,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/meta"        className="nav-item">Meta</Link>
                 <Link href="/compare"     className="nav-item">Comparar</Link>
                 <Link href="/garage"      className="nav-item">Garagem</Link>
+                <Link href="/settings"    className="nav-item" aria-label="Configurações">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
+                    <path d="M7.5 1v1.5M7.5 12.5V14M1 7.5h1.5M12.5 7.5H14M2.93 2.93l1.06 1.06M11.01 11.01l1.06 1.06M2.93 12.07l1.06-1.06M11.01 3.99l1.06-1.06" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                </Link>
               </nav>
               <div className="flex items-center gap-2">
                 <AuthStatus />
@@ -81,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </nav>
             </div>
           </footer>
+        </SettingsProvider>
         </AuthProvider>
       </body>
     </html>

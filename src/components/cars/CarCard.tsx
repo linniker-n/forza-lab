@@ -4,6 +4,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 import { getCarImageUrl } from "@/data/cars"
+import { useSettings } from "@/lib/settings/context"
+import { powerLabel, powerValue, torqueLabel, torqueValue } from "@/lib/settings/units"
 import type { Car } from "@/types"
 
 const SCORE_KEYS = [
@@ -26,6 +28,9 @@ export function CarCard({ car, index = 0, highlightKey }: Props) {
   const url = getCarImageUrl(car)
   const hasImg = !!url && !imgErr
   const delay = `${Math.min(index * 55, 440)}ms`
+  const { settings } = useSettings()
+  const pwUnit = settings.powerUnit
+  const tUnit  = settings.torqueUnit
 
   return (
     <article
@@ -116,9 +121,9 @@ export function CarCard({ car, index = 0, highlightKey }: Props) {
           style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}
         >
           {[
-            { l: "HP",  v: String(car.power_hp) },
-            { l: "Nm",  v: String(car.torque_nm) },
-            { l: "kg",  v: String(car.weight_kg) },
+            { l: powerLabel(pwUnit),  v: powerValue(car.power_hp, pwUnit) },
+            { l: torqueLabel(tUnit),  v: torqueValue(car.torque_nm, tUnit) },
+            { l: "kg",                v: String(car.weight_kg) },
           ].map(({ l, v }) => (
             <div key={l} className="flex flex-col items-center gap-0.5">
               <span className="mono-val" style={{ fontSize: 12 }}>{v}</span>

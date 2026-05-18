@@ -8,6 +8,9 @@ import { useAuth } from "@/components/auth/AuthProvider"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CARS, getCarImageUrl } from "@/data/cars"
 import { getFirebaseDb } from "@/lib/firebase/client"
+import { useSettings } from "@/lib/settings/context"
+import { translateParts } from "@/lib/settings/translations"
+import { formatPressure, formatPower, formatTorque } from "@/lib/settings/units"
 import { generateTune } from "@/lib/tune-engine/generator"
 import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneRequest, TuneType } from "@/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
@@ -122,6 +125,11 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
   const [err, setErr] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  const { settings } = useSettings()
+  const lang = settings.partsLanguage
+  const pUnit = settings.pressureUnit
+  const pwUnit = settings.powerUnit
+  const tUnit = settings.torqueUnit
   const [saveError, setSaveError] = useState<string | null>(null)
   const { user } = useAuth()
 
@@ -252,7 +260,7 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
                   {cat === "engine" ? "Motor" : cat === "platform" ? "Plataforma" : cat === "drivetrain" ? "Transmissão" : cat === "tires" ? "Pneus" : "Aero"}
                 </p>
                 <ul className="space-y-1">
-                  {(items as string[]).map((item, j) => (
+                  {translateParts(items as string[], lang).map((item, j) => (
                     <li key={j} className="flex items-center gap-2" style={{ fontSize: 12, color: "var(--text)" }}>
                       <span className="w-1 h-1 rounded-full shrink-0" style={{ background: "var(--blue)" }} />
                       {item}
@@ -268,8 +276,8 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
         <div className="space-y-4">
           <div className="r-card p-5">
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Pneus & Alinhamento</p>
-            <TR l="Pneu diant." v={`${tune.tuning.tires.front} PSI`} />
-            <TR l="Pneu tras."  v={`${tune.tuning.tires.rear} PSI`} />
+            <TR l="Pneu diant." v={formatPressure(tune.tuning.tires.front, pUnit)} />
+            <TR l="Pneu tras."  v={formatPressure(tune.tuning.tires.rear,  pUnit)} />
             <TR l="Cambagem D"  v={`${tune.tuning.alignment.camber_front}°`} />
             <TR l="Cambagem T"  v={`${tune.tuning.alignment.camber_rear}°`} />
             <TR l="Toe diant."  v={String(tune.tuning.alignment.toe_front)} />
