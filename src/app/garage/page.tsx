@@ -3,6 +3,8 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { useAuth } from "@/components/auth/AuthProvider"
+import { RequireAuth } from "@/components/auth/RequireAuth"
 import { getCarImageUrl } from "@/data/cars"
 import type { GeneratedTune } from "@/types"
 
@@ -12,11 +14,13 @@ interface SavedTune {
   tune: GeneratedTune
 }
 
-const STORAGE_KEY = "forza-tune-lab:saved-tunes"
+function storageKey(userId?: string) {
+  return `forza-tune-lab:saved-tunes:${userId ?? "local"}`
+}
 
-function readSavedTunes(): SavedTune[] {
+function readSavedTunes(userId?: string): SavedTune[] {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
+    const raw = window.localStorage.getItem(storageKey(userId))
     const data = raw ? JSON.parse(raw) : []
     return Array.isArray(data) ? data : []
   } catch {
@@ -26,28 +30,30 @@ function readSavedTunes(): SavedTune[] {
 
 export default function GaragePage() {
   const [saved, setSaved] = useState<SavedTune[]>([])
+  const { user } = useAuth()
 
   useEffect(() => {
     const handle = window.setTimeout(() => {
-      setSaved(readSavedTunes())
+      setSaved(readSavedTunes(user?.id))
     }, 0)
 
     return () => window.clearTimeout(handle)
-  }, [])
+  }, [user?.id])
 
   function removeTune(id: string) {
     const next = saved.filter((item) => item.id !== id)
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    window.localStorage.setItem(storageKey(user?.id), JSON.stringify(next))
     setSaved(next)
   }
 
   function clearGarage() {
-    window.localStorage.removeItem(STORAGE_KEY)
+    window.localStorage.removeItem(storageKey(user?.id))
     setSaved([])
   }
 
   return (
-    <div className="dot-grid" style={{ minHeight: "100dvh" }}>
+    <RequireAuth>
+      <div className="dot-grid" style={{ minHeight: "100dvh" }}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
         <div className="flex items-start justify-between gap-4 flex-wrap anim-up">
           <div>
@@ -114,6 +120,7 @@ export default function GaragePage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </RequireAuth>
   )
 }

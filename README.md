@@ -39,11 +39,30 @@ npm run sync:fandom-cars
 
 - `/` visão geral
 - `/cars` banco completo de carros
+- `/login` login por email ou Google via Supabase
 - `/tune` gerador de tune
 - `/diagnostics` diagnóstico contextual
 - `/meta` ranking técnico por classe e uso
 - `/compare` comparador de carros
 - `/garage` tunes salvas localmente
+
+## Autenticação
+
+O app usa Supabase Auth. Para habilitar login por email e Google, crie um projeto no Supabase e configure:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
+
+No painel do Supabase, em Authentication, adicione as URLs de callback:
+
+```text
+http://localhost:3000/auth/callback
+https://SEU-DOMINIO/auth/callback
+```
+
+Ative o provider Google no Supabase com as credenciais OAuth do Google Cloud.
 
 ## Observação
 

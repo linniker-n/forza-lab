@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CarCard } from "@/components/cars/CarCard"
 import { CARS, FANDOM_SOURCE_URL } from "@/data/cars"
 import type { Car, CarClass, TuneType } from "@/types"
@@ -45,7 +46,8 @@ export default function MetaPage() {
   }, [carClass, tuneType])
 
   return (
-    <div className="dot-grid" style={{ minHeight: "100dvh" }}>
+    <RequireAuth>
+      <div className="dot-grid" style={{ minHeight: "100dvh" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
           <div className="anim-up">
@@ -121,6 +123,7 @@ export default function MetaPage() {
           </aside>
         </div>
       </div>
-    </div>
+      </div>
+    </RequireAuth>
   )
 }

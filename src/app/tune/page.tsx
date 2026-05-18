@@ -4,6 +4,8 @@ import { Suspense, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
+import { useAuth } from "@/components/auth/AuthProvider"
+import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CARS, getCarImageUrl } from "@/data/cars"
 import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneType } from "@/types"
 
@@ -116,9 +118,10 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
   const url = getCarImageUrl(tune.car)
   const [err, setErr] = useState(false)
   const [saved, setSaved] = useState(false)
+  const { user } = useAuth()
 
   function saveTune() {
-    const storageKey = "forza-tune-lab:saved-tunes"
+    const storageKey = `forza-tune-lab:saved-tunes:${user?.id ?? "local"}`
     let savedTunes: unknown = []
     try {
       const raw = window.localStorage.getItem(storageKey)
@@ -600,13 +603,15 @@ function WizardInner() {
 
 export default function TunePage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[60dvh]">
-        <div className="w-6 h-6 border-2 rounded-full animate-spin"
-          style={{ borderColor: "rgba(37,99,235,0.3)", borderTopColor: "var(--blue)" }} />
-      </div>
-    }>
-      <WizardInner />
-    </Suspense>
+    <RequireAuth>
+      <Suspense fallback={
+        <div className="flex items-center justify-center min-h-[60dvh]">
+          <div className="w-6 h-6 border-2 rounded-full animate-spin"
+            style={{ borderColor: "rgba(37,99,235,0.3)", borderTopColor: "var(--blue)" }} />
+        </div>
+      }>
+        <WizardInner />
+      </Suspense>
+    </RequireAuth>
   )
 }

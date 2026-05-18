@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CARS } from "@/data/cars"
 import { PROBLEM_LABELS } from "@/lib/tune-engine/diagnostics"
 import type { Car, DiagnosticProblem, DiagnosticResult, TuneType } from "@/types"
@@ -68,7 +69,8 @@ export default function DiagnosticsPage() {
   }
 
   return (
-    <div className="dot-grid" style={{ minHeight: "100dvh" }}>
+    <RequireAuth>
+      <div className="dot-grid" style={{ minHeight: "100dvh" }}>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-8">
 
         {/* ── Header ── */}
@@ -328,6 +330,7 @@ export default function DiagnosticsPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </RequireAuth>
   )
 }

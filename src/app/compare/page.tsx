@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CARS } from "@/data/cars"
 import type { Car, TuneType } from "@/types"
 
@@ -96,7 +97,8 @@ export default function ComparePage() {
   }, [left, right, tuneType])
 
   return (
-    <div className="dot-grid" style={{ minHeight: "100dvh" }}>
+    <RequireAuth>
+      <div className="dot-grid" style={{ minHeight: "100dvh" }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-8">
         <div className="anim-up">
           <p className="section-label">Comparador</p>
@@ -154,6 +156,7 @@ export default function ComparePage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </RequireAuth>
   )
 }
