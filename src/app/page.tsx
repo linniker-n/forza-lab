@@ -127,9 +127,9 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Conteúdo — centro horizontal */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pb-14 pt-36 w-full flex flex-col items-center" style={{ zIndex: 2 }}>
-          <div className="space-y-6 anim-up text-center" style={{ maxWidth: 680 }}>
+        {/* Conteúdo — esquerda, verticalmente centralizado */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 w-full flex flex-col justify-center" style={{ zIndex: 2, flex: 1, paddingBottom: 80 }}>
+          <div className="max-w-xl space-y-6 anim-up">
 
             <h1
               className="fh6-headline"
@@ -141,11 +141,11 @@ export default function HomePage() {
               <span style={{ color: "rgba(255,255,255,0.45)" }}>ACELERE.</span>
             </h1>
 
-            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.7 }}>
+            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", maxWidth: 440, lineHeight: 1.7 }}>
               Seu assistente de tunagem. Agora você terá total liberdade com seus carros.
             </p>
 
-            <div className="flex flex-wrap gap-3 justify-center">
+            <div className="flex flex-wrap gap-3">
               <Link href="/tune" className="r-btn" style={{
                 paddingLeft: 32, paddingRight: 32, paddingTop: 13, paddingBottom: 13,
                 background: "var(--fh6-teal)", color: "#000", border: "none",
