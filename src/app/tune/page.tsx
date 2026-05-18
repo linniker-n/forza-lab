@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CARS, getCarImageUrl } from "@/data/cars"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneType } from "@/types"
 
 type Difficulty = "easy" | "balanced" | "aggressive"
@@ -118,9 +119,13 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
   const url = getCarImageUrl(tune.car)
   const [err, setErr] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const { user } = useAuth()
 
-  function saveTune() {
+  async function saveTune() {
+    setSaving(true)
+    setSaveError(null)
     const storageKey = `forza-tune-lab:saved-tunes:${user?.id ?? "local"}`
     let savedTunes: unknown = []
     try {
@@ -134,8 +139,21 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
       saved_at: new Date().toISOString(),
       tune,
     }
+
+    const supabase = getSupabaseBrowserClient()
+    if (supabase && user) {
+      const { error } = await supabase
+        .from("saved_tunes")
+        .insert({ user_id: user.id, tune })
+
+      if (error) {
+        setSaveError("Não foi possível salvar no Supabase. A tune ficou salva neste navegador.")
+      }
+    }
+
     window.localStorage.setItem(storageKey, JSON.stringify([entry, ...(Array.isArray(savedTunes) ? savedTunes : [])].slice(0, 60)))
     setSaved(true)
+    setSaving(false)
   }
 
   return (
@@ -175,8 +193,8 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <button type="button" onClick={saveTune} className="r-btn r-btn-outline" style={{ fontSize: 11 }}>
-                {saved ? "Tune salva" : "Salvar tune"}
+              <button type="button" onClick={() => void saveTune()} disabled={saving} className="r-btn r-btn-outline" style={{ fontSize: 11, opacity: saving ? 0.7 : 1 }}>
+                {saved ? "Tune salva" : saving ? "Salvando..." : "Salvar tune"}
               </button>
               <Link href="/garage" className="r-btn r-btn-ghost" style={{ fontSize: 11 }}>
                 Garagem
@@ -187,6 +205,9 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
             </div>
           </div>
           <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 12, lineHeight: 1.6 }}>{tune.summary}</p>
+          {saveError && (
+            <p style={{ fontSize: 11, color: "#fbbf24", marginTop: 10 }}>{saveError}</p>
+          )}
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { getCarImageUrl } from "@/data/cars"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { GeneratedTune } from "@/types"
 
 interface SavedTune {
@@ -30,23 +31,64 @@ function readSavedTunes(userId?: string): SavedTune[] {
 
 export default function GaragePage() {
   const [saved, setSaved] = useState<SavedTune[]>([])
+  const [syncNote, setSyncNote] = useState<string | null>(null)
   const { user } = useAuth()
+  const userId = user?.id
 
   useEffect(() => {
-    const handle = window.setTimeout(() => {
-      setSaved(readSavedTunes(user?.id))
-    }, 0)
+    let active = true
+    const supabase = getSupabaseBrowserClient()
 
-    return () => window.clearTimeout(handle)
-  }, [user?.id])
+    if (supabase && userId) {
+      supabase
+        .from("saved_tunes")
+        .select("id, created_at, tune")
+        .order("created_at", { ascending: false })
+        .then(({ data, error }) => {
+          if (!active) return
 
-  function removeTune(id: string) {
+          if (error) {
+            setSyncNote("Garagem Supabase indisponível. Exibindo tunes salvas neste navegador.")
+            setSaved(readSavedTunes(userId))
+            return
+          }
+
+          setSyncNote(null)
+          setSaved((data ?? []).map((row) => ({
+            id: row.id,
+            saved_at: row.created_at,
+            tune: row.tune as GeneratedTune,
+          })))
+        })
+    } else {
+      Promise.resolve().then(() => {
+        if (!active) return
+        setSaved(readSavedTunes(userId))
+      })
+    }
+
+    return () => {
+      active = false
+    }
+  }, [userId])
+
+  async function removeTune(id: string) {
+    const supabase = getSupabaseBrowserClient()
+    if (supabase && user) {
+      await supabase.from("saved_tunes").delete().eq("id", id)
+    }
+
     const next = saved.filter((item) => item.id !== id)
     window.localStorage.setItem(storageKey(user?.id), JSON.stringify(next))
     setSaved(next)
   }
 
-  function clearGarage() {
+  async function clearGarage() {
+    const supabase = getSupabaseBrowserClient()
+    if (supabase && user) {
+      await supabase.from("saved_tunes").delete().eq("user_id", user.id)
+    }
+
     window.localStorage.removeItem(storageKey(user?.id))
     setSaved([])
   }
@@ -65,13 +107,19 @@ export default function GaragePage() {
           </div>
           <div className="flex gap-2">
             {saved.length > 0 && (
-              <button type="button" className="r-btn r-btn-ghost" onClick={clearGarage}>
+              <button type="button" className="r-btn r-btn-ghost" onClick={() => void clearGarage()}>
                 Limpar garagem
               </button>
             )}
             <Link href="/tune" className="r-btn r-btn-primary">Criar tune</Link>
           </div>
         </div>
+
+        {syncNote && (
+          <p className="rounded-lg p-3 anim-up" style={{ fontSize: 12, color: "#fbbf24", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)" }}>
+            {syncNote}
+          </p>
+        )}
 
         {saved.length === 0 ? (
           <div className="r-card bracket p-8 text-center space-y-4 anim-up" style={{ animationDelay: "80ms" }}>
@@ -110,7 +158,7 @@ export default function GaragePage() {
                     <Link href={`/tune?car=${tune.car.id}&type=${tune.tune_type}`} className="r-btn r-btn-outline" style={{ fontSize: 11 }}>
                       Regerar
                     </Link>
-                    <button type="button" className="r-btn r-btn-ghost" style={{ fontSize: 11 }} onClick={() => removeTune(item.id)}>
+                    <button type="button" className="r-btn r-btn-ghost" style={{ fontSize: 11 }} onClick={() => void removeTune(item.id)}>
                       Remover
                     </button>
                   </div>

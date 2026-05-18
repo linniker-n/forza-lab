@@ -64,6 +64,8 @@ https://SEU-DOMINIO/auth/callback
 
 Ative o provider Google no Supabase com as credenciais OAuth do Google Cloud.
 
+Para persistir tunes salvas por usuário, execute o SQL em `supabase/schema.sql` no editor SQL do Supabase.
+
 ## Observação
 
-O app usa regras e dados locais. Ranking comunitário, tempos reais e banco remoto ainda podem ser adicionados depois, mas o fluxo atual já funciona sem backend externo.
+O app usa regras e dados locais para gerar tunes. Com Supabase configurado, login e garagem remota ficam ativos; sem Supabase, o app mostra o estado de configuração pendente nas áreas protegidas.
