@@ -1,5 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Arquivos de mídia na raiz (cópias dos assets que já estão em /public)
+/*.webm
+/*.mp4
+
 # dependencies
 /node_modules
 /.pnp
