@@ -4,19 +4,9 @@ import Link from "next/link"
 import { useAuth } from "./AuthProvider"
 
 export function AuthStatus() {
-  const { configured, loading, user, signOut } = useAuth()
+  const { loading, user, signOut } = useAuth()
 
-  if (loading) {
-    return <span className="auth-pill">Sessão</span>
-  }
-
-  if (!configured) {
-    return (
-      <Link href="/login" className="auth-pill auth-pill-warn">
-        Auth setup
-      </Link>
-    )
-  }
+  if (loading) return null
 
   if (!user) {
     return (
