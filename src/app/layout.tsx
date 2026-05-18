@@ -61,7 +61,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <span className="footer-badge">FT</span>
                 <span className="footer-brand">Forza Tune Lab</span>
               </div>
-              <p className="footer-copy">Baseado em padrões de FH4/FH5 — preparado para Forza Horizon 6</p>
+              <p className="footer-copy">
+                Desenvolvido por{" "}
+                <a
+                  href="https://www.instagram.com/linniker.n"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "var(--fh6-teal)", textDecoration: "none", fontWeight: 600 }}
+                >
+                  @linnikern_
+                </a>
+              </p>
               <nav className="flex gap-4 flex-wrap justify-center">
                 <Link href="/tune"        className="footer-link">Tune</Link>
                 <Link href="/diagnostics" className="footer-link">Diagnóstico</Link>
