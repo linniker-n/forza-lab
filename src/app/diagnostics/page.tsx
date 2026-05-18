@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CARS } from "@/data/cars"
-import { PROBLEM_LABELS } from "@/lib/tune-engine/diagnostics"
+import { diagnose as runDiagnostic, PROBLEM_LABELS } from "@/lib/tune-engine/diagnostics"
 import type { Car, DiagnosticProblem, DiagnosticResult, TuneType } from "@/types"
 
 const PROBLEMS = Object.entries(PROBLEM_LABELS) as [DiagnosticProblem, string][]
@@ -58,13 +58,10 @@ export default function DiagnosticsPage() {
     if (!selected) return
     setLoading(true)
     try {
-      const res = await fetch("/api/diagnostics", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ problem: selected, car_id: car?.id, tune_type: tuneType || undefined }),
-      })
-      const data = await res.json()
-      setResult(data.result)
+      setResult(runDiagnostic(selected, {
+        car: car ?? undefined,
+        tuneType: tuneType || undefined,
+      }))
     } finally { setLoading(false) }
   }
 

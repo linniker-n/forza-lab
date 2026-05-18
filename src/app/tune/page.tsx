@@ -7,8 +7,10 @@ import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CARS, getCarImageUrl } from "@/data/cars"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneType } from "@/types"
+import { getFirebaseDb } from "@/lib/firebase/client"
+import { generateTune } from "@/lib/tune-engine/generator"
+import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneRequest, TuneType } from "@/types"
+import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 
 type Difficulty = "easy" | "balanced" | "aggressive"
 
@@ -37,7 +39,7 @@ const CONTROLS: { v: ControlType; l: string }[] = [
   { v: "keyboard",   l: "Teclado" },
   { v: "wheel",      l: "Volante" },
 ]
-const DRIVETRAINS = [
+const DRIVETRAINS: { v: TuneRequest["preferred_drivetrain"]; l: string }[] = [
   { v: "original", l: "Manter original" },
   { v: "AWD",      l: "AWD" },
   { v: "RWD",      l: "RWD" },
@@ -126,7 +128,7 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
   async function saveTune() {
     setSaving(true)
     setSaveError(null)
-    const storageKey = `forza-tune-lab:saved-tunes:${user?.id ?? "local"}`
+    const storageKey = `forza-tune-lab:saved-tunes:${user?.uid ?? "local"}`
     let savedTunes: unknown = []
     try {
       const raw = window.localStorage.getItem(storageKey)
@@ -140,14 +142,15 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
       tune,
     }
 
-    const supabase = getSupabaseBrowserClient()
-    if (supabase && user) {
-      const { error } = await supabase
-        .from("saved_tunes")
-        .insert({ user_id: user.id, tune })
-
-      if (error) {
-        setSaveError("Não foi possível salvar no Supabase. A tune ficou salva neste navegador.")
+    const db = getFirebaseDb()
+    if (db && user) {
+      try {
+        await addDoc(collection(db, "users", user.uid, "savedTunes"), {
+          tune,
+          createdAt: serverTimestamp(),
+        })
+      } catch {
+        setSaveError("Não foi possível salvar no Firebase. A tune ficou salva neste navegador.")
       }
     }
 
@@ -393,7 +396,7 @@ function WizardInner() {
   const [diff, setDiff]       = useState<Difficulty>("balanced")
   const [style, setStyle]     = useState<DrivingStyle>("competitive")
   const [ctrl, setCtrl]       = useState<ControlType>("controller")
-  const [dt, setDt]           = useState("original")
+  const [dt, setDt]           = useState<TuneRequest["preferred_drivetrain"]>("original")
   const [loading, setLoading] = useState(false)
   const [result, setResult]   = useState<GeneratedTune | null>(null)
   const [error, setError]     = useState<string | null>(null)
@@ -406,14 +409,16 @@ function WizardInner() {
     if (!car || !tuneType) return
     setLoading(true); setError(null)
     try {
-      const res = await fetch("/api/tune", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ car_id: car.id, target_class: cls, tune_type: tuneType, style, control: ctrl, preferred_drivetrain: dt, difficulty: diff }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setResult(data.tune); setStep(4)
+      const request: TuneRequest = {
+        car_id: car.id,
+        target_class: cls,
+        tune_type: tuneType,
+        style,
+        control: ctrl,
+        preferred_drivetrain: dt,
+        difficulty: diff,
+      }
+      setResult(generateTune(request, car)); setStep(4)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro ao gerar tune")
     } finally { setLoading(false) }
@@ -578,7 +583,7 @@ function WizardInner() {
                   <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{label}</p>
                   <div className="space-y-1">
                     {opts.map((o) => (
-                      <button key={o.v} type="button" onClick={() => set(o.v)}
+                      <button key={o.v} type="button" onClick={() => (set as (value: string) => void)(o.v)}
                         className="w-full r-btn text-left transition-all"
                         style={{
                           justifyContent: "flex-start",

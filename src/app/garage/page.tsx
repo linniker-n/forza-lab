@@ -6,8 +6,9 @@ import { useEffect, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { getCarImageUrl } from "@/data/cars"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { getFirebaseDb } from "@/lib/firebase/client"
 import type { GeneratedTune } from "@/types"
+import { collection, deleteDoc, doc, getDocs, orderBy, query } from "firebase/firestore"
 
 interface SavedTune {
   id: string
@@ -29,43 +30,67 @@ function readSavedTunes(userId?: string): SavedTune[] {
   }
 }
 
+function firestoreDate(value: unknown) {
+  if (
+    value &&
+    typeof value === "object" &&
+    "toDate" in value &&
+    typeof (value as { toDate: () => Date }).toDate === "function"
+  ) {
+    return (value as { toDate: () => Date }).toDate().toISOString()
+  }
+
+  return new Date().toISOString()
+}
+
+function mapFirestoreTune(id: string, data: Record<string, unknown>): SavedTune | null {
+  if (!data.tune) return null
+
+  return {
+    id,
+    saved_at: firestoreDate(data.createdAt),
+    tune: data.tune as GeneratedTune,
+  }
+}
+
 export default function GaragePage() {
   const [saved, setSaved] = useState<SavedTune[]>([])
   const [syncNote, setSyncNote] = useState<string | null>(null)
   const { user } = useAuth()
-  const userId = user?.id
+  const userId = user?.uid
 
   useEffect(() => {
     let active = true
-    const supabase = getSupabaseBrowserClient()
+    const db = getFirebaseDb()
+    const localTunes = readSavedTunes(userId)
 
-    if (supabase && userId) {
-      supabase
-        .from("saved_tunes")
-        .select("id, created_at, tune")
-        .order("created_at", { ascending: false })
-        .then(({ data, error }) => {
-          if (!active) return
-
-          if (error) {
-            setSyncNote("Garagem Supabase indisponível. Exibindo tunes salvas neste navegador.")
-            setSaved(readSavedTunes(userId))
-            return
-          }
-
-          setSyncNote(null)
-          setSaved((data ?? []).map((row) => ({
-            id: row.id,
-            saved_at: row.created_at,
-            tune: row.tune as GeneratedTune,
-          })))
-        })
-    } else {
+    if (!db || !userId) {
       Promise.resolve().then(() => {
         if (!active) return
-        setSaved(readSavedTunes(userId))
+        setSaved(localTunes)
       })
+
+      return () => {
+        active = false
+      }
     }
+
+    const tunesRef = collection(db, "users", userId, "savedTunes")
+    getDocs(query(tunesRef, orderBy("createdAt", "desc")))
+      .then((snapshot) => {
+        if (!active) return
+        const remoteTunes = snapshot.docs
+          .map((item) => mapFirestoreTune(item.id, item.data()))
+          .filter((item): item is SavedTune => Boolean(item))
+
+        setSyncNote(null)
+        setSaved(remoteTunes.length > 0 ? remoteTunes : localTunes)
+      })
+      .catch(() => {
+        if (!active) return
+        setSyncNote("Garagem Firebase indisponível. Exibindo tunes salvas neste navegador.")
+        setSaved(localTunes)
+      })
 
     return () => {
       active = false
@@ -73,23 +98,32 @@ export default function GaragePage() {
   }, [userId])
 
   async function removeTune(id: string) {
-    const supabase = getSupabaseBrowserClient()
-    if (supabase && user) {
-      await supabase.from("saved_tunes").delete().eq("id", id)
+    const db = getFirebaseDb()
+    if (db && user) {
+      try {
+        await deleteDoc(doc(db, "users", user.uid, "savedTunes", id))
+      } catch {
+        setSyncNote("Não foi possível remover no Firebase agora.")
+      }
     }
 
     const next = saved.filter((item) => item.id !== id)
-    window.localStorage.setItem(storageKey(user?.id), JSON.stringify(next))
+    window.localStorage.setItem(storageKey(user?.uid), JSON.stringify(next))
     setSaved(next)
   }
 
   async function clearGarage() {
-    const supabase = getSupabaseBrowserClient()
-    if (supabase && user) {
-      await supabase.from("saved_tunes").delete().eq("user_id", user.id)
+    const db = getFirebaseDb()
+    if (db && user) {
+      try {
+        const snapshot = await getDocs(collection(db, "users", user.uid, "savedTunes"))
+        await Promise.all(snapshot.docs.map((item) => deleteDoc(item.ref)))
+      } catch {
+        setSyncNote("Não foi possível limpar no Firebase agora.")
+      }
     }
 
-    window.localStorage.removeItem(storageKey(user?.id))
+    window.localStorage.removeItem(storageKey(user?.uid))
     setSaved([])
   }
 
@@ -99,10 +133,10 @@ export default function GaragePage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
         <div className="flex items-start justify-between gap-4 flex-wrap anim-up">
           <div>
-            <p className="section-label">Garagem local</p>
+            <p className="section-label">Garagem</p>
             <h1 className="page-title">Tunes salvas</h1>
             <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>
-              As tunes ficam no armazenamento deste navegador.
+              As tunes sincronizam no Firebase e mantêm cópia local neste navegador.
             </p>
           </div>
           <div className="flex gap-2">

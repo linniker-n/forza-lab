@@ -1,86 +1,90 @@
 "use client"
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
-import type { Session, User } from "@supabase/supabase-js"
-import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client"
+import {
+  GoogleAuthProvider,
+  isSignInWithEmailLink,
+  onAuthStateChanged,
+  sendSignInLinkToEmail,
+  signInWithEmailLink,
+  signInWithPopup,
+  signOut as firebaseSignOut,
+  type User,
+} from "firebase/auth"
+import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase/client"
 
 interface AuthContextValue {
   configured: boolean
   loading: boolean
-  session: Session | null
   user: User | null
   signInWithEmail(email: string): Promise<void>
+  completeEmailSignIn(email?: string): Promise<void>
   signInWithGoogle(): Promise<void>
   signOut(): Promise<void>
 }
 
+const EMAIL_STORAGE_KEY = "forza-tune-lab:email-for-sign-in"
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-function redirectUrl() {
-  return `${window.location.origin}/auth/callback`
+function actionCodeSettings() {
+  return {
+    url: `${window.location.origin}/auth/callback`,
+    handleCodeInApp: true,
+  }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const supabase = useMemo(() => getSupabaseBrowserClient(), [])
-  const configured = isSupabaseConfigured()
-  const [session, setSession] = useState<Session | null>(null)
+  const auth = useMemo(() => getFirebaseAuth(), [])
+  const configured = isFirebaseConfigured()
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(() => configured)
 
   useEffect(() => {
-    if (!supabase) return
+    if (!auth) return
 
-    let active = true
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return
-      setSession(data.session)
+    return onAuthStateChanged(auth, (nextUser) => {
+      setUser(nextUser)
       setLoading(false)
     })
-
-    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession)
-      setLoading(false)
-    })
-
-    return () => {
-      active = false
-      data.subscription.unsubscribe()
-    }
-  }, [supabase])
+  }, [auth])
 
   const signInWithEmail = useCallback(async (email: string) => {
-    if (!supabase) throw new Error("Supabase não configurado.")
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: redirectUrl() },
-    })
-    if (error) throw error
-  }, [supabase])
+    if (!auth) throw new Error("Firebase não configurado.")
+    window.localStorage.setItem(EMAIL_STORAGE_KEY, email)
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings())
+  }, [auth])
+
+  const completeEmailSignIn = useCallback(async (fallbackEmail?: string) => {
+    if (!auth) throw new Error("Firebase não configurado.")
+    if (!isSignInWithEmailLink(auth, window.location.href)) return
+
+    const email = fallbackEmail || window.localStorage.getItem(EMAIL_STORAGE_KEY)
+    if (!email) throw new Error("Informe novamente o email para concluir o login.")
+
+    await signInWithEmailLink(auth, email, window.location.href)
+    window.localStorage.removeItem(EMAIL_STORAGE_KEY)
+  }, [auth])
 
   const signInWithGoogle = useCallback(async () => {
-    if (!supabase) throw new Error("Supabase não configurado.")
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: redirectUrl() },
-    })
-    if (error) throw error
-  }, [supabase])
+    if (!auth) throw new Error("Firebase não configurado.")
+    await signInWithPopup(auth, new GoogleAuthProvider())
+  }, [auth])
 
   const signOut = useCallback(async () => {
-    if (!supabase) return
-    await supabase.auth.signOut()
-    setSession(null)
-  }, [supabase])
+    if (!auth) return
+    await firebaseSignOut(auth)
+    setUser(null)
+  }, [auth])
 
   const value = useMemo<AuthContextValue>(() => ({
     configured,
     loading,
-    session,
-    user: session?.user ?? null,
+    user,
     signInWithEmail,
+    completeEmailSignIn,
     signInWithGoogle,
     signOut,
-  }), [configured, loading, session, signInWithEmail, signInWithGoogle, signOut])
+  }), [configured, loading, user, signInWithEmail, completeEmailSignIn, signInWithGoogle, signOut])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

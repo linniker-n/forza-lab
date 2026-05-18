@@ -54,7 +54,7 @@ export default function LoginPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               ["Email", "Magic link sem senha"],
-              ["Google", "OAuth via Supabase"],
+              ["Google", "OAuth via Firebase"],
               ["Garagem", "Dados por usuário"],
             ].map(([title, desc]) => (
               <div key={title} className="r-card p-4">
@@ -70,14 +70,16 @@ export default function LoginPage() {
             <div className="space-y-4">
               <p className="section-label">Configuração necessária</p>
               <p style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.6 }}>
-                O login está implementado, mas precisa das variáveis do Supabase para funcionar.
+                O login está implementado, mas precisa das variáveis do Firebase para funcionar.
               </p>
               <div className="rounded-lg p-3 mono-val" style={{ fontSize: 11, color: "var(--text-muted)", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
-                NEXT_PUBLIC_SUPABASE_URL<br />
-                NEXT_PUBLIC_SUPABASE_ANON_KEY
+                NEXT_PUBLIC_FIREBASE_API_KEY<br />
+                NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN<br />
+                NEXT_PUBLIC_FIREBASE_PROJECT_ID<br />
+                NEXT_PUBLIC_FIREBASE_APP_ID
               </div>
               <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.55 }}>
-                Depois de configurar o projeto no Supabase, adicione também a URL de produção em Authentication Redirect URLs.
+                Depois de configurar o projeto no Firebase, ative Google e Email link em Authentication.
               </p>
             </div>
           ) : user ? (

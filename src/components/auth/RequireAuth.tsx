@@ -26,9 +26,9 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-14">
           <div className="r-card bracket p-8 space-y-4">
             <p className="section-label">Autenticação pendente</p>
-            <h1 className="page-title">Configure o Supabase</h1>
+            <h1 className="page-title">Configure o Firebase</h1>
             <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.65 }}>
-              Para liberar esta área, defina `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` no ambiente local e no deploy.
+              Para liberar esta área, defina as variáveis `NEXT_PUBLIC_FIREBASE_*` no ambiente local e no Cloudflare Pages.
             </p>
             <Link href="/login" className="r-btn r-btn-primary">Ver tela de login</Link>
           </div>

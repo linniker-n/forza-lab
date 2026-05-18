@@ -4,11 +4,13 @@ Aplicativo de tunagens para Forza Horizon 6. O projeto combina uma base local de
 
 ## Stack
 
-- Next.js 16
+- Next.js 16 com export estático
 - React 19
 - TypeScript
 - Tailwind CSS 4
-- shadcn/Base UI
+- Firebase Authentication
+- Cloud Firestore
+- Cloudflare Pages
 
 ## Dados dos carros
 
@@ -31,41 +33,64 @@ Algumas linhas do Fandom ainda apontam para páginas não criadas. Esses carros 
 ```bash
 npm run dev
 npm run build
+npm run preview
 npm run lint
 npm run sync:fandom-cars
+npm run pages:deploy
 ```
 
 ## Rotas
 
 - `/` visão geral
 - `/cars` banco completo de carros
-- `/login` login por email ou Google via Supabase
+- `/login` login por email ou Google via Firebase
 - `/tune` gerador de tune
 - `/diagnostics` diagnóstico contextual
 - `/meta` ranking técnico por classe e uso
 - `/compare` comparador de carros
-- `/garage` tunes salvas localmente
+- `/garage` tunes salvas no Firestore com cópia local
 
-## Autenticação
+## Firebase
 
-O app usa Supabase Auth. Para habilitar login por email e Google, crie um projeto no Supabase e configure:
+Crie um projeto no Firebase e configure estas variáveis no `.env.local` e no Cloudflare Pages:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 ```
 
-No painel do Supabase, em Authentication, adicione as URLs de callback:
+Em Authentication, ative:
+
+- Google
+- Email link/passwordless sign-in
+
+Adicione os domínios autorizados:
 
 ```text
-http://localhost:3000/auth/callback
-https://SEU-DOMINIO/auth/callback
+localhost
+SEU-PROJETO.pages.dev
+SEU-DOMINIO.com
 ```
 
-Ative o provider Google no Supabase com as credenciais OAuth do Google Cloud.
+As tunes salvas ficam em `users/{uid}/savedTunes/{tuneId}` no Cloud Firestore. Publique as regras em `firebase/firestore.rules` para restringir leitura e escrita ao dono da conta.
 
-Para persistir tunes salvas por usuário, execute o SQL em `supabase/schema.sql` no editor SQL do Supabase.
+## Cloudflare Pages
+
+O app está preparado para Cloudflare Pages usando static export. Na criação do projeto, conecte o repositório do GitHub e use:
+
+```text
+Framework preset: Next.js (Static HTML Export)
+Production branch: main
+Build command: npm run build
+Build output directory: out
+```
+
+Depois configure as variáveis `NEXT_PUBLIC_FIREBASE_*` no painel do Cloudflare Pages e inclua o domínio `*.pages.dev` nos domínios autorizados do Firebase Authentication.
 
 ## Observação
 
-O app usa regras e dados locais para gerar tunes. Com Supabase configurado, login e garagem remota ficam ativos; sem Supabase, o app mostra o estado de configuração pendente nas áreas protegidas.
+O motor de tune roda no cliente com dados locais, então o app não depende de API própria para gerar tunes. Firebase entra apenas para login e sincronização da garagem.
