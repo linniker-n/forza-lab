@@ -131,23 +131,18 @@ export default function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pb-14 pt-36 w-full" style={{ zIndex: 2 }}>
           <div className="max-w-xl space-y-6 anim-up">
 
-            <div className="japan-pill">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.2"/>
-                <circle cx="5" cy="5" r="2" fill="currentColor"/>
-              </svg>
-              Forza Horizon 6 · Japan
-            </div>
-
-            <h1 className="fh6-headline">
-              O JAPÃO TE <span className="fh6-headline-accent">AGUARDA,</span><br />
+            <h1
+              className="fh6-headline"
+              style={{ fontSize: "clamp(2.2rem, 5.5vw, 5.5rem)" }}
+            >
+              <span style={{ whiteSpace: "nowrap" }}>O JAPÃO TE</span>{" "}
+              <span className="fh6-headline-accent" style={{ whiteSpace: "nowrap" }}>AGUARDA,</span><br />
               TUNE E<br />
               <span style={{ color: "rgba(255,255,255,0.45)" }}>ACELERE.</span>
             </h1>
 
             <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", maxWidth: 440, lineHeight: 1.7 }}>
-              618 carros confirmados. Cada tune calculada do zero pelo perfil do carro —
-              sem IA chutando valores.
+              Seu assistente de tunagem. Agora você terá total liberdade com seus carros.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -167,14 +162,6 @@ export default function HomePage() {
               }}>
                 Ver Carros
               </Link>
-            </div>
-
-            <div className="flex flex-wrap gap-2 pt-1">
-              {TUNE_TYPES.map((t) => (
-                <Link key={t.slug} href={`/tune?type=${t.slug}`} className={`inline-tag ${t.cls}`}>
-                  {t.label}
-                </Link>
-              ))}
             </div>
           </div>
 
