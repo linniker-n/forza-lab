@@ -65,6 +65,14 @@
   --red:        #ef4444;
   --red-dim:    rgba(239, 68, 68, 0.12);
 
+  /* FH6 Identity — baseado no visual oficial forza.net/forzahorizon6 */
+  --fh6-teal:       #2ccecc;
+  --fh6-teal-dim:   rgba(44, 206, 204, 0.12);
+  --fh6-teal-glow:  rgba(44, 206, 204, 0.25);
+  --fh6-pink:       #d4278a;
+  --fh6-pink-dim:   rgba(212, 39, 138, 0.10);
+  --fh6-hero-bg:    #000000;
+
   /* Borders */
   --border:         rgba(255, 255, 255, 0.08);
   --border-strong:  rgba(255, 255, 255, 0.14);
@@ -822,3 +830,249 @@
   user-select: none;
 }
 .inline-tag:hover { opacity: 0.8; }
+
+/* ════════════════════════════════════════════════════════════
+   FH6 VISUAL IDENTITY
+   Baseado no design oficial forza.net — preto, branco,
+   teal divisor, rosa/magenta origami, bold uppercase.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Teal divider (idêntico ao fh6-teal-divider.png) ── */
+.fh6-divider {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent 0%, var(--fh6-teal) 30%, var(--fh6-teal) 70%, transparent 100%);
+  opacity: 0.9;
+}
+
+/* Thin teal line horizontal */
+.fh6-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--fh6-teal), transparent);
+  opacity: 0.6;
+}
+
+/* ── Origami shapes decorativos (CSS clip-path) ── */
+.origami-tr {
+  position: absolute;
+  pointer-events: none;
+  top: 0; right: 0;
+  width: 420px; height: 420px;
+  overflow: hidden;
+  opacity: 0.07;
+}
+.origami-tr::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 320px; height: 320px;
+  background: var(--fh6-pink);
+  clip-path: polygon(60% 0%, 100% 0%, 100% 40%, 40% 100%, 0% 100%, 0% 60%);
+  transform: rotate(15deg);
+}
+.origami-tr::after {
+  content: '';
+  position: absolute;
+  top: 60px; right: 30px;
+  width: 180px; height: 180px;
+  background: var(--fh6-pink);
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  transform: rotate(-20deg);
+  opacity: 0.6;
+}
+
+.origami-bl {
+  position: absolute;
+  pointer-events: none;
+  bottom: 0; left: 0;
+  width: 300px; height: 300px;
+  overflow: hidden;
+  opacity: 0.06;
+}
+.origami-bl::before {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: -60px;
+  width: 260px; height: 260px;
+  background: var(--fh6-pink);
+  clip-path: polygon(0% 40%, 60% 0%, 100% 0%, 100% 60%, 40% 100%, 0% 100%);
+  transform: rotate(-10deg);
+}
+
+/* ── FH6 Hero ── */
+.fh6-hero {
+  position: relative;
+  background: var(--fh6-hero-bg);
+  overflow: hidden;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Noise grain overlay */
+.fh6-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+}
+
+/* Car glow radial */
+.fh6-car-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 70% at 65% 55%,
+    rgba(44, 206, 204, 0.06) 0%,
+    rgba(212, 39, 138, 0.04) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ── FH6 Hero headline ── */
+.fh6-headline {
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.fh6-headline-accent {
+  color: var(--fh6-teal);
+}
+
+/* ── FH6 Eyebrow label ── */
+.fh6-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fh6-teal);
+}
+
+/* ── Feature card FH6 style ── */
+.fh6-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 4px;
+  background: #080808;
+  transition: border-color 0.25s ease, transform 0.25s cubic-bezier(0.16,1,0.3,1);
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+}
+.fh6-card:hover {
+  border-color: var(--fh6-teal);
+  transform: translateY(-2px);
+}
+.fh6-card-inner {
+  padding: 24px;
+}
+.fh6-card::after {
+  content: '';
+  position: absolute;
+  inset-x: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--fh6-teal);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+.fh6-card:hover::after { transform: scaleX(1); }
+
+/* ── Stat chip FH6 ── */
+.fh6-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 20px;
+}
+.fh6-stat-val {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: #fff;
+  font-family: var(--font-geist-mono), monospace;
+}
+.fh6-stat-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+}
+
+/* ── Japan tag pill ── */
+.japan-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 2px;
+  border: 1px solid rgba(44,206,204,0.35);
+  background: rgba(44,206,204,0.06);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fh6-teal);
+}
+
+/* ── Scroll indicator ── */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(6px); }
+}
+.scroll-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  animation: scrollBounce 1.8s ease-in-out infinite;
+}
+
+/* ── Auth pill in header ── */
+.auth-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.auth-email {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.auth-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-strong);
+  color: rgba(255,255,255,0.6);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.auth-pill:hover {
+  border-color: var(--fh6-teal);
+  color: var(--fh6-teal);
+}
+.auth-pill-warn {
+  border-color: rgba(239,68,68,0.4);
+  color: #fca5a5;
+}
