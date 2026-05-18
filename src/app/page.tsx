@@ -140,8 +140,7 @@ export default function HomePage() {
             </div>
 
             <h1 className="fh6-headline">
-              O JAPÃO<br />
-              TE <span className="fh6-headline-accent">AGUARDA,</span><br />
+              O JAPÃO TE <span className="fh6-headline-accent">AGUARDA,</span><br />
               TUNE E<br />
               <span style={{ color: "rgba(255,255,255,0.45)" }}>ACELERE.</span>
             </h1>
