@@ -3,9 +3,9 @@ import Link from "next/link"
 import { CARS, getCarImageUrl } from "@/data/cars"
 import { CarCard } from "@/components/cars/CarCard"
 
-/* ── Carros JDM em destaque (FH6 = ambientado no Japão) ── */
-const HERO_CAR  = CARS.find((c) => c.id === "nissan_gtr_nismo_2024")
-               ?? CARS.find((c) => c.id === "nissan_gtr_2017")
+/* ── Carro capa oficial do FH6 ── */
+const HERO_CAR  = CARS.find((c) => c.id === "gr_gt_prototype_2025")
+               ?? CARS.find((c) => c.id === "toyota_gr_supra_2020")
                ?? CARS[0]
 
 const FEATURED  = CARS.filter((c) =>
@@ -69,66 +69,47 @@ const FEATURES = [
 ]
 
 export default function HomePage() {
-  const heroImg = getCarImageUrl(HERO_CAR)
-
   return (
     <>
       {/* ════════════════════════════════════════════════════════
           HERO — full-viewport, estilo forza.net/forzahorizon6
           ════════════════════════════════════════════════════════ */}
       <section className="fh6-hero">
-        {/* Origami shapes decorativos */}
-        <div className="origami-tr" aria-hidden="true" />
-        <div className="origami-bl" aria-hidden="true" />
 
-        {/* Glow radial atrás do carro */}
-        <div className="fh6-car-glow" aria-hidden="true" />
+        {/* ── Vídeo keyart oficial FH6 como fundo ── */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+          style={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <source src="/hero.webm" type="video/webm" />
+        </video>
 
-        {/* Gradiente atmosférico */}
+        {/* Overlay escuro progressivo — garante legibilidade do texto */}
         <div
           aria-hidden="true"
           style={{
             position: "absolute", inset: 0,
-            background: "radial-gradient(ellipse 80% 60% at 50% 110%, rgba(44,206,204,0.07) 0%, transparent 60%)",
+            background: "linear-gradient(to top, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.15) 75%, transparent 100%)",
             pointerEvents: "none",
           }}
         />
 
-        {/* ── Car image — full background ── */}
-        {heroImg && (
-          <div
-            style={{
-              position: "absolute", inset: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >
-            <div
-              style={{
-                position: "relative",
-                width: "100%", maxWidth: 1100,
-                height: "70%",
-                marginLeft: "auto",
-                right: "-4%",
-              }}
-            >
-              <Image
-                src={heroImg}
-                alt={`${HERO_CAR.brand} ${HERO_CAR.model}`}
-                fill
-                sizes="100vw"
-                style={{ objectFit: "contain", objectPosition: "center right", filter: "brightness(1.05) contrast(1.02) drop-shadow(0 20px 60px rgba(44,206,204,0.12))" }}
-                priority
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Gradient bottom overlay para legibilidade do texto */}
+        {/* Overlay lateral esquerdo para destaque do texto */}
         <div
           aria-hidden="true"
           style={{
             position: "absolute", inset: 0,
-            background: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 35%, rgba(0,0,0,0.1) 65%, transparent 100%)",
+            background: "linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)",
             pointerEvents: "none",
           }}
         />
