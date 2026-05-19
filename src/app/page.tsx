@@ -204,7 +204,7 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════
           STATS BAR
           ════════════════════════════════════════════════════════ */}
-      <section style={{ background: "#050505", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+      <section style={{ background: "#10121c", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 divide-x" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
           {[
             { val: "618",  label: "Carros do FH6" },
@@ -223,8 +223,8 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════
           JAPAN — "Tokyo. Nikko. Hokkaido."
           ════════════════════════════════════════════════════════ */}
-      <section style={{ background: "#000", position: "relative", overflow: "hidden" }}>
-        <div className="origami-tr" aria-hidden="true" style={{ opacity: 0.05 }} />
+      <section style={{ background: "#0c0d14", position: "relative", overflow: "hidden" }}>
+        <div className="origami-tr" aria-hidden="true" style={{ opacity: 0.08 }} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 anim-up">
@@ -261,7 +261,7 @@ export default function HomePage() {
               const img = getCarImageUrl(car)
               return (
                 <Link key={car.id} href={`/tune?car=${car.id}`} className="fh6-card group" style={{ aspectRatio: "16/10" }}>
-                  <div style={{ position: "relative", width: "100%", height: "100%", background: "#111" }}>
+                  <div style={{ position: "relative", width: "100%", height: "100%", background: "#181c2c" }}>
                     {img && (
                       <Image src={img} alt={`${car.brand} ${car.model}`} fill sizes="(max-width:768px) 50vw, 25vw"
                         style={{ objectFit: "contain", padding: 10 }} />
@@ -290,8 +290,8 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════
           FUNCIONALIDADES — 6 cards com hover real
           ════════════════════════════════════════════════════════ */}
-      <section style={{ background: "#050505", position: "relative", overflow: "hidden" }}>
-        <div className="origami-bl" aria-hidden="true" style={{ opacity: 0.05 }} />
+      <section style={{ background: "#10121c", position: "relative", overflow: "hidden" }}>
+        <div className="origami-bl" aria-hidden="true" style={{ opacity: 0.08 }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 space-y-10">
           <div className="space-y-2 anim-up">
             <p className="fh6-eyebrow">O que você encontra aqui</p>
@@ -326,7 +326,7 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════
           JDM CARROSSEL — slide automático
           ════════════════════════════════════════════════════════ */}
-      <section style={{ background: "#000", paddingTop: 64, paddingBottom: 0 }}>
+      <section style={{ background: "#0c0d14", paddingTop: 64, paddingBottom: 0 }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6 pb-8">
           <div className="flex items-end justify-between flex-wrap gap-4 anim-up">
             <div className="space-y-1">
@@ -366,8 +366,8 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════
           CTA FINAL
           ════════════════════════════════════════════════════════ */}
-      <section style={{ background: "#050505", position: "relative", overflow: "hidden" }}>
-        <div className="origami-tr" aria-hidden="true" style={{ opacity: 0.05 }} />
+      <section style={{ background: "#10121c", position: "relative", overflow: "hidden" }}>
+        <div className="origami-tr" aria-hidden="true" style={{ opacity: 0.08 }} />
         <div aria-hidden="true" style={{
           position: "absolute", inset: 0, pointerEvents: "none",
           background: "radial-gradient(ellipse 60% 80% at 50% 100%, rgba(44,206,204,0.08) 0%, transparent 60%)",

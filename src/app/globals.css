@@ -45,13 +45,13 @@
    DESIGN TOKENS — hex/rgba para garantir renderização
    ──────────────────────────────────────────────────────────── */
 :root {
-  /* ── Surfaces — neutral dark, sem tint azul ─────────── */
-  --bg-base:       #060608;
-  --bg-surface:    #0a0c12;
-  --bg-card:       #111520;
-  --bg-card-hover: #161a28;
-  --bg-elevated:   #1a1f2e;
-  --bg-input:      #0d1018;
+  /* ── Surfaces — FH6 Japan night aesthetic ───────────── */
+  --bg-base:       #0c0d14;   /* base: dark navy, não puro preto  */
+  --bg-surface:    #10121c;   /* segunda superfície                */
+  --bg-card:       #181c2c;   /* cards: claramente destacados      */
+  --bg-card-hover: #1e2338;   /* card hover: elevado               */
+  --bg-elevated:   #222740;   /* elementos elevados (dropdowns)    */
+  --bg-input:      #141720;   /* campos de input                   */
 
   /* ── FH6 Brand — cores oficiais Forza Horizon 6 ─────── */
   /* Teal (cor principal da UI do jogo) */
@@ -95,22 +95,22 @@
   --text-subtle:   #2e3448;
 
   /* ── Shadcn compat ───────────────────────────────────── */
-  --background:         #060608;
+  --background:         #0c0d14;
   --foreground:         #e8eaf0;
-  --card:               #111520;
+  --card:               #181c2c;
   --card-foreground:    #e8eaf0;
-  --popover:            #111520;
+  --popover:            #181c2c;
   --popover-foreground: #e8eaf0;
   --primary:            #2ccecc;
   --primary-foreground: #000000;
-  --secondary:          #0a0c12;
+  --secondary:          #10121c;
   --secondary-foreground:#94a3b8;
-  --muted:              #0a0c12;
+  --muted:              #10121c;
   --muted-foreground:   #5a6478;
   --accent:             #2ccecc;
   --accent-foreground:  #000000;
   --destructive:        #ef4444;
-  --input:              #0d1018;
+  --input:              #141720;
   --ring:               #2ccecc;
   --radius:             0.5rem;
   --sidebar:            #0a0c12;
@@ -616,7 +616,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: rgba(6, 6, 8, 0.95);
+  background-color: rgba(12, 13, 20, 0.96);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-strong);
@@ -971,7 +971,7 @@
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 6px;
-  background: #0f0f0f;
+  background: #181c2c;
   transition: border-color 0.25s ease, transform 0.25s cubic-bezier(0.16,1,0.3,1), background 0.25s ease, box-shadow 0.25s ease;
   cursor: pointer;
   text-decoration: none;
@@ -979,7 +979,7 @@
 }
 .fh6-card:hover {
   border-color: var(--fh6-teal);
-  background: #141414;
+  background: #1e2338;
   transform: translateY(-3px);
   box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(44,206,204,0.15);
 }
