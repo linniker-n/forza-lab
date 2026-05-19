@@ -45,73 +45,82 @@
    DESIGN TOKENS — hex/rgba para garantir renderização
    ──────────────────────────────────────────────────────────── */
 :root {
-  /* Surfaces */
-  --bg-base:    #04080f;
-  --bg-surface: #0a1120;
-  --bg-card:    #0e1829;
-  --bg-card-hover: #131f35;
-  --bg-elevated:#162034;
-  --bg-input:   #0c1525;
+  /* ── Surfaces — neutral dark, sem tint azul ─────────── */
+  --bg-base:       #060608;
+  --bg-surface:    #0a0c12;
+  --bg-card:       #111520;
+  --bg-card-hover: #161a28;
+  --bg-elevated:   #1a1f2e;
+  --bg-input:      #0d1018;
 
-  /* Brand */
-  --blue:       #2563eb;
-  --blue-bright:#3b82f6;
-  --blue-dim:   rgba(37, 99, 235, 0.12);
-  --blue-glow:  rgba(37, 99, 235, 0.25);
-  --amber:      #f59e0b;
-  --amber-dim:  rgba(245, 158, 11, 0.12);
-  --green:      #10b981;
-  --green-dim:  rgba(16, 185, 129, 0.12);
-  --red:        #ef4444;
-  --red-dim:    rgba(239, 68, 68, 0.12);
+  /* ── FH6 Brand — cores oficiais Forza Horizon 6 ─────── */
+  /* Teal (cor principal da UI do jogo) */
+  --blue:          #2ccecc;
+  --blue-bright:   #3dd9d7;
+  --blue-dim:      rgba(44, 206, 204, 0.12);
+  --blue-glow:     rgba(44, 206, 204, 0.25);
 
-  /* FH6 Identity — baseado no visual oficial forza.net/forzahorizon6 */
-  --fh6-teal:       #2ccecc;
-  --fh6-teal-dim:   rgba(44, 206, 204, 0.12);
-  --fh6-teal-glow:  rgba(44, 206, 204, 0.25);
-  --fh6-pink:       #d4278a;
-  --fh6-pink-dim:   rgba(212, 39, 138, 0.10);
-  --fh6-hero-bg:    #000000;
+  /* Magenta/Pink (acento secundário) */
+  --fh6-pink:      #d4278a;
+  --fh6-pink-dim:  rgba(212, 39, 138, 0.10);
+  --fh6-pink-glow: rgba(212, 39, 138, 0.25);
 
-  /* Borders */
-  --border:         rgba(255, 255, 255, 0.08);
-  --border-strong:  rgba(255, 255, 255, 0.14);
-  --border-blue:    rgba(37, 99, 235, 0.45);
-  --border-amber:   rgba(245, 158, 11, 0.45);
+  /* Volt green (acento terciário — neon Japan) */
+  --volt:          #c8ff00;
+  --volt-dim:      rgba(200, 255, 0, 0.10);
 
-  /* Text */
-  --text:        #e2e8f0;
-  --text-muted:  #64748b;
-  --text-subtle: #334155;
+  /* Manter aliases para compatibilidade com componentes FH6 */
+  --fh6-teal:      #2ccecc;
+  --fh6-teal-dim:  rgba(44, 206, 204, 0.12);
+  --fh6-teal-glow: rgba(44, 206, 204, 0.25);
+  --fh6-hero-bg:   #000000;
 
-  /* Shadcn compat */
-  --background:         #04080f;
-  --foreground:         #e2e8f0;
-  --card:               #0e1829;
-  --card-foreground:    #e2e8f0;
-  --popover:            #0e1829;
-  --popover-foreground: #e2e8f0;
-  --primary:            #2563eb;
-  --primary-foreground: #ffffff;
-  --secondary:          #0a1120;
+  /* ── Utility colors ──────────────────────────────────── */
+  --amber:         #f59e0b;
+  --amber-dim:     rgba(245, 158, 11, 0.12);
+  --green:         #10b981;
+  --green-dim:     rgba(16, 185, 129, 0.12);
+  --red:           #ef4444;
+  --red-dim:       rgba(239, 68, 68, 0.12);
+
+  /* ── Borders ─────────────────────────────────────────── */
+  --border:        rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.13);
+  --border-blue:   rgba(44, 206, 204, 0.40);
+  --border-amber:  rgba(245, 158, 11, 0.45);
+
+  /* ── Text ────────────────────────────────────────────── */
+  --text:          #e8eaf0;
+  --text-muted:    #5a6478;
+  --text-subtle:   #2e3448;
+
+  /* ── Shadcn compat ───────────────────────────────────── */
+  --background:         #060608;
+  --foreground:         #e8eaf0;
+  --card:               #111520;
+  --card-foreground:    #e8eaf0;
+  --popover:            #111520;
+  --popover-foreground: #e8eaf0;
+  --primary:            #2ccecc;
+  --primary-foreground: #000000;
+  --secondary:          #0a0c12;
   --secondary-foreground:#94a3b8;
-  --muted:              #0a1120;
-  --muted-foreground:   #64748b;
-  --accent:             #f59e0b;
+  --muted:              #0a0c12;
+  --muted-foreground:   #5a6478;
+  --accent:             #2ccecc;
   --accent-foreground:  #000000;
   --destructive:        #ef4444;
-  --border:             rgba(255, 255, 255, 0.08);
-  --input:              #0c1525;
-  --ring:               #2563eb;
+  --input:              #0d1018;
+  --ring:               #2ccecc;
   --radius:             0.5rem;
-  --sidebar:            #0a1120;
-  --sidebar-foreground: #e2e8f0;
-  --sidebar-primary:    #2563eb;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent:     #0e1829;
+  --sidebar:            #0a0c12;
+  --sidebar-foreground: #e8eaf0;
+  --sidebar-primary:    #2ccecc;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent:     #111520;
   --sidebar-accent-foreground:  #94a3b8;
   --sidebar-border:     rgba(255, 255, 255, 0.08);
-  --sidebar-ring:       #2563eb;
+  --sidebar-ring:       #2ccecc;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -140,8 +149,8 @@
   100% { background-position:  400px 0; }
 }
 @keyframes borderGlow {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(37,99,235,0.3), 0 0 12px rgba(37,99,235,0.1); }
-  50%       { box-shadow: 0 0 0 1px rgba(37,99,235,0.6), 0 0 24px rgba(37,99,235,0.2); }
+  0%, 100% { box-shadow: 0 0 0 1px rgba(44,206,204,0.25), 0 0 12px rgba(44,206,204,0.08); }
+  50%       { box-shadow: 0 0 0 1px rgba(44,206,204,0.6), 0 0 24px rgba(44,206,204,0.18); }
 }
 @keyframes carSlide {
   from { transform: translateX(30px); opacity: 0; }
@@ -167,7 +176,7 @@
 
   ::-webkit-scrollbar        { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track  { background: var(--bg-base); }
-  ::-webkit-scrollbar-thumb  { background: #1e3a5f; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb  { background: #1c2535; border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--blue); }
 }
 
@@ -178,7 +187,7 @@
 /* Dot-grid background para seções */
 .dot-grid {
   background-color: var(--bg-base);
-  background-image: radial-gradient(rgba(37,99,235,0.15) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(44,206,204,0.10) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
@@ -199,7 +208,7 @@
   left: 0;
   height: 1px;
   width: 40%;
-  background: linear-gradient(90deg, transparent, rgba(37,99,235,0.6), rgba(37,99,235,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(44,206,204,0.6), rgba(44,206,204,0.18), transparent);
   animation: speedLine 3.5s linear infinite;
   pointer-events: none;
   z-index: 2;
@@ -224,9 +233,9 @@
 .r-card:hover {
   transform: translateY(-3px);
   border-color: var(--border-blue);
-  box-shadow: 0 0 0 1px rgba(37,99,235,0.15),
+  box-shadow: 0 0 0 1px rgba(44,206,204,0.10),
               0 8px 32px rgba(0,0,0,0.6),
-              0 0 20px rgba(37,99,235,0.08);
+              0 0 20px rgba(44,206,204,0.06);
 }
 
 /* Corner brackets — decoração racing */
@@ -239,7 +248,7 @@
   position: absolute;
   width: 14px;
   height: 14px;
-  border-color: rgba(37,99,235,0.5);
+  border-color: rgba(44,206,204,0.45);
   border-style: solid;
   pointer-events: none;
   transition: border-color 0.25s ease;
@@ -284,7 +293,7 @@
   background: var(--blue);
   color: #fff;
   border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+  box-shadow: 0 4px 14px rgba(44,206,204,0.30);
 }
 .r-btn-primary::before {
   content: '';
@@ -295,7 +304,7 @@
   transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
 }
 .r-btn-primary:hover::before { transform: translateX(0); }
-.r-btn-primary:hover { box-shadow: 0 6px 20px rgba(37,99,235,0.5); }
+.r-btn-primary:hover { box-shadow: 0 6px 20px rgba(44,206,204,0.45); }
 
 .r-btn-ghost {
   background: transparent;
@@ -385,7 +394,7 @@
 .r-input::placeholder { color: var(--text-muted); }
 .r-input:focus {
   border-color: var(--border-blue);
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  box-shadow: 0 0 0 3px rgba(44,206,204,0.12);
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -437,15 +446,15 @@
   background: linear-gradient(
     135deg,
     var(--bg-base) 0%,
-    #070f1f 40%,
-    #0a1530 100%
+    #07080c 40%,
+    #0a0c14 100%
   );
 }
 
 /* Glow radial atrás do carro no hero */
 .hero-glow {
   background: radial-gradient(ellipse 60% 60% at 65% 50%,
-    rgba(37,99,235,0.12) 0%,
+    rgba(44,206,204,0.12) 0%,
     rgba(37,99,235,0.04) 40%,
     transparent 70%
   );
@@ -607,7 +616,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: rgba(4, 8, 15, 0.94);
+  background-color: rgba(6, 6, 8, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-strong);
@@ -632,8 +641,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  background: linear-gradient(135deg, var(--blue), #1d4ed8);
-  box-shadow: 0 0 14px rgba(37,99,235,0.4);
+  background: linear-gradient(135deg, var(--blue), #1aafae);
+  box-shadow: 0 0 14px rgba(44,206,204,0.38);
 }
 .logo-text {
   display: flex;
@@ -751,7 +760,7 @@
   user-select: none;
 }
 .filter-chip:hover {
-  border-color: rgba(37,99,235,0.4);
+  border-color: rgba(44,206,204,0.38);
   color: var(--text);
   background: var(--blue-dim);
 }
@@ -781,7 +790,7 @@
   user-select: none;
 }
 .class-chip:hover {
-  border-color: rgba(37,99,235,0.4);
+  border-color: rgba(44,206,204,0.38);
   color: var(--text);
 }
 .class-chip.active {
@@ -802,7 +811,7 @@
   width: 7px; height: 7px;
   border-radius: 50%;
   background: var(--blue);
-  box-shadow: 0 0 6px rgba(37,99,235,0.8);
+  box-shadow: 0 0 6px rgba(44,206,204,0.8);
   animation: revPulse 2s ease-in-out infinite;
 }
 
