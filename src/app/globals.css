@@ -1087,3 +1087,203 @@
   border-color: rgba(239,68,68,0.4);
   color: #fca5a5;
 }
+
+/* ════════════════════════════════════════════════════════════
+   LIGHT MODE — [data-theme="light"]
+   Aplica sobre todas as variáveis e componentes do dark mode.
+   ════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Surfaces */
+  --bg-base:       #f0f2f8;
+  --bg-surface:    #e5e8f2;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #f5f7fc;
+  --bg-elevated:   #ffffff;
+  --bg-input:      #eceef6;
+
+  /* Accent — mantém teal FH6 */
+  --blue-dim:      rgba(44, 206, 204, 0.10);
+  --blue-glow:     rgba(44, 206, 204, 0.18);
+
+  /* Borders — visíveis em fundo claro */
+  --border:        rgba(0, 0, 0, 0.07);
+  --border-strong: rgba(0, 0, 0, 0.12);
+  --border-blue:   rgba(44, 206, 204, 0.50);
+
+  /* Text */
+  --text:          #0f1018;
+  --text-muted:    #525c72;
+  --text-subtle:   #8a94a8;
+
+  /* Shadcn compat */
+  --background:         #f0f2f8;
+  --foreground:         #0f1018;
+  --card:               #ffffff;
+  --card-foreground:    #0f1018;
+  --popover:            #ffffff;
+  --popover-foreground: #0f1018;
+  --secondary:          #e5e8f2;
+  --secondary-foreground: #525c72;
+  --muted:              #e5e8f2;
+  --muted-foreground:   #525c72;
+  --input:              #eceef6;
+}
+
+/* ── Body & scrollbar ── */
+[data-theme="light"] body {
+  background-color: var(--bg-base);
+  color: var(--text);
+}
+[data-theme="light"] ::-webkit-scrollbar-track  { background: var(--bg-surface); }
+[data-theme="light"] ::-webkit-scrollbar-thumb  { background: #9aa3b8; border-radius: 3px; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: var(--blue); }
+
+/* ── Header ── */
+[data-theme="light"] .app-header {
+  background-color: rgba(240, 242, 248, 0.97);
+  border-bottom-color: rgba(0,0,0,0.08);
+}
+
+/* ── Cards ── */
+[data-theme="light"] .r-card {
+  background-color: #ffffff;
+  border-color: rgba(0,0,0,0.09);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+[data-theme="light"] .r-card:hover {
+  border-color: var(--border-blue);
+  box-shadow: 0 4px 20px rgba(44,206,204,0.10), 0 0 0 1px rgba(44,206,204,0.18);
+}
+[data-theme="light"] .bracket::before,
+[data-theme="light"] .bracket::after {
+  border-color: rgba(44,206,204,0.35);
+}
+
+/* ── Botões ── */
+[data-theme="light"] .r-btn-primary {
+  box-shadow: 0 3px 12px rgba(44,206,204,0.30);
+}
+[data-theme="light"] .r-btn-primary:hover {
+  box-shadow: 0 5px 18px rgba(44,206,204,0.45);
+}
+[data-theme="light"] .r-btn-ghost {
+  color: var(--text-muted);
+  border-color: rgba(0,0,0,0.12);
+}
+[data-theme="light"] .r-btn-ghost:hover {
+  background: var(--bg-surface);
+  color: var(--text);
+  border-color: var(--border-blue);
+}
+[data-theme="light"] .r-btn-outline {
+  color: var(--blue);
+  border-color: rgba(44,206,204,0.40);
+}
+[data-theme="light"] .r-btn-outline:hover {
+  background: var(--blue-dim);
+}
+
+/* ── Inputs ── */
+[data-theme="light"] .r-input {
+  background: var(--bg-input);
+  border-color: rgba(0,0,0,0.12);
+  color: var(--text);
+}
+[data-theme="light"] .r-input::placeholder { color: var(--text-subtle); }
+[data-theme="light"] .r-input:focus {
+  border-color: var(--border-blue);
+  box-shadow: 0 0 0 3px rgba(44,206,204,0.10);
+}
+
+/* ── fh6-card ── */
+[data-theme="light"] .fh6-card {
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.09);
+}
+[data-theme="light"] .fh6-card:hover {
+  background: #f5f7fc;
+  border-color: var(--fh6-teal);
+  box-shadow: 0 6px 24px rgba(44,206,204,0.08);
+}
+
+/* ── Dot-grid ── */
+[data-theme="light"] .dot-grid {
+  background-color: var(--bg-base);
+  background-image: radial-gradient(rgba(44,206,204,0.14) 1px, transparent 1px);
+}
+
+/* ── Auth pill ── */
+[data-theme="light"] .auth-pill {
+  color: var(--text-muted);
+  border-color: rgba(0,0,0,0.12);
+  background: transparent;
+}
+[data-theme="light"] .auth-pill:hover {
+  border-color: var(--fh6-teal);
+  color: var(--fh6-teal);
+}
+
+/* ── Nav ── */
+[data-theme="light"] .nav-item { color: var(--text-muted); }
+[data-theme="light"] .nav-item:hover { color: var(--text); }
+
+/* ── Filtros / chips ── */
+[data-theme="light"] .filter-chip {
+  color: var(--text-muted);
+  border-color: rgba(0,0,0,0.12);
+}
+[data-theme="light"] .filter-chip:hover {
+  background: var(--blue-dim);
+  color: var(--text);
+}
+[data-theme="light"] .class-chip {
+  color: var(--text-muted);
+  border-color: rgba(0,0,0,0.12);
+}
+[data-theme="light"] .class-chip:hover { color: var(--text); }
+
+/* ── Prob cards (diagnostics) ── */
+[data-theme="light"] .prob-card {
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.09);
+}
+[data-theme="light"] .prob-card:hover {
+  border-color: var(--border-blue);
+  background: var(--bg-card-hover);
+}
+[data-theme="light"] .prob-card.active {
+  border-color: var(--blue);
+  background: var(--blue-dim);
+}
+
+/* ── Step indicator ── */
+[data-theme="light"] .step-dot.inactive {
+  border-color: rgba(0,0,0,0.18);
+  color: var(--text-subtle);
+}
+[data-theme="light"] .step-line.inactive { background: rgba(0,0,0,0.10); }
+
+/* ── Telemetry rows ── */
+[data-theme="light"] .telem-row { border-bottom-color: rgba(0,0,0,0.05); }
+[data-theme="light"] .telem-label { color: var(--text-muted); }
+[data-theme="light"] .telem-value { color: var(--text); }
+
+/* ── Japan-pill ── */
+[data-theme="light"] .japan-pill {
+  border-color: rgba(44,206,204,0.40);
+  background: rgba(44,206,204,0.06);
+}
+
+/* ── Footer ── */
+[data-theme="light"] .app-footer {
+  background-color: var(--bg-surface);
+  border-top-color: rgba(0,0,0,0.08);
+}
+[data-theme="light"] .footer-badge {
+  background: var(--blue-dim);
+  border-color: rgba(44,206,204,0.30);
+}
+

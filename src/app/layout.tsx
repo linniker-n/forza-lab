@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google"
 import Link from "next/link"
 import { AuthProvider } from "@/components/auth/AuthProvider"
 import { AuthStatus } from "@/components/auth/AuthStatus"
+import { ThemeProvider } from "@/lib/theme/context"
+import { ThemeToggle } from "@/components/ui/ThemeToggle"
 import { SettingsProvider } from "@/lib/settings/context"
 import "./globals.css"
 
@@ -14,10 +16,25 @@ export const metadata: Metadata = {
   description: "Motor de regras competitivo para FH6. Peças, ajustes finos e diagnóstico.",
 }
 
+// Script inline que roda antes do React para evitar flash de tema errado
+const themeScript = `
+  try {
+    var t = localStorage.getItem('forza-tune-lab:theme');
+    if (t === 'light' || t === 'dark') {
+      document.documentElement.setAttribute('data-theme', t);
+    }
+  } catch(e) {}
+`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Anti-FOUC: define o tema antes do primeiro paint */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="app-root">
+        <ThemeProvider>
         <AuthProvider>
         <SettingsProvider>
           <header className="app-header">
@@ -44,12 +61,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/garage"      className="nav-item">Garagem</Link>
                 <Link href="/settings"    className="nav-item" aria-label="Configurações">
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                    <circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
-                    <path d="M7.5 1v1.5M7.5 12.5V14M1 7.5h1.5M12.5 7.5H14M2.93 2.93l1.06 1.06M11.01 11.01l1.06 1.06M2.93 12.07l1.06-1.06M11.01 3.99l1.06-1.06" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                    <path d="M7.5 1C7.5 1 6.5 2.5 6 3.5C5 3.2 3.8 3.5 3 4.3L2.2 5.8C2.7 6.3 3 7 3 7.5C3 8 2.7 8.7 2.2 9.2L3 10.7C3.8 11.5 5 11.8 6 11.5C6.5 12.5 7.5 14 7.5 14C7.5 14 8.5 12.5 9 11.5C10 11.8 11.2 11.5 12 10.7L12.8 9.2C12.3 8.7 12 8 12 7.5C12 7 12.3 6.3 12.8 5.8L12 4.3C11.2 3.5 10 3.2 9 3.5C8.5 2.5 7.5 1 7.5 1Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="7.5" cy="7.5" r="1.5" stroke="currentColor" strokeWidth="1.4"/>
                   </svg>
                 </Link>
               </nav>
               <div className="flex items-center gap-2">
+                <ThemeToggle />
                 <AuthStatus />
                 <Link href="/tune" className="r-btn r-btn-primary">
                   <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
@@ -91,6 +109,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </footer>
         </SettingsProvider>
         </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

@@ -204,7 +204,7 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════
           STATS BAR
           ════════════════════════════════════════════════════════ */}
-      <section style={{ background: "#10121c", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+      <section style={{ background: "var(--bg-surface)", borderBottom: "1px solid var(--border)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 divide-x" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
           {[
             { val: "618",  label: "Carros do FH6" },
@@ -223,7 +223,7 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════
           JAPAN — "Tokyo. Nikko. Hokkaido."
           ════════════════════════════════════════════════════════ */}
-      <section style={{ background: "#0c0d14", position: "relative", overflow: "hidden" }}>
+      <section style={{ background: "var(--bg-base)", position: "relative", overflow: "hidden" }}>
         <div className="origami-tr" aria-hidden="true" style={{ opacity: 0.08 }} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -232,12 +232,12 @@ export default function HomePage() {
             <h2 style={{
               fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 900,
               letterSpacing: "-0.03em", lineHeight: 1.05,
-              color: "#fff", textTransform: "uppercase",
+              color: "var(--text)", textTransform: "uppercase",
             }}>
               Tokyo. Nikko.<br />Hokkaido.<br />
               <span style={{ color: "var(--fh6-teal)" }}>O mapa inteiro<br />te espera.</span>
             </h2>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.62)", lineHeight: 1.75, maxWidth: 450 }}>
+            <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.75, maxWidth: 450 }}>
               FH6 é o maior mapa da série. Tóquio, estradas de montanha, litoral — cada pista
               pede um setup diferente. Escolha o carro, a classe, o estilo. O app calcula o resto.
             </p>
@@ -261,7 +261,7 @@ export default function HomePage() {
               const img = getCarImageUrl(car)
               return (
                 <Link key={car.id} href={`/tune?car=${car.id}`} className="fh6-card group" style={{ aspectRatio: "16/10" }}>
-                  <div style={{ position: "relative", width: "100%", height: "100%", background: "#181c2c" }}>
+                  <div style={{ position: "relative", width: "100%", height: "100%", background: "var(--bg-card)" }}>
                     {img && (
                       <Image src={img} alt={`${car.brand} ${car.model}`} fill sizes="(max-width:768px) 50vw, 25vw"
                         style={{ objectFit: "contain", padding: 10 }} />
@@ -290,12 +290,12 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════
           FUNCIONALIDADES — 6 cards com hover real
           ════════════════════════════════════════════════════════ */}
-      <section style={{ background: "#10121c", position: "relative", overflow: "hidden" }}>
+      <section style={{ background: "var(--bg-surface)", position: "relative", overflow: "hidden" }}>
         <div className="origami-bl" aria-hidden="true" style={{ opacity: 0.08 }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 space-y-10">
           <div className="space-y-2 anim-up">
             <p className="fh6-eyebrow">O que você encontra aqui</p>
-            <h2 style={{ fontSize: "clamp(1.75rem,3.5vw,2.5rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
+            <h2 style={{ fontSize: "clamp(1.75rem,3.5vw,2.5rem)", fontWeight: 900, color: "var(--text)", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
               Ferramentas para quem leva a sério.
             </h2>
           </div>
@@ -312,8 +312,8 @@ export default function HomePage() {
                       <path d="M2 7.5h11M8 3l4.5 4.5L8 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
-                  <p style={{ fontSize: 15, fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>{f.title}</p>
-                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.58)", lineHeight: 1.65 }}>{f.body}</p>
+                  <p style={{ fontSize: 15, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.01em" }}>{f.title}</p>
+                  <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.65 }}>{f.body}</p>
                 </div>
               </Link>
             ))}
@@ -326,12 +326,12 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════
           JDM CARROSSEL — slide automático
           ════════════════════════════════════════════════════════ */}
-      <section style={{ background: "#0c0d14", paddingTop: 64, paddingBottom: 0 }}>
+      <section style={{ background: "var(--bg-base)", paddingTop: 64, paddingBottom: 0 }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6 pb-8">
           <div className="flex items-end justify-between flex-wrap gap-4 anim-up">
             <div className="space-y-1">
               <p className="fh6-eyebrow">JDM · O Japão na garagem</p>
-              <h2 style={{ fontSize: "clamp(1.75rem,3.5vw,2.5rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
+              <h2 style={{ fontSize: "clamp(1.75rem,3.5vw,2.5rem)", fontWeight: 900, color: "var(--text)", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
                 Lendas do Japão.
               </h2>
             </div>
@@ -366,7 +366,7 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════
           CTA FINAL
           ════════════════════════════════════════════════════════ */}
-      <section style={{ background: "#10121c", position: "relative", overflow: "hidden" }}>
+      <section style={{ background: "var(--bg-surface)", position: "relative", overflow: "hidden" }}>
         <div className="origami-tr" aria-hidden="true" style={{ opacity: 0.08 }} />
         <div aria-hidden="true" style={{
           position: "absolute", inset: 0, pointerEvents: "none",
@@ -380,7 +380,7 @@ export default function HomePage() {
               Pronto pra<br />
               <span className="fh6-headline-accent">largar.</span>
             </h2>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", maxWidth: 460, margin: "0 auto", lineHeight: 1.75 }}>
+            <p style={{ fontSize: 14, color: "var(--text-muted)", maxWidth: 460, margin: "0 auto", lineHeight: 1.75 }}>
               Sem IA inventando números. Cada valor saiu da combinação de carro,
               classe e tipo de prova — calculado pelo motor de regras.
             </p>

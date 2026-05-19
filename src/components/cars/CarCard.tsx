@@ -42,7 +42,7 @@ export function CarCard({ car, index = 0, highlightKey }: Props) {
         className="relative overflow-hidden rounded-t-[9px]"
         style={{
           height: 156,
-          background: "linear-gradient(135deg, #0f1520 0%, #141c2a 100%)",
+          background: "var(--bg-surface)",
         }}
       >
         {hasImg ? (
