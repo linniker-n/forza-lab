@@ -97,7 +97,7 @@ export function JDMCarousel() {
         aria-hidden="true"
         style={{
           position: "absolute", left: 0, top: 0, bottom: 0, width: 80, zIndex: 1,
-          background: "linear-gradient(to right, #050505, transparent)",
+          background: "linear-gradient(to right, var(--bg-base), transparent)",
           pointerEvents: "none",
         }}
       />
@@ -105,7 +105,7 @@ export function JDMCarousel() {
         aria-hidden="true"
         style={{
           position: "absolute", right: 0, top: 0, bottom: 0, width: 80, zIndex: 1,
-          background: "linear-gradient(to left, #050505, transparent)",
+          background: "linear-gradient(to left, var(--bg-base), transparent)",
           pointerEvents: "none",
         }}
       />

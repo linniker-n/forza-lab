@@ -1287,3 +1287,43 @@
   border-color: rgba(44,206,204,0.30);
 }
 
+/* ── Stat bar (fh6-stat-val/label hardcode #fff) ── */
+[data-theme="light"] .fh6-stat-val   { color: var(--text); }
+[data-theme="light"] .fh6-stat-label { color: var(--text-muted); }
+
+/* ── fh6-headline hardcodes color:#fff ── */
+[data-theme="light"] .fh6-headline { color: var(--text); }
+
+/* ── Hero overlays ── */
+[data-theme="light"] .hero-overlay-btm {
+  background: linear-gradient(
+    to top,
+    rgba(240,242,248,0.96) 0%,
+    rgba(240,242,248,0.60) 40%,
+    rgba(240,242,248,0.12) 72%,
+    transparent 100%
+  ) !important;
+}
+[data-theme="light"] .hero-overlay-lft {
+  background: linear-gradient(
+    to right,
+    rgba(240,242,248,0.80) 0%,
+    rgba(240,242,248,0.25) 55%,
+    transparent 100%
+  ) !important;
+}
+/* Hero text elements over the light overlay */
+[data-theme="light"] .hero-subtitle   { color: var(--text-muted) !important; }
+[data-theme="light"] .hero-btn-ghost  {
+  color: var(--text) !important;
+  border-color: var(--border-strong) !important;
+}
+[data-theme="light"] .hero-chip {
+  background: rgba(255,255,255,0.92) !important;
+  border-color: var(--border-strong) !important;
+  backdrop-filter: blur(12px);
+}
+[data-theme="light"] .hero-chip-label { color: var(--text-muted) !important; }
+[data-theme="light"] .hero-chip-value { color: var(--text) !important; }
+[data-theme="light"] .hero-chip-div   { background: var(--border-strong) !important; }
+

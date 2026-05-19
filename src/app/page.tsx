@@ -95,11 +95,11 @@ export default function HomePage() {
         </video>
 
         {/* Overlay progressivo — legibilidade do texto */}
-        <div aria-hidden="true" style={{
+        <div aria-hidden="true" className="hero-overlay-btm" style={{
           position: "absolute", inset: 0, pointerEvents: "none",
           background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 38%, rgba(0,0,0,0.15) 70%, transparent 100%)",
         }} />
-        <div aria-hidden="true" style={{
+        <div aria-hidden="true" className="hero-overlay-lft" style={{
           position: "absolute", inset: 0, pointerEvents: "none",
           background: "linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.25) 55%, transparent 100%)",
         }} />
@@ -141,7 +141,7 @@ export default function HomePage() {
               <span style={{ color: "rgba(255,255,255,0.45)" }}>ACELERE.</span>
             </h1>
 
-            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", maxWidth: 440, lineHeight: 1.7 }}>
+            <p className="hero-subtitle" style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", maxWidth: 440, lineHeight: 1.7 }}>
               Seu assistente de tunagem. Agora você terá total liberdade com seus carros.
             </p>
 
@@ -154,7 +154,7 @@ export default function HomePage() {
               }}>
                 Criar Tune
               </Link>
-              <Link href="/cars" className="r-btn" style={{
+              <Link href="/cars" className="r-btn hero-btn-ghost" style={{
                 paddingLeft: 28, paddingRight: 28, paddingTop: 13, paddingBottom: 13,
                 background: "transparent", color: "#fff",
                 border: "1px solid rgba(255,255,255,0.3)",
@@ -166,24 +166,24 @@ export default function HomePage() {
           </div>
 
           {/* Car info chip bottom-right */}
-          <div className="absolute right-4 sm:right-6 bottom-14 hidden lg:flex items-center gap-3 px-4 py-3 rounded anim-up" style={{
+          <div className="hero-chip absolute right-4 sm:right-6 bottom-14 hidden lg:flex items-center gap-3 px-4 py-3 rounded anim-up" style={{
             background: "rgba(0,0,0,0.8)",
             border: "1px solid rgba(255,255,255,0.12)",
             backdropFilter: "blur(16px)",
             animationDelay: "0.35s",
           }}>
             <div>
-              <p style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+              <p className="hero-chip-label" style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>
                 {HERO_CAR.brand} · {HERO_CAR.year}
               </p>
-              <p style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>{HERO_CAR.model}</p>
+              <p className="hero-chip-value" style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>{HERO_CAR.model}</p>
             </div>
-            <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.12)" }} />
+            <div className="hero-chip-div" style={{ width: 1, height: 28, background: "rgba(255,255,255,0.12)" }} />
             <div>
-              <p style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>Potência</p>
+              <p className="hero-chip-label" style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>Potência</p>
               <p style={{ fontSize: 13, fontWeight: 800, color: "var(--fh6-teal)", fontFamily: "var(--font-geist-mono)" }}>{HERO_CAR.power_hp} HP</p>
             </div>
-            <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.12)" }} />
+            <div className="hero-chip-div" style={{ width: 1, height: 28, background: "rgba(255,255,255,0.12)" }} />
             <span className={`badge-class badge-${HERO_CAR.base_class}`} style={{ fontSize: 11 }}>
               {HERO_CAR.base_class} · {HERO_CAR.base_pi} PI
             </span>
@@ -205,7 +205,7 @@ export default function HomePage() {
           STATS BAR
           ════════════════════════════════════════════════════════ */}
       <section style={{ background: "var(--bg-surface)", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 divide-x" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 divide-x" style={{ borderColor: "var(--border)" }}>
           {[
             { val: "618",  label: "Carros do FH6" },
             { val: "7",    label: "Tipos de tune" },
@@ -261,7 +261,7 @@ export default function HomePage() {
               const img = getCarImageUrl(car)
               return (
                 <Link key={car.id} href={`/tune?car=${car.id}`} className="fh6-card group" style={{ aspectRatio: "16/10" }}>
-                  <div style={{ position: "relative", width: "100%", height: "100%", background: "var(--bg-card)" }}>
+                  <div style={{ position: "relative", width: "100%", height: "100%", background: "#0f1215" }}>
                     {img && (
                       <Image src={img} alt={`${car.brand} ${car.model}`} fill sizes="(max-width:768px) 50vw, 25vw"
                         style={{ objectFit: "contain", padding: 10 }} />
@@ -397,8 +397,8 @@ export default function HomePage() {
             </Link>
             <Link href="/diagnostics" className="r-btn" style={{
               paddingLeft: 32, paddingRight: 32, paddingTop: 15, paddingBottom: 15,
-              background: "transparent", color: "#fff",
-              border: "1px solid rgba(255,255,255,0.22)",
+              background: "transparent", color: "var(--text)",
+              border: "1px solid var(--border-strong)",
               fontWeight: 700, fontSize: 14, letterSpacing: "0.04em", textTransform: "uppercase",
             }}>
               Diagnosticar
@@ -414,8 +414,8 @@ export default function HomePage() {
               { href: "/garage",  label: "Garagem" },
             ].map(({ href, label }, i) => (
               <span key={href} className="flex items-center gap-5">
-                {i > 0 && <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "inline-block" }} />}
-                <Link href={href} style={{ fontSize: 10, color: "rgba(255,255,255,0.32)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", textDecoration: "none" }}>
+                {i > 0 && <span style={{ width: 3, height: 3, borderRadius: "50%", background: "var(--border-strong)", display: "inline-block" }} />}
+                <Link href={href} style={{ fontSize: 10, color: "var(--text-subtle)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", textDecoration: "none" }}>
                   {label}
                 </Link>
               </span>
