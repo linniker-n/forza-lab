@@ -1,201 +1,149 @@
-import type { Car, Drivetrain, Parts, TuneType } from "@/types"
+import type { Car, CarClass, Drivetrain, Parts, TuneType } from "@/types"
 import type { CarProfile } from "./analyze"
+
+// 1 = D/C class (light upgrade), 2 = B/A (medium), 3 = S1/S2 (full race), 4 = R/X (extreme)
+type Depth = 1 | 2 | 3 | 4
+
+const CLASS_DEPTH: Record<CarClass, Depth> = {
+  D: 1, C: 1, B: 2, A: 2, S1: 3, S2: 3, R: 4, X: 4,
+}
+
+function engineParts(car: Car, depth: Depth): string[] {
+  if (car.aspiration === "Electric") {
+    return depth >= 3
+      ? ["Race Battery", "Race Motor", "Race Inverter"]
+      : ["Sport Battery", "Sport Motor"]
+  }
+
+  const parts: string[] = []
+
+  // Intake
+  parts.push(depth === 1 ? "Sport Intake" : "Race Intake")
+
+  // Exhaust
+  parts.push(depth === 1 ? "Sport Exhaust" : "Race Exhaust")
+
+  // Forced induction — based on car's aspiration
+  if (car.aspiration === "Turbo") {
+    if (depth === 1) {
+      parts.push("Sport Turbo")
+    } else if (depth === 2) {
+      parts.push("Race Turbo", "Race Intercooler")
+    } else {
+      parts.push("Race Turbo", "Race Intercooler", "Race Fuel System")
+    }
+  } else if (car.aspiration === "Supercharged") {
+    if (depth === 1) {
+      parts.push("Sport Supercharger")
+    } else if (depth === 2) {
+      parts.push("Race Supercharger", "Race Intercooler")
+    } else {
+      parts.push("Race Supercharger", "Race Intercooler", "Race Fuel System")
+    }
+  } else {
+    // NA — compensate with more internal upgrades
+    if (depth >= 2) parts.push("Race Camshaft", "Race Valves")
+    if (depth >= 3) parts.push("Race Ignition", "Race Displacement")
+  }
+
+  // Engine internals for serious builds
+  if (depth === 3) parts.push("Race Pistons", "Race Flywheel")
+  if (depth === 4) parts.push("Race Pistons", "Race Flywheel", "Race Engine Block")
+
+  // Unique items — remove duplicates (NA depth 3 would add Pistons twice without this)
+  return [...new Set(parts)]
+}
+
+function platformParts(tuneType: TuneType, depth: Depth): string[] {
+  const weightReduction = depth >= 3 ? "Race Weight Reduction" : "Sport Weight Reduction"
+
+  if (tuneType === "drift") {
+    return ["Drift Suspension", "Drift Anti-Roll Bars", "Race Brakes", weightReduction]
+  }
+  if (tuneType === "rally") {
+    return ["Rally Suspension", "Rally Anti-Roll Bars", "Race Brakes", weightReduction]
+  }
+  if (tuneType === "cross_country") {
+    return ["Off-Road Suspension", "Off-Road Anti-Roll Bars", "Race Brakes", weightReduction]
+  }
+
+  if (depth === 1) {
+    return ["Sport Brakes", "Sport Springs & Dampers", "Sport Anti-Roll Bars"]
+  }
+  return [
+    "Race Brakes",
+    "Race Springs & Dampers",
+    "Race Anti-Roll Bars",
+    weightReduction,
+  ]
+}
+
+function drivetrainParts(tuneType: TuneType, depth: Depth): string[] {
+  const diff =
+    tuneType === "drift" ? "Drift Differential" : depth === 1 ? "Sport Differential" : "Race Differential"
+  const trans = depth === 1 ? "Sport Transmission" : "Race Transmission"
+  const clutch = depth === 1 ? "Sport Clutch" : "Race Clutch"
+
+  const parts = [trans, diff, clutch]
+  if (depth >= 3) parts.push("Race Driveline")
+  return parts
+}
+
+function tireParts(tuneType: TuneType, depth: Depth): string[] {
+  switch (tuneType) {
+    case "drag":
+      return ["Drag Tires", "Max Width Rear Tires", "Stock Front Tire Width"]
+    case "drift":
+      return ["Drift Tires", "Max Width Rear Tires", "Stock Front Tire Width"]
+    case "rally":
+      return ["Rally Tires", "+1 Rear Tire Width"]
+    case "cross_country":
+      return ["Off-Road Tires", "Max Width Rear Tires", "Max Width Front Tires"]
+    case "grip":
+      return ["Semi-Slick Tires", "Max Width Rear Tires", "+1 Front Tire Width"]
+    case "top_speed":
+      return [
+        depth >= 3 ? "Semi-Slick Tires" : "Sport Tires",
+        "+1 Rear Tire Width",
+      ]
+    default: // street
+      return [
+        depth >= 3 ? "Semi-Slick Tires" : "Sport Tires",
+        "+1 Rear Tire Width",
+        "+1 Front Tire Width",
+      ]
+  }
+}
+
+function aeroParts(tuneType: TuneType): string[] {
+  switch (tuneType) {
+    case "grip":    return ["Front Splitter (High)", "Adjustable Rear Wing"]
+    case "drag":    return []
+    case "drift":   return ["Front Bumper Aero", "Rear Spoiler (Low)"]
+    case "rally":   return ["Adjustable Front Bumper", "Adjustable Rear Wing (Medium)"]
+    case "cross_country": return []
+    case "top_speed": return ["Front Splitter (Low)", "Rear Wing (Low)"]
+    default:        return ["Adjustable Rear Wing"]
+  }
+}
 
 export function selectParts(
   car: Car,
   profile: CarProfile,
   tuneType: TuneType,
-  targetDrivetrain: Drivetrain
+  targetDrivetrain: Drivetrain,
+  targetClass: CarClass,
 ): Parts {
   const needsConversion = targetDrivetrain !== car.drivetrain
+  const conversionParts: string[] = needsConversion ? [`${targetDrivetrain} Conversion`] : []
 
-  const conversionParts: string[] = needsConversion
-    ? [`${targetDrivetrain} Conversion`]
-    : []
+  const depth = CLASS_DEPTH[targetClass]
 
-  switch (tuneType) {
-    case "drift":
-      return driftParts(profile, conversionParts)
-    case "drag":
-      return dragParts(profile, conversionParts)
-    case "rally":
-      return rallyParts(profile, conversionParts)
-    case "cross_country":
-      return crossCountryParts(profile, conversionParts)
-    case "top_speed":
-      return topSpeedParts(profile, conversionParts)
-    case "grip":
-      return gripParts(profile, conversionParts)
-    default:
-      return streetParts(profile, conversionParts)
-  }
-}
-
-function streetParts(profile: CarProfile, conversions: string[]): Parts {
   return {
-    engine: profile.isLowPower
-      ? ["Race Intake", "Race Exhaust", "Race Turbo", "Race Engine Block", "Race Pistons"]
-      : profile.isPowerful
-        ? ["Race Intake", "Sport Exhaust", "Race Intercooler"]
-        : ["Race Intake", "Sport Exhaust", "Street Turbo"],
-    platform: [
-      "Race Brakes",
-      "Race Springs & Dampers",
-      "Race Anti-Roll Bars",
-      profile.isHeavy ? "Race Weight Reduction" : "Sport Weight Reduction",
-    ],
-    drivetrain: [
-      ...conversions,
-      "Race Transmission",
-      "Race Differential",
-      "Race Clutch",
-    ],
-    tires: [
-      "Sport Tires",
-      profile.isHeavy ? "Max Width Rear Tires" : "+1 Rear Tire Width",
-      "+1 Front Tire Width",
-    ],
-    aero: ["Adjustable Rear Wing"],
-  }
-}
-
-function driftParts(profile: CarProfile, conversions: string[]): Parts {
-  return {
-    engine: profile.isLowPower
-      ? ["Race Intake", "Race Exhaust", "Race Turbo", "Race Engine Block"]
-      : ["Race Intake", "Race Exhaust", "Race Intercooler"],
-    platform: [
-      "Drift Suspension",
-      "Drift Anti-Roll Bars",
-      "Race Brakes",
-      "Race Weight Reduction",
-    ],
-    drivetrain: [
-      ...conversions,
-      "Drift Differential",
-      "Race Transmission",
-      "Race Clutch",
-    ],
-    tires: ["Drift Tires", "Max Width Rear Tires", "Stock Front Tire Width"],
-    aero: ["Front Bumper Aero", "Rear Spoiler (Low)"],
-  }
-}
-
-function dragParts(profile: CarProfile, conversions: string[]): Parts {
-  return {
-    engine: [
-      "Race Intake",
-      "Race Exhaust",
-      profile.isPowerful ? "Race Intercooler" : "Race Turbo",
-      "Race Engine Block",
-      "Race Pistons",
-      "Race Valves",
-    ],
-    platform: [
-      "Race Brakes",
-      "Drag Suspension",
-      "Race Anti-Roll Bars",
-      "Race Weight Reduction",
-    ],
-    drivetrain: [
-      ...conversions,
-      "Race Transmission",
-      "Race Differential",
-      "Race Driveline",
-      "Race Clutch",
-    ],
-    tires: ["Drag Tires", "Max Width Rear Tires", "Stock Front Tire Width"],
-    aero: [],
-  }
-}
-
-function rallyParts(profile: CarProfile, conversions: string[]): Parts {
-  return {
-    engine: profile.isLowPower
-      ? ["Race Intake", "Race Exhaust", "Race Turbo"]
-      : ["Race Intake", "Sport Exhaust"],
-    platform: [
-      "Rally Suspension",
-      "Rally Anti-Roll Bars",
-      "Race Brakes",
-      "Sport Weight Reduction",
-    ],
-    drivetrain: [
-      ...conversions,
-      "Race Transmission",
-      "Race Differential",
-      "Race Clutch",
-    ],
-    tires: ["Rally Tires", "+1 Rear Tire Width"],
-    aero: ["Adjustable Front Bumper", "Adjustable Rear Wing (Medium)"],
-  }
-}
-
-function crossCountryParts(profile: CarProfile, conversions: string[]): Parts {
-  return {
-    engine: ["Race Intake", "Race Exhaust", "Race Intercooler"],
-    platform: [
-      "Off-Road Suspension",
-      "Off-Road Anti-Roll Bars",
-      "Race Brakes",
-      "Sport Weight Reduction",
-    ],
-    drivetrain: [
-      ...conversions,
-      "Race Transmission",
-      "Race Differential",
-      "Race Clutch",
-    ],
-    tires: ["Off-Road Tires", "Max Width Rear Tires", "Max Width Front Tires"],
-    aero: [],
-  }
-}
-
-function topSpeedParts(profile: CarProfile, conversions: string[]): Parts {
-  return {
-    engine: [
-      "Race Intake",
-      "Race Exhaust",
-      profile.isPowerful ? "Race Intercooler" : "Race Turbo",
-      "Race Engine Block",
-      "Race Pistons",
-    ],
-    platform: [
-      "Race Brakes",
-      "Race Springs & Dampers",
-      "Race Anti-Roll Bars",
-      "Race Weight Reduction",
-    ],
-    drivetrain: [
-      ...conversions,
-      "Race Transmission",
-      "Race Differential",
-      "Race Driveline",
-      "Race Clutch",
-    ],
-    tires: ["Sport Tires", "+1 Rear Tire Width"],
-    aero: ["Front Splitter (Low)", "Rear Wing (Low)"],
-  }
-}
-
-function gripParts(profile: CarProfile, conversions: string[]): Parts {
-  return {
-    engine: profile.isLowPower
-      ? ["Race Intake", "Race Exhaust", "Race Turbo"]
-      : ["Race Intake", "Sport Exhaust"],
-    platform: [
-      "Race Brakes",
-      "Race Springs & Dampers",
-      "Race Anti-Roll Bars",
-      "Race Weight Reduction",
-    ],
-    drivetrain: [
-      ...conversions,
-      "Race Transmission",
-      "Race Differential",
-      "Race Clutch",
-    ],
-    tires: ["Semi-Slick Tires", "Max Width Rear Tires", "+1 Front Tire Width"],
-    aero: ["Front Splitter (High)", "Adjustable Rear Wing"],
+    engine:     engineParts(car, depth),
+    platform:   platformParts(tuneType, depth),
+    drivetrain: [...conversionParts, ...drivetrainParts(tuneType, depth)],
+    tires:      tireParts(tuneType, depth),
+    aero:       aeroParts(tuneType),
   }
 }

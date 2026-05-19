@@ -120,6 +120,23 @@ export const PARTS_PTBR: Record<string, string> = {
   "Front Splitter (Low)":        "Splitter dianteiro (baixo)",
   "Rear Wing (Low)":             "Asa traseira (baixa)",
   "Front Splitter (High)":       "Splitter dianteiro (alto)",
+
+  // ── Novas peças do motor reescrito ────────────────────
+  "Race Fuel System":            "Sistema de combustível de corrida",
+  "Race Ignition":               "Ignição de corrida",
+  "Race Displacement":           "Cilindrada de corrida",
+  "Race Flywheel":               "Volante motor de corrida",
+  "Race Battery":                "Bateria de corrida",
+  "Race Motor":                  "Motor elétrico de corrida",
+  "Race Inverter":               "Inversor de corrida",
+  "Sport Battery":               "Bateria esportiva",
+  "Sport Motor":                 "Motor elétrico esportivo",
+  "Sport Springs & Dampers":     "Molas e amortecedores esportivos",
+  "Sport Anti-Roll Bars":        "Barras estabilizadoras esportivas",
+  "Sport Brakes":                "Freios esportivos",
+  "Sport Transmission":          "Câmbio esportivo",
+  "Sport Differential":          "Diferencial esportivo",
+  "Sport Clutch":                "Embreagem esportiva",
 }
 
 const PARTS_LOWER = Object.fromEntries(
