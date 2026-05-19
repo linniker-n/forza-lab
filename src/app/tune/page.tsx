@@ -125,7 +125,7 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
   const [err, setErr] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
-  const { settings } = useSettings()
+  const { settings, update } = useSettings()
   const lang = settings.partsLanguage
   const pUnit = settings.pressureUnit
   const pwUnit = settings.powerUnit
@@ -144,24 +144,25 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
     } catch {
       savedTunes = []
     }
-    const entry = {
-      id: `${tune.car.id}_${tune.tune_type}_${Date.now()}`,
-      saved_at: new Date().toISOString(),
-      tune,
-    }
-
+    let entryId = `${tune.car.id}_${tune.tune_type}_${Date.now()}`
     const db = getFirebaseDb()
     if (db && user) {
       try {
-        await addDoc(collection(db, "users", user.uid, "savedTunes"), {
+        const docRef = await addDoc(collection(db, "users", user.uid, "savedTunes"), {
           tune,
           createdAt: serverTimestamp(),
         })
+        entryId = docRef.id
       } catch {
         setSaveError("Não foi possível salvar no Firebase. A tune ficou salva neste navegador.")
       }
     }
 
+    const entry = {
+      id: entryId,
+      saved_at: new Date().toISOString(),
+      tune,
+    }
     window.localStorage.setItem(storageKey, JSON.stringify([entry, ...(Array.isArray(savedTunes) ? savedTunes : [])].slice(0, 60)))
     setSaved(true)
     setSaving(false)
@@ -219,6 +220,60 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
           {saveError && (
             <p style={{ fontSize: 11, color: "#fbbf24", marginTop: 10 }}>{saveError}</p>
           )}
+        </div>
+      </div>
+
+      {/* Unit & language toggles */}
+      <div className="flex flex-wrap gap-x-5 gap-y-2 items-center px-4 py-3 rounded-lg"
+        style={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)" }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Ver como</span>
+
+        <div className="flex items-center gap-1.5">
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>Peças</span>
+          <div className="flex rounded" style={{ border: "1px solid var(--border-strong)", overflow: "hidden" }}>
+            {(["en", "ptbr"] as const).map((v, i) => (
+              <button key={v} type="button" onClick={() => update({ partsLanguage: v })}
+                style={{ fontSize: 11, fontWeight: 700, padding: "3px 8px", lineHeight: 1.5, background: settings.partsLanguage === v ? "var(--blue)" : "transparent", color: settings.partsLanguage === v ? "#fff" : "var(--text-muted)", border: "none", cursor: "pointer", borderLeft: i > 0 ? "1px solid var(--border-strong)" : "none" }}>
+                {v === "en" ? "EN" : "PT-BR"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>Pressão</span>
+          <div className="flex rounded" style={{ border: "1px solid var(--border-strong)", overflow: "hidden" }}>
+            {(["psi", "bar"] as const).map((v, i) => (
+              <button key={v} type="button" onClick={() => update({ pressureUnit: v })}
+                style={{ fontSize: 11, fontWeight: 700, padding: "3px 8px", lineHeight: 1.5, background: settings.pressureUnit === v ? "var(--blue)" : "transparent", color: settings.pressureUnit === v ? "#fff" : "var(--text-muted)", border: "none", cursor: "pointer", borderLeft: i > 0 ? "1px solid var(--border-strong)" : "none" }}>
+                {v.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>Potência</span>
+          <div className="flex rounded" style={{ border: "1px solid var(--border-strong)", overflow: "hidden" }}>
+            {(["hp", "cv"] as const).map((v, i) => (
+              <button key={v} type="button" onClick={() => update({ powerUnit: v })}
+                style={{ fontSize: 11, fontWeight: 700, padding: "3px 8px", lineHeight: 1.5, background: settings.powerUnit === v ? "var(--blue)" : "transparent", color: settings.powerUnit === v ? "#fff" : "var(--text-muted)", border: "none", cursor: "pointer", borderLeft: i > 0 ? "1px solid var(--border-strong)" : "none" }}>
+                {v.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>Torque</span>
+          <div className="flex rounded" style={{ border: "1px solid var(--border-strong)", overflow: "hidden" }}>
+            {(["nm", "kgfm"] as const).map((v, i) => (
+              <button key={v} type="button" onClick={() => update({ torqueUnit: v })}
+                style={{ fontSize: 11, fontWeight: 700, padding: "3px 8px", lineHeight: 1.5, background: settings.torqueUnit === v ? "var(--blue)" : "transparent", color: settings.torqueUnit === v ? "#fff" : "var(--text-muted)", border: "none", cursor: "pointer", borderLeft: i > 0 ? "1px solid var(--border-strong)" : "none" }}>
+                {v === "kgfm" ? "kgf·m" : "Nm"}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

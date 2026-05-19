@@ -83,8 +83,13 @@ export default function GaragePage() {
           .map((item) => mapFirestoreTune(item.id, item.data()))
           .filter((item): item is SavedTune => Boolean(item))
 
+        const remoteIds = new Set(remoteTunes.map((t) => t.id))
+        const localOnly = localTunes.filter((lt) => !remoteIds.has(lt.id))
+        const merged = [...remoteTunes, ...localOnly].sort(
+          (a, b) => new Date(b.saved_at).getTime() - new Date(a.saved_at).getTime()
+        )
         setSyncNote(null)
-        setSaved(remoteTunes.length > 0 ? remoteTunes : localTunes)
+        setSaved(merged)
       })
       .catch(() => {
         if (!active) return
