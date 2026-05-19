@@ -385,7 +385,7 @@
   border: 1px solid var(--border-strong);
   border-radius: 6px;
   color: var(--text);
-  font-size: 0.875rem;
+  font-size: max(1rem, 16px); /* iOS não faz zoom se >= 16px */
   padding: 0.5rem 0.875rem;
   width: 100%;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -1326,4 +1326,44 @@
 [data-theme="light"] .hero-chip-label { color: var(--text-muted) !important; }
 [data-theme="light"] .hero-chip-value { color: var(--text) !important; }
 [data-theme="light"] .hero-chip-div   { background: var(--border-strong) !important; }
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE — breakpoints e ajustes específicos para telas < 640px
+   ════════════════════════════════════════════════════════════ */
+
+@media (max-width: 639px) {
+  /* Typography */
+  .page-title  { font-size: 1.75rem; }
+  .fh6-headline { font-size: clamp(2.2rem, 11vw, 3.5rem); }
+
+  /* Padding base mais compacto */
+  .r-card { border-radius: 8px; }
+
+  /* Botões full-width em mobile */
+  .r-btn {
+    min-height: 44px; /* touch target iOS */
+    font-size: 0.875rem;
+  }
+
+  /* Input: font mínimo 16px para evitar zoom automático no iOS */
+  .r-input { font-size: 16px; }
+
+  /* Telem rows mais compactos */
+  .telem-label { font-size: 12px; }
+  .telem-value { font-size: 13px; }
+
+  /* Step indicator: esconde rótulos de texto */
+  .step-line { max-width: 28px; }
+
+  /* Footer compacto */
+  .app-footer .footer-brand,
+  .app-footer .footer-copy { font-size: 11px; }
+}
+
+/* Touch targets mínimos de 44px em todos os links interativos */
+@media (max-width: 1023px) {
+  .nav-item { padding: 10px 0; }
+  .filter-chip { min-height: 38px; padding: 6px 14px; }
+  .class-chip  { min-height: 38px; }
+}
 

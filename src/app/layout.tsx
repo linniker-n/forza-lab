@@ -5,6 +5,7 @@ import { AuthProvider } from "@/components/auth/AuthProvider"
 import { AuthStatus } from "@/components/auth/AuthStatus"
 import { ThemeProvider } from "@/lib/theme/context"
 import { ThemeToggle } from "@/components/ui/ThemeToggle"
+import { MobileMenu } from "@/components/ui/MobileMenu"
 import { SettingsProvider } from "@/lib/settings/context"
 import "./globals.css"
 
@@ -66,7 +67,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </svg>
                 </Link>
               </nav>
-              <div className="flex items-center gap-2">
+              {/* Desktop: theme + auth + CTA */}
+              <div className="hidden lg:flex items-center gap-2">
                 <ThemeToggle />
                 <AuthStatus />
                 <Link href="/tune" className="r-btn r-btn-primary">
@@ -75,6 +77,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </svg>
                   Nova tune
                 </Link>
+              </div>
+
+              {/* Mobile: theme + hamburger */}
+              <div className="flex lg:hidden items-center gap-2">
+                <ThemeToggle />
+                <MobileMenu />
               </div>
             </div>
           </header>
