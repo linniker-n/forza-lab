@@ -100,12 +100,36 @@ export const PARTS_PTBR: Record<string, string> = {
   "Keep original":            "Manter original",
   "Upgrade to":               "Atualizar para",
   "Downgrade to":             "Reduzir para",
+
+  // ── Partes ausentes do gerador ────────────────────────
+  "Race Engine Block":           "Bloco do motor de corrida",
+  "Race Springs & Dampers":      "Molas e amortecedores de corrida",
+  "Drift Anti-Roll Bars":        "Barras estabilizadoras de drift",
+  "Rally Anti-Roll Bars":        "Barras estabilizadoras de rally",
+  "Off-Road Anti-Roll Bars":     "Barras estabilizadoras off-road",
+  "Drag Suspension":             "Suspensão de arrancada",
+  "Max Width Rear Tires":        "Pneus traseiros — largura máxima",
+  "Max Width Front Tires":       "Pneus dianteiros — largura máxima",
+  "+1 Rear Tire Width":          "Largura traseira +1",
+  "+1 Front Tire Width":         "Largura dianteira +1",
+  "Stock Front Tire Width":      "Largura dianteira original",
+  "Front Bumper Aero":           "Para-choque dianteiro aero",
+  "Rear Spoiler (Low)":          "Aerofólio traseiro (baixo)",
+  "Adjustable Front Bumper":     "Para-choque dianteiro ajustável",
+  "Adjustable Rear Wing (Medium)": "Asa traseira ajustável (média)",
+  "Front Splitter (Low)":        "Splitter dianteiro (baixo)",
+  "Rear Wing (Low)":             "Asa traseira (baixa)",
+  "Front Splitter (High)":       "Splitter dianteiro (alto)",
 }
+
+const PARTS_LOWER = Object.fromEntries(
+  Object.entries(PARTS_PTBR).map(([k, v]) => [k.toLowerCase(), v])
+)
 
 /** Traduz um nome de peça para PT-BR. Retorna o original se não encontrar. */
 export function translatePart(name: string, language: "en" | "ptbr"): string {
   if (language === "en") return name
-  return PARTS_PTBR[name] ?? name
+  return PARTS_LOWER[name.toLowerCase()] ?? name
 }
 
 /** Traduz uma lista de peças */

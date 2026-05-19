@@ -119,6 +119,22 @@ function TR({ l, v, mono = true }: { l: string; v: string; mono?: boolean }) {
   )
 }
 
+function rideHeightLabel(v: string): string {
+  const map: Record<string, string> = {
+    "low": "Baixa", "medium-low": "Médio-baixa", "medium": "Média",
+    "medium-high": "Médio-alta", "high": "Alta", "max": "Máxima",
+  }
+  return map[v] ?? v
+}
+
+function aeroLabel(v: string): string {
+  const map: Record<string, string> = {
+    "min": "Mínimo", "low": "Baixo", "medium": "Médio",
+    "medium-high": "Médio-alto", "high": "Alto", "max": "Máximo",
+  }
+  return map[v] ?? v
+}
+
 /* ── Tune result ── */
 function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void }) {
   const url = getCarImageUrl(tune.car)
@@ -145,27 +161,34 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
       savedTunes = []
     }
     let entryId = `${tune.car.id}_${tune.tune_type}_${Date.now()}`
-    const db = getFirebaseDb()
-    if (db && user) {
-      try {
-        const docRef = await addDoc(collection(db, "users", user.uid, "savedTunes"), {
-          tune,
-          createdAt: serverTimestamp(),
-        })
-        entryId = docRef.id
-      } catch {
-        setSaveError("Não foi possível salvar no Firebase. A tune ficou salva neste navegador.")
+    try {
+      const db = getFirebaseDb()
+      if (db && user) {
+        try {
+          const savePromise = addDoc(collection(db, "users", user.uid, "savedTunes"), {
+            tune,
+            createdAt: serverTimestamp(),
+          })
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("timeout")), 5000)
+          )
+          const docRef = await Promise.race([savePromise, timeoutPromise])
+          entryId = docRef.id
+        } catch {
+          setSaveError("Não foi possível salvar no Firebase. A tune ficou salva neste navegador.")
+        }
       }
-    }
 
-    const entry = {
-      id: entryId,
-      saved_at: new Date().toISOString(),
-      tune,
+      const entry = {
+        id: entryId,
+        saved_at: new Date().toISOString(),
+        tune,
+      }
+      window.localStorage.setItem(storageKey, JSON.stringify([entry, ...(Array.isArray(savedTunes) ? savedTunes : [])].slice(0, 60)))
+      setSaved(true)
+    } finally {
+      setSaving(false)
     }
-    window.localStorage.setItem(storageKey, JSON.stringify([entry, ...(Array.isArray(savedTunes) ? savedTunes : [])].slice(0, 60)))
-    setSaved(true)
-    setSaving(false)
   }
 
   return (
@@ -303,98 +326,112 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
         </div>
       )}
 
-      {/* Main grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Parts */}
-        <div className="r-card p-5 space-y-4">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Peças</p>
-          {Object.entries(tune.parts).map(([cat, items]) =>
-            (items as string[]).length > 0 ? (
-              <div key={cat}>
-                <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-subtle)", marginBottom: 6 }}>
-                  {cat === "engine" ? "Motor" : cat === "platform" ? "Plataforma" : cat === "drivetrain" ? "Transmissão" : cat === "tires" ? "Pneus" : "Aero"}
-                </p>
-                <ul className="space-y-1">
-                  {translateParts(items as string[], lang).map((item, j) => (
-                    <li key={j} className="flex items-center gap-2" style={{ fontSize: 12, color: "var(--text)" }}>
-                      <span className="w-1 h-1 rounded-full shrink-0" style={{ background: "var(--blue)" }} />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null
-          )}
-        </div>
-
-        {/* Telemetry */}
-        <div className="space-y-4">
-          <div className="r-card p-5">
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Pneus & Alinhamento</p>
-            <TR l="Pneu diant." v={formatPressure(tune.tuning.tires.front, pUnit)} />
-            <TR l="Pneu tras."  v={formatPressure(tune.tuning.tires.rear,  pUnit)} />
-            <TR l="Cambagem D"  v={`${tune.tuning.alignment.camber_front}°`} />
-            <TR l="Cambagem T"  v={`${tune.tuning.alignment.camber_rear}°`} />
-            <TR l="Toe diant."  v={String(tune.tuning.alignment.toe_front)} />
-            <TR l="Toe tras."   v={String(tune.tuning.alignment.toe_rear)} />
-            <TR l="Caster"      v={String(tune.tuning.alignment.caster)} />
-          </div>
-          <div className="r-card p-5">
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Barras & Molas</p>
-            <TR l="Barra D"  v={String(tune.tuning.antiroll_bars.front)} />
-            <TR l="Barra T"  v={String(tune.tuning.antiroll_bars.rear)} />
-            <TR l="Mola D"   v={`${tune.tuning.springs.front}`} />
-            <TR l="Mola T"   v={`${tune.tuning.springs.rear}`} />
-            <TR l="Altura D" v={tune.tuning.springs.ride_height_front} mono={false} />
-            <TR l="Altura T" v={tune.tuning.springs.ride_height_rear} mono={false} />
-          </div>
-        </div>
-      </div>
-
-      {/* Damping + Brakes + Diff */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="r-card p-5">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Amortecimento</p>
-          <TR l="Rebound D" v={String(tune.tuning.damping.rebound_front)} />
-          <TR l="Rebound T" v={String(tune.tuning.damping.rebound_rear)} />
-          <TR l="Bump D"    v={String(tune.tuning.damping.bump_front)} />
-          <TR l="Bump T"    v={String(tune.tuning.damping.bump_rear)} />
-        </div>
-        <div className="r-card p-5">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Freios & Aero</p>
-          <TR l="Balanço"  v={`${tune.tuning.brakes.balance}%`} />
-          <TR l="Pressão"  v={`${tune.tuning.brakes.pressure}%`} />
-          <TR l="Aero D"   v={tune.tuning.aero.front}  mono={false} />
-          <TR l="Aero T"   v={tune.tuning.aero.rear}   mono={false} />
-        </div>
-        <div className="r-card p-5">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Diferencial</p>
-          {tune.tuning.differential.front_accel !== undefined && <TR l="Front Acel."   v={`${tune.tuning.differential.front_accel}%`} />}
-          {tune.tuning.differential.front_decel !== undefined && <TR l="Front Desacel." v={`${tune.tuning.differential.front_decel}%`} />}
-          <TR l="Rear Acel."   v={`${tune.tuning.differential.rear_accel}%`} />
-          <TR l="Rear Desacel." v={`${tune.tuning.differential.rear_decel}%`} />
-          {tune.tuning.differential.center_balance !== undefined && <TR l="Centro (% T)" v={`${tune.tuning.differential.center_balance}%`} />}
-        </div>
-      </div>
-
-      {/* Gearing */}
-      <div className="r-card p-5">
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 12 }}>Câmbio</p>
-        <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
-          {[
-            { l: "Final", v: tune.tuning.gearing.final_drive },
-            ...([1,2,3,4,5,6,7] as const).map((g) => ({
-              l: `${g}ª`,
-              v: tune.tuning.gearing[`gear_${g}` as keyof typeof tune.tuning.gearing] as number | undefined,
-            })).filter((x) => x.v !== undefined),
-          ].map(({ l, v }) => (
-            <div key={l} className="flex flex-col items-center gap-1 p-2 rounded"
-              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
-              <span style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 600 }}>{l}</span>
-              <span className="mono-val" style={{ fontSize: 13 }}>{v}</span>
+      {/* Peças */}
+      <div className="r-card p-5 space-y-4">
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Peças</p>
+        {Object.entries(tune.parts).map(([cat, items]) =>
+          (items as string[]).length > 0 ? (
+            <div key={cat}>
+              <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-subtle)", marginBottom: 6 }}>
+                {cat === "engine" ? "Motor" : cat === "platform" ? "Plataforma" : cat === "drivetrain" ? "Transmissão" : cat === "tires" ? "Pneus" : "Aero"}
+              </p>
+              <ul className="space-y-1">
+                {translateParts(items as string[], lang).map((item, j) => (
+                  <li key={j} className="flex items-center gap-2" style={{ fontSize: 12, color: "var(--text)" }}>
+                    <span className="w-1 h-1 rounded-full shrink-0" style={{ background: "var(--blue)" }} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-          ))}
+          ) : null
+        )}
+      </div>
+
+      {/* 1. Pneus · 2. Câmbio */}
+      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-4 items-start">
+        <div className="r-card p-5" style={{ minWidth: 210 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Pneus</p>
+          <TR l="Pressão dianteira" v={formatPressure(tune.tuning.tires.front, pUnit)} />
+          <TR l="Pressão traseira"  v={formatPressure(tune.tuning.tires.rear,  pUnit)} />
         </div>
+        <div className="r-card p-5">
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 12 }}>Câmbio</p>
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+            {[
+              { l: "Final", v: tune.tuning.gearing.final_drive },
+              ...([1,2,3,4,5,6,7] as const).map((g) => ({
+                l: `${g}ª`,
+                v: tune.tuning.gearing[`gear_${g}` as keyof typeof tune.tuning.gearing] as number | undefined,
+              })).filter((x) => x.v !== undefined),
+            ].map(({ l, v }) => (
+              <div key={l} className="flex flex-col items-center gap-1 p-2 rounded"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
+                <span style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 600 }}>{l}</span>
+                <span className="mono-val" style={{ fontSize: 13 }}>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Alinhamento · 4. Barras Estabilizadoras */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="r-card p-5">
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Alinhamento</p>
+          <TR l="Cambagem dianteira"     v={`${tune.tuning.alignment.camber_front}°`} />
+          <TR l="Cambagem traseira"      v={`${tune.tuning.alignment.camber_rear}°`} />
+          <TR l="Convergência dianteira" v={`${tune.tuning.alignment.toe_front}°`} />
+          <TR l="Convergência traseira"  v={`${tune.tuning.alignment.toe_rear}°`} />
+          <TR l="Caster"                 v={`${tune.tuning.alignment.caster}°`} />
+        </div>
+        <div className="r-card p-5">
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Barras Estabilizadoras</p>
+          <TR l="Dianteira" v={String(tune.tuning.antiroll_bars.front)} />
+          <TR l="Traseira"  v={String(tune.tuning.antiroll_bars.rear)} />
+        </div>
+      </div>
+
+      {/* 5. Molas · 6. Amortecedores */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="r-card p-5">
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Molas</p>
+          <TR l="Rigidez dianteira" v={String(tune.tuning.springs.front)} />
+          <TR l="Rigidez traseira"  v={String(tune.tuning.springs.rear)} />
+          <TR l="Altura dianteira"  v={rideHeightLabel(tune.tuning.springs.ride_height_front)} mono={false} />
+          <TR l="Altura traseira"   v={rideHeightLabel(tune.tuning.springs.ride_height_rear)} mono={false} />
+        </div>
+        <div className="r-card p-5">
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Amortecedores</p>
+          <TR l="Retorno dianteiro"    v={String(tune.tuning.damping.rebound_front)} />
+          <TR l="Retorno traseiro"     v={String(tune.tuning.damping.rebound_rear)} />
+          <TR l="Compressão dianteira" v={String(tune.tuning.damping.bump_front)} />
+          <TR l="Compressão traseira"  v={String(tune.tuning.damping.bump_rear)} />
+        </div>
+      </div>
+
+      {/* 7. Aerodinâmica · 8. Freios */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="r-card p-5">
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Aerodinâmica</p>
+          <TR l="Downforce dianteiro" v={aeroLabel(tune.tuning.aero.front)} mono={false} />
+          <TR l="Downforce traseiro"  v={aeroLabel(tune.tuning.aero.rear)} mono={false} />
+        </div>
+        <div className="r-card p-5">
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Freios</p>
+          <TR l="Equilíbrio de frenagem" v={`${tune.tuning.brakes.balance}%`} />
+          <TR l="Pressão de frenagem"    v={`${tune.tuning.brakes.pressure}%`} />
+        </div>
+      </div>
+
+      {/* 9. Diferencial */}
+      <div className="r-card p-5">
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Diferencial</p>
+        {tune.tuning.differential.front_accel !== undefined && <TR l="Dianteiro, aceleração"    v={`${tune.tuning.differential.front_accel}%`} />}
+        {tune.tuning.differential.front_decel !== undefined && <TR l="Dianteiro, desaceleração" v={`${tune.tuning.differential.front_decel}%`} />}
+        <TR l="Traseiro, aceleração"    v={`${tune.tuning.differential.rear_accel}%`} />
+        <TR l="Traseiro, desaceleração" v={`${tune.tuning.differential.rear_decel}%`} />
+        {tune.tuning.differential.center_balance !== undefined && <TR l="Centro" v={`${tune.tuning.differential.center_balance}%`} />}
       </div>
 
       {/* Strengths / Weaknesses */}
