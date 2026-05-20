@@ -36,7 +36,6 @@ const CAR_TYPES = new Set<CarCategory>([
 const DRIVETRAINS = new Set<Drivetrain>(["FWD", "RWD", "AWD"])
 const CLASSES = new Set<CarClass>(["D", "C", "B", "A", "S1", "S2", "R", "X"])
 
-export const FANDOM_SOURCE_URL = payload.source_url
 export const CARS_SYNCED_AT = payload.synced_at
 export const CARS_TOTAL = payload.count
 export const CARS: Car[] = payload.cars

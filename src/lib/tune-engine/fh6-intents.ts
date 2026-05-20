@@ -10,7 +10,6 @@ import type {
   TuningSetup,
 } from "@/types"
 import type { CarProfile } from "./analyze"
-import { getTrackProfileWarning } from "./fh6-track-profiles"
 
 const AERO_LEVELS: TuningSetup["aero"]["front"][] = [
   "min",
@@ -384,15 +383,6 @@ export function getFH6IntentCarWeaknesses(car: Car, intent: TuneIntent): string[
 
 export function getFH6IntentWarnings(context: IntentContext): TuneWarning[] {
   const warnings: TuneWarning[] = []
-
-  warnings.push({
-    type: "info",
-    message: `Perfil FH6 "${FH6_INTENT_LABELS[context.intent]}": ${FH6_INTENT_DESCRIPTIONS[context.intent]}`,
-  })
-  warnings.push({
-    type: "tip",
-    message: getTrackProfileWarning(context.intent),
-  })
 
   if (context.intent === "speed" && context.car.power_hp < 350) {
     warnings.push({

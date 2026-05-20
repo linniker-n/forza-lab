@@ -12,10 +12,10 @@ interface RawForzaTuneTrack {
   n: number
 }
 
-interface TrackProfileStats {
-  count: number
-  examples: string[]
-  note: string
+export interface TrackProfileDemand {
+  aero: number
+  stiffness: number
+  speed: number
 }
 
 const tracks = rawTracks as RawForzaTuneTrack[]
@@ -72,27 +72,21 @@ const groups = tracks.reduce<Record<TuneIntent, RawForzaTuneTrack[]>>((acc, trac
 // where the old app recommended compromise instead of absolute aero minimum/maximum.
 groups.control = tracks.filter((track) => track.a >= 2 && track.a <= 3).slice(0, 8)
 
-const NOTES: Record<TuneIntent, string> = {
-  balanced: "Perfil misto criado a partir de pistas com reta e curva sem uma exigencia extrema de aero.",
-  control: "Perfil de margem: usa pistas mistas como proxy para setups previsiveis em mapa aberto.",
-  speed: "Perfil baseado em pistas antigas onde o APK recomendava pouco ou nenhum downforce.",
-  cornering: "Perfil baseado em pistas antigas onde o APK recomendava downforce alto para manter velocidade em curvas.",
-  acceleration: "Perfil baseado em rotas curtas/lentas onde retomada e saida de curva importam mais que final.",
-}
-
-export function getTrackProfileStats(intent: TuneIntent): TrackProfileStats {
+export function getTrackProfileDemand(intent: TuneIntent): TrackProfileDemand {
   const source = groups[intent].length > 0 ? groups[intent] : groups.balanced
+  const avgAero = source.length > 0
+    ? source.reduce((sum, track) => sum + track.a, 0) / source.length
+    : 2.8
+  const avgStiffness = source.length > 0
+    ? source.reduce((sum, track) => sum + track.x, 0) / source.length
+    : 0.36
+
+  const aero = Math.min(Math.max(avgAero / 5, 0), 1)
+  const stiffness = Math.min(Math.max((avgStiffness - 0.25) / 0.4, 0), 1)
 
   return {
-    count: source.length,
-    examples: source.slice(0, 4).map((track) => track.short_name),
-    note: NOTES[intent],
+    aero,
+    stiffness,
+    speed: 1 - aero,
   }
-}
-
-export function getTrackProfileWarning(intent: TuneIntent): string {
-  const stats = getTrackProfileStats(intent)
-  const examples = stats.examples.length > 0 ? ` Exemplos antigos usados como referencia: ${stats.examples.join(", ")}.` : ""
-
-  return `${stats.note} Base recuperada: ${stats.count} pistas do APK.${examples}`
 }

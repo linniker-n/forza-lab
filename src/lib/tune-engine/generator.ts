@@ -9,9 +9,9 @@ import {
   getFH6IntentSummary,
   getFH6IntentWarnings,
 } from "./fh6-intents"
-import { findForzaTuneCalibration, getCalibrationSummary } from "./forzatune-calibration"
 import { calculateAdvancedGearing } from "./gearing-calculator"
 import { selectParts } from "./parts"
+import { applyPrecisionModel } from "./precision-model"
 import { buildTune } from "./presets"
 
 const CLASS_PI_MAP: Record<CarClass, number> = {
@@ -44,7 +44,7 @@ function generateSummary(car: Car, tuneType: TuneType, drivetrain: Drivetrain, s
     competitive: "competitivo e preciso",
     meta: "máxima performance e agressividade",
   }
-  return `Tune do ${car.brand} ${car.model} (${car.year}) preparada para ${tuneLabels[tuneType]}, com tração ${drivetrain}. Perfil FH6: ${getFH6IntentLabel(intent)}. ${getFH6IntentSummary(intent)} Configurada para ser ${styleLabels[style]}.`
+  return `Tune do ${car.brand} ${car.model} (${car.year}) preparada para ${tuneLabels[tuneType]}, com tração ${drivetrain}. Objetivo: ${getFH6IntentLabel(intent)}. ${getFH6IntentSummary(intent)} Configurada para ser ${styleLabels[style]}.`
 }
 
 function generateHowToDrive(tuneType: TuneType, drivetrain: Drivetrain, intent: TuneIntent): string {
@@ -76,14 +76,6 @@ function generateWarnings(
   engineSwap: boolean,
 ): TuneWarning[] {
   const warnings: TuneWarning[] = []
-  const calibrationSummary = getCalibrationSummary(car)
-
-  if (calibrationSummary) {
-    warnings.push({
-      type: "info",
-      message: calibrationSummary,
-    })
-  }
 
   if (engineSwap) {
     warnings.push({
@@ -120,13 +112,6 @@ function generateWarnings(
 function getStrengths(car: Car, tuneType: TuneType): string[] {
   const score = car.meta_score[tuneType === "grip" ? "street" : tuneType] ?? 5
   const strengths: string[] = []
-  const calibration = findForzaTuneCalibration(car)
-
-  if (calibration?.source === "car") {
-    strengths.push("Base geometrica recuperada do APK para este carro")
-  } else if (calibration?.source === "division") {
-    strengths.push(`Fallback de divisao ForzaTune: ${calibration.division}`)
-  }
   if (score >= 8) strengths.push(`Excelente aptidão natural para ${tuneType}`)
   if (car.weight_kg < 1400) strengths.push("Leveza favorece aceleração e mudança de direção")
   if (car.power_hp > 500) strengths.push("Alta potência proporciona aceleração superior")
@@ -200,6 +185,17 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
     difficulty: request.difficulty,
   })
 
+  tuning = applyPrecisionModel(tuning, {
+    car: carForTune,
+    profile: profileForTune,
+    tuneType: request.tune_type,
+    drivetrain,
+    targetClass: request.target_class,
+    intent: fh6Intent,
+    style: request.style,
+    difficulty: request.difficulty,
+  })
+
   if (request.gearing_calculator) {
     tuning.gearing = calculateAdvancedGearing(request.gearing_calculator, {
       base: tuning.gearing,
@@ -230,10 +226,6 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
     weaknesses,
     warnings:   [
       ...generateWarnings(car, request.tune_type, drivetrain, request.preferred_drivetrain, request.engine_swap),
-      ...(request.gearing_calculator ? [{
-        type: "info" as const,
-        message: `Cambio recalculado pela calculadora avancada: ${request.gearing_calculator.number_of_gears} marchas para alvo de ${request.gearing_calculator.target_speed_kmh} km/h a ${request.gearing_calculator.redline_rpm} rpm.`,
-      }] : []),
       ...getFH6IntentWarnings({
         car: carForTune,
         profile: profileForTune,

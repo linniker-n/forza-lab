@@ -31,6 +31,10 @@ export function CarCard({ car, index = 0, highlightKey }: Props) {
   const { settings } = useSettings()
   const pwUnit = settings.powerUnit
   const tUnit  = settings.torqueUnit
+  const displayNote = car.notes
+    ?.replace(/\s*oficial do [^.]+\.?/gi, "")
+    .replace(/^missing data\s*/i, "")
+    .trim()
 
   return (
     <article
@@ -165,7 +169,7 @@ export function CarCard({ car, index = 0, highlightKey }: Props) {
         </div>
 
         {/* Note */}
-        {car.notes && (
+        {displayNote && (
           <p
             style={{
               fontSize: 11,
@@ -176,7 +180,7 @@ export function CarCard({ car, index = 0, highlightKey }: Props) {
             }}
             className="line-clamp-2"
           >
-            {car.notes}
+            {displayNote}
           </p>
         )}
 

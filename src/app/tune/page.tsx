@@ -11,7 +11,7 @@ import { getFirebaseDb } from "@/lib/firebase/client"
 import { useSettings } from "@/lib/settings/context"
 import { translateParts } from "@/lib/settings/translations"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
-import { getFH6IntentLabel, getFH6IntentTuningNotes } from "@/lib/tune-engine/fh6-intents"
+import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
 import { generateTune } from "@/lib/tune-engine/generator"
 import type { AdvancedGearingInput, Car, CarCategory, CarClass, ControlType, Drivetrain, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType } from "@/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
@@ -323,7 +323,6 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
   const lang  = settings.partsLanguage
   const pUnit = settings.pressureUnit
   const spUnit = settings.springUnit
-  const intentNotes = getFH6IntentTuningNotes(tune.fh6_intent ?? "balanced")
   const [saveError, setSaveError] = useState<string | null>(null)
   const { user } = useAuth()
 
@@ -424,19 +423,6 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
           {saveError && (
             <p style={{ fontSize: 11, color: "#fbbf24", marginTop: 10 }}>{saveError}</p>
           )}
-        </div>
-      </div>
-
-      <div className="r-card p-4" style={{ border: "1px solid rgba(52,211,153,0.18)" }}>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#34d399", marginBottom: 8 }}>
-          O que o objetivo FH6 alterou
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {intentNotes.map((note) => (
-            <p key={note} style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.55 }}>
-              {note}
-            </p>
-          ))}
         </div>
       </div>
 

@@ -4,16 +4,15 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
-import { ThemeToggle } from "./ThemeToggle"
 
 const NAV_LINKS = [
-  { href: "/tune",        label: "Criar Tune",   icon: "⚡" },
-  { href: "/cars",        label: "Carros",        icon: "🚗" },
-  { href: "/garage",      label: "Garagem",       icon: "🏠" },
-  { href: "/diagnostics", label: "Diagnóstico",   icon: "🔧" },
-  { href: "/meta",        label: "Meta / Ranking",icon: "🏆" },
-  { href: "/compare",     label: "Comparar",      icon: "⚖️" },
-  { href: "/settings",    label: "Configurações",  icon: "⚙️" },
+  { href: "/tune", label: "Criar tune" },
+  { href: "/diagnostics", label: "Diagnostico" },
+  { href: "/calculator", label: "Calculadora" },
+  { href: "/cars", label: "Carros" },
+  { href: "/meta", label: "Meta" },
+  { href: "/compare", label: "Comparar" },
+  { href: "/garage", label: "Garagem" },
 ]
 
 export function MobileMenu() {
@@ -21,13 +20,11 @@ export function MobileMenu() {
   const { user, signOut } = useAuth()
   const pathname = usePathname()
 
-  // Fecha o menu quando a rota muda
   useEffect(() => {
     const handle = window.setTimeout(() => setOpen(false), 0)
     return () => window.clearTimeout(handle)
   }, [pathname])
 
-  // Bloqueia scroll do body quando aberto
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : ""
     return () => { document.body.style.overflow = "" }
@@ -35,13 +32,12 @@ export function MobileMenu() {
 
   return (
     <>
-      {/* Botão hamburguer — apenas mobile */}
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen((value) => !value)}
         aria-label={open ? "Fechar menu" : "Abrir menu"}
         aria-expanded={open}
-        className="lg:hidden"
+        className="xl:hidden"
         style={{
           display: "flex",
           flexDirection: "column",
@@ -81,10 +77,9 @@ export function MobileMenu() {
         }} />
       </button>
 
-      {/* Backdrop */}
       <div
         onClick={() => setOpen(false)}
-        className="lg:hidden"
+        className="xl:hidden"
         style={{
           position: "fixed",
           inset: 0,
@@ -97,17 +92,16 @@ export function MobileMenu() {
         }}
       />
 
-      {/* Painel slide-in da direita */}
       <nav
         aria-label="Menu mobile"
-        className="lg:hidden"
+        className="xl:hidden"
         style={{
           position: "fixed",
           top: 0,
           right: 0,
           bottom: 0,
           zIndex: 50,
-          width: "min(85vw, 320px)",
+          width: "min(86vw, 340px)",
           background: "var(--bg-card)",
           borderLeft: "1px solid var(--border-strong)",
           display: "flex",
@@ -118,7 +112,6 @@ export function MobileMenu() {
           boxShadow: "-8px 0 32px rgba(0,0,0,0.35)",
         }}
       >
-        {/* Header do painel */}
         <div style={{
           display: "flex",
           alignItems: "center",
@@ -126,33 +119,29 @@ export function MobileMenu() {
           padding: "14px 20px",
           borderBottom: "1px solid var(--border)",
         }}>
-          <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-            Menu
+          <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text)" }}>
+            Forza Tune Lab
           </span>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Fechar menu"
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
-                width: 32, height: 32, borderRadius: 6,
-                border: "1px solid var(--border-strong)", background: "transparent",
-                color: "var(--text-muted)", cursor: "pointer",
-              }}
-            >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="Fechar menu"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 32, height: 32, borderRadius: 6,
+              border: "1px solid var(--border-strong)", background: "transparent",
+              color: "var(--text-muted)", cursor: "pointer",
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
         </div>
 
-        {/* Links de navegação */}
         <div style={{ padding: "12px 0", flex: 1 }}>
-          {NAV_LINKS.map(({ href, label, icon }) => {
-            const active = pathname === href || pathname.startsWith(href + "/")
+          {NAV_LINKS.map(({ href, label }) => {
+            const active = pathname === href || pathname.startsWith(`${href}/`)
             return (
               <Link
                 key={href}
@@ -160,25 +149,21 @@ export function MobileMenu() {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 14,
                   padding: "14px 20px",
                   fontSize: 14,
-                  fontWeight: active ? 700 : 500,
+                  fontWeight: active ? 800 : 600,
                   color: active ? "var(--blue)" : "var(--text)",
                   textDecoration: "none",
                   background: active ? "var(--blue-dim)" : "transparent",
                   borderLeft: `3px solid ${active ? "var(--blue)" : "transparent"}`,
-                  transition: "background 0.15s ease",
                 }}
               >
-                <span style={{ fontSize: 16, width: 22, textAlign: "center" }}>{icon}</span>
                 {label}
               </Link>
             )
           })}
         </div>
 
-        {/* Auth section no fundo */}
         <div style={{
           padding: "16px 20px",
           borderTop: "1px solid var(--border)",
@@ -188,9 +173,12 @@ export function MobileMenu() {
         }}>
           {user ? (
             <>
-              <p style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <p className="profile-email" style={{ margin: 0 }}>
                 {user.email}
               </p>
+              <Link href="/settings" className="r-btn r-btn-ghost w-full" style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center" }}>
+                Configuracoes
+              </Link>
               <button
                 type="button"
                 className="r-btn r-btn-ghost w-full"
@@ -202,7 +190,7 @@ export function MobileMenu() {
             </>
           ) : (
             <Link href="/login" className="r-btn r-btn-primary" style={{ fontSize: 13, padding: "11px", justifyContent: "center" }}>
-              Entrar / Criar conta
+              Entrar
             </Link>
           )}
         </div>

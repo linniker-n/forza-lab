@@ -503,19 +503,19 @@ export function diagnose(problem: DiagnosticProblem, context: DiagnosticContext 
 
   if (context.intent === "control" && ["oversteer", "brake_instability", "bouncing"].includes(problem)) {
     contextNotes.push(
-      "Perfil FH6 Controle: primeiro reduza agressividade de diferencial e barras antes de buscar mais potencia. A meta aqui e previsibilidade."
+      "Meta de controle: reduza agressividade de diferencial e barras antes de buscar mais potencia. A prioridade e previsibilidade."
     )
   }
 
   if (context.intent === "speed" && problem === "slow_straight") {
     contextNotes.push(
-      "Perfil FH6 Velocidade: como nao temos rota oficial de FH6, use a reta mais longa do seu teste e ajuste o final drive para quase encostar no corte no fim da reta."
+      "Meta de velocidade: ajuste o final drive para chegar perto do corte no fim da maior reta usada no seu teste."
     )
   }
 
   if (context.intent === "cornering" && ["understeer", "slow_cornering"].includes(problem)) {
     contextNotes.push(
-      "Perfil FH6 Curvas: valide cambagem com telemetria depois de 2 a 3 voltas. Se o pneu interno estiver muito mais quente, reduza cambagem negativa."
+      "Meta de curvas: valide cambagem com telemetria depois de algumas voltas. Se o pneu interno estiver muito mais quente, reduza cambagem negativa."
     )
   }
 

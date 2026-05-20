@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import Link from "next/link"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CarCard } from "@/components/cars/CarCard"
-import { CARS, FANDOM_SOURCE_URL } from "@/data/cars"
+import { CARS } from "@/data/cars"
 import type { Car, CarClass, TuneType } from "@/types"
 
 const TUNE_TYPES: { v: TuneType; l: string }[] = [
@@ -12,8 +12,8 @@ const TUNE_TYPES: { v: TuneType; l: string }[] = [
   { v: "drag", l: "Drag" },
   { v: "drift", l: "Drift" },
   { v: "rally", l: "Rally" },
-  { v: "cross_country", l: "Cross Country" },
-  { v: "top_speed", l: "Top Speed" },
+  { v: "cross_country", l: "Cross country" },
+  { v: "top_speed", l: "Top speed" },
   { v: "grip", l: "Grip" },
 ]
 
@@ -28,9 +28,9 @@ function scoreFor(car: Car, tuneType: TuneType) {
 }
 
 function confidence(score: number) {
-  if (score >= 9) return "Alto"
-  if (score >= 7.5) return "Médio"
-  return "Baixo"
+  if (score >= 9) return "Alta"
+  if (score >= 7.5) return "Media"
+  return "Baixa"
 }
 
 export default function MetaPage() {
@@ -48,81 +48,78 @@ export default function MetaPage() {
   return (
     <RequireAuth>
       <div className="dot-grid" style={{ minHeight: "100dvh" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
-          <div className="anim-up">
-            <p className="section-label">Meta tracker local</p>
-            <h1 className="page-title">Ranking por contexto</h1>
-            <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 8, maxWidth: 620, lineHeight: 1.6 }}>
-              Ranking derivado dos atributos oficiais da tabela do Forza Wiki. Use como ponto de partida técnico até existirem tempos comunitários reais.
-            </p>
-            <a href={FANDOM_SOURCE_URL} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "var(--blue-bright)" }}>
-              Ver fonte no Forza Wiki
-            </a>
-          </div>
-
-          <div className="r-card p-4 space-y-4 anim-up" style={{ animationDelay: "80ms" }}>
-            <div>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
-                Tipo de prova
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+            <div className="anim-up">
+              <p className="section-label">Meta tracker local</p>
+              <h1 className="page-title">Ranking por contexto</h1>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 8, maxWidth: 620, lineHeight: 1.6 }}>
+                Ranking tecnico calculado pela base local do app, desempenho do carro e tipo de prova.
               </p>
-              <div className="flex flex-wrap gap-2">
-                {TUNE_TYPES.map((type) => (
-                  <button key={type.v} type="button" className={`filter-chip${tuneType === type.v ? " active" : ""}`} onClick={() => setTuneType(type.v)}>
-                    {type.l}
-                  </button>
-                ))}
-              </div>
             </div>
-            <div>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
-                Classe
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {CLASSES.map((item) => (
-                  <button key={item} type="button" className={`class-chip${carClass === item ? " active" : ""}`} onClick={() => setCarClass(item)}>
-                    {item === "all" ? "Todas" : item}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ranked.slice(0, 12).map(({ car }, index) => (
-              <CarCard key={car.id} car={car} index={index} highlightKey={tuneType} />
-            ))}
-          </div>
-
-          <aside className="space-y-2">
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-              Top 24 técnico
-            </p>
-            {ranked.map(({ car, score }, index) => (
-              <Link
-                key={car.id}
-                href={`/tune?car=${car.id}&type=${tuneType}`}
-                className="r-card flex items-center justify-between gap-3 p-3 anim-up"
-                style={{ animationDelay: `${index * 22}ms`, textDecoration: "none" }}
-              >
-                <div className="min-w-0">
-                  <p style={{ fontSize: 12, fontWeight: 800, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {index + 1}. {car.brand} {car.model}
-                  </p>
-                  <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>
-                    {car.year} · {car.fandom_car_type ?? "FH6"} · confiança {confidence(score)}
-                  </p>
+            <div className="r-card p-4 space-y-4 anim-up" style={{ animationDelay: "80ms" }}>
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
+                  Tipo de prova
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {TUNE_TYPES.map((type) => (
+                    <button key={type.v} type="button" className={`filter-chip${tuneType === type.v ? " active" : ""}`} onClick={() => setTuneType(type.v)}>
+                      {type.l}
+                    </button>
+                  ))}
                 </div>
-                <span className="mono-val" style={{ fontSize: 14, color: score >= 8 ? "#34d399" : score >= 6 ? "#fbbf24" : "var(--text-muted)" }}>
-                  {score.toFixed(1)}
-                </span>
-              </Link>
-            ))}
-          </aside>
+              </div>
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
+                  Classe
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {CLASSES.map((item) => (
+                    <button key={item} type="button" className={`class-chip${carClass === item ? " active" : ""}`} onClick={() => setCarClass(item)}>
+                      {item === "all" ? "Todas" : item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {ranked.slice(0, 12).map(({ car }, index) => (
+                <CarCard key={car.id} car={car} index={index} highlightKey={tuneType} />
+              ))}
+            </div>
+
+            <aside className="space-y-2">
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                Top 24 tecnico
+              </p>
+              {ranked.map(({ car, score }, index) => (
+                <Link
+                  key={car.id}
+                  href={`/tune?car=${car.id}&type=${tuneType}`}
+                  className="r-card flex items-center justify-between gap-3 p-3 anim-up"
+                  style={{ animationDelay: `${index * 22}ms`, textDecoration: "none" }}
+                >
+                  <div className="min-w-0">
+                    <p style={{ fontSize: 12, fontWeight: 800, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {index + 1}. {car.brand} {car.model}
+                    </p>
+                    <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>
+                      {car.year} - {car.fandom_car_type ?? "FH6"} - confianca {confidence(score)}
+                    </p>
+                  </div>
+                  <span className="mono-val" style={{ fontSize: 14, color: score >= 8 ? "#34d399" : score >= 6 ? "#fbbf24" : "var(--text-muted)" }}>
+                    {score.toFixed(1)}
+                  </span>
+                </Link>
+              ))}
+            </aside>
+          </div>
         </div>
-      </div>
       </div>
     </RequireAuth>
   )
