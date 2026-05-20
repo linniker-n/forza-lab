@@ -12,6 +12,7 @@ export type TuneType =
 export type DrivingStyle = "casual" | "competitive" | "meta"
 export type ControlType = "keyboard" | "controller" | "wheel"
 export type DifficultyLevel = "easy" | "balanced" | "aggressive"
+export type TuneIntent = "balanced" | "control" | "speed" | "cornering" | "acceleration"
 export type CarCategory =
   | "jdm"
   | "muscle"
@@ -81,6 +82,7 @@ export interface TuneRequest {
   preferred_drivetrain: Drivetrain | "original"
   difficulty: DifficultyLevel
   engine_swap: boolean
+  fh6_intent: TuneIntent
 }
 
 export interface TirePressure {
@@ -173,6 +175,7 @@ export interface GeneratedTune {
   car: Car
   target_class: CarClass
   tune_type: TuneType
+  fh6_intent: TuneIntent
   drivetrain: Drivetrain
   parts: Parts
   tuning: TuningSetup

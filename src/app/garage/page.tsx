@@ -8,6 +8,7 @@ import { RequireAuth } from "@/components/auth/RequireAuth"
 import { getCarImageUrl } from "@/data/cars"
 import { getFirebaseDb } from "@/lib/firebase/client"
 import { diagnose as runDiagnostic, PROBLEM_LABELS } from "@/lib/tune-engine/diagnostics"
+import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
 import { useSettings } from "@/lib/settings/context"
 import type { AppSettings } from "@/lib/settings/context"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
@@ -196,7 +197,7 @@ function DiagnosticPanel({ tune, onClose }: { tune: GeneratedTune; onClose(): vo
 
   function selectProblem(p: DiagnosticProblem) {
     setProblem(p)
-    setResult(runDiagnostic(p, { car: tune.car, tuneType: tune.tune_type }))
+    setResult(runDiagnostic(p, { car: tune.car, tuneType: tune.tune_type, intent: tune.fh6_intent ?? "balanced" }))
   }
 
   const titleStyle = {
@@ -531,6 +532,9 @@ export default function GaragePage() {
                           <span className={`badge-class badge-${tune.drivetrain === "AWD" ? "awd" : tune.drivetrain === "RWD" ? "rwd" : "fwd"}`}>{tune.drivetrain}</span>
                           <span className="badge-class" style={{ color: "var(--blue-bright)", background: "var(--blue-dim)", borderColor: "var(--border-blue)" }}>
                             {TUNE_LABELS[tune.tune_type] ?? tune.tune_type}
+                          </span>
+                          <span className="badge-class" style={{ color: "#34d399", background: "rgba(52,211,153,0.08)", borderColor: "rgba(52,211,153,0.22)" }}>
+                            FH6 {getFH6IntentLabel(tune.fh6_intent ?? "balanced")}
                           </span>
                         </div>
                         <h2 style={{ fontSize: 15, fontWeight: 800, color: "var(--text)" }}>

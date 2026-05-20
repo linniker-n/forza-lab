@@ -8,11 +8,12 @@
  *    freio traseiro vs balanceamento
  */
 
-import type { Car, DiagnosticFix, DiagnosticProblem, DiagnosticResult, TuneType } from "@/types"
+import type { Car, DiagnosticFix, DiagnosticProblem, DiagnosticResult, TuneIntent, TuneType } from "@/types"
 
 interface DiagnosticContext {
   car?: Car
   tuneType?: TuneType
+  intent?: TuneIntent
 }
 
 const FIXES: Record<DiagnosticProblem, { diagnosis: string; fixes: DiagnosticFix[] }> = {
@@ -389,6 +390,24 @@ export function diagnose(problem: DiagnosticProblem, context: DiagnosticContext 
     contextNotes.push(
       "Tune de drag: na largada, solte o acelerador progressivamente (não 100% instantâneo). " +
       "A tune pode estar correta — a técnica de largada influencia muito."
+    )
+  }
+
+  if (context.intent === "control" && ["oversteer", "brake_instability", "bouncing"].includes(problem)) {
+    contextNotes.push(
+      "Perfil FH6 Controle: primeiro reduza agressividade de diferencial e barras antes de buscar mais potencia. A meta aqui e previsibilidade."
+    )
+  }
+
+  if (context.intent === "speed" && problem === "slow_straight") {
+    contextNotes.push(
+      "Perfil FH6 Velocidade: como nao temos rota oficial de FH6, use a reta mais longa do seu teste e ajuste o final drive para quase encostar no corte no fim da reta."
+    )
+  }
+
+  if (context.intent === "cornering" && ["understeer", "slow_cornering"].includes(problem)) {
+    contextNotes.push(
+      "Perfil FH6 Curvas: valide cambagem com telemetria depois de 2 a 3 voltas. Se o pneu interno estiver muito mais quente, reduza cambagem negativa."
     )
   }
 

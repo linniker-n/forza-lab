@@ -1,5 +1,14 @@
-import type { Car, CarClass, Drivetrain, DrivingStyle, GeneratedTune, TuneRequest, TuneType, TuneWarning } from "@/types"
+import type { Car, CarClass, Drivetrain, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType, TuneWarning } from "@/types"
 import { analyzeCar } from "./analyze"
+import {
+  applyFH6Intent,
+  getFH6IntentCarStrengths,
+  getFH6IntentCarWeaknesses,
+  getFH6IntentLabel,
+  getFH6IntentStrengths,
+  getFH6IntentSummary,
+  getFH6IntentWarnings,
+} from "./fh6-intents"
 import { selectParts } from "./parts"
 import { buildTune } from "./presets"
 
@@ -18,7 +27,7 @@ function resolveDrivetrain(car: Car, preferred: string, tuneType: TuneType): Dri
   return car.drivetrain
 }
 
-function generateSummary(car: Car, tuneType: TuneType, drivetrain: Drivetrain, style: DrivingStyle): string {
+function generateSummary(car: Car, tuneType: TuneType, drivetrain: Drivetrain, style: DrivingStyle, intent: TuneIntent): string {
   const tuneLabels: Record<TuneType, string> = {
     street: "corridas de asfalto",
     drag: "arrancadas e drag",
@@ -33,10 +42,10 @@ function generateSummary(car: Car, tuneType: TuneType, drivetrain: Drivetrain, s
     competitive: "competitivo e preciso",
     meta: "máxima performance e agressividade",
   }
-  return `Tune do ${car.brand} ${car.model} (${car.year}) preparada para ${tuneLabels[tuneType]}, com tração ${drivetrain}. Configurada para ser ${styleLabels[style]}.`
+  return `Tune do ${car.brand} ${car.model} (${car.year}) preparada para ${tuneLabels[tuneType]}, com tração ${drivetrain}. Perfil FH6: ${getFH6IntentLabel(intent)}. ${getFH6IntentSummary(intent)} Configurada para ser ${styleLabels[style]}.`
 }
 
-function generateHowToDrive(tuneType: TuneType, drivetrain: Drivetrain): string {
+function generateHowToDrive(tuneType: TuneType, drivetrain: Drivetrain, intent: TuneIntent): string {
   const guides: Record<TuneType, string> = {
     street: `Frear antes da curva e acelerar progressivamente na saída. ${drivetrain === "AWD" ? "AWD oferece tração consistente, use isso a seu favor." : drivetrain === "RWD" ? "RWD exige suavidade no acelerador em curvas." : "FWD tende a subesterçar — freie mais antes da curva."}`,
     drag: `Largar suave para não patinar. Use 1ª curta e mude rápido para 2ª e 3ª. ${drivetrain === "AWD" ? "AWD oferece largada mais consistente." : "RWD exige controle na largada — solte o acelerador gradualmente."}`,
@@ -46,7 +55,15 @@ function generateHowToDrive(tuneType: TuneType, drivetrain: Drivetrain): string 
     top_speed: `Foque na reta mais longa. Acelerador fundo após a curva. Câmbio afinado para terminar a última marcha no limite de RPM.`,
     grip: `Braking points precisos. Trail brake leve na entrada da curva. Acelere somente quando o carro estiver apontado para a saída.`,
   }
-  return guides[tuneType]
+  const intentGuides: Record<TuneIntent, string> = {
+    balanced: "Use como base geral: ajuste apenas se sentir understeer, oversteer ou falta de final.",
+    control: "Priorize entrada limpa e aceleração progressiva; o setup foi feito para salvar erros sem quebrar a traseira.",
+    speed: "Abra a curva antes da reta e deixe o carro respirar até a última marcha; se bater limitador cedo, alongue mais o final drive.",
+    cornering: "Use trail brake leve, aponte cedo e confie no aero; se a traseira ficar viva, reduza barra traseira ou aumente aero traseiro.",
+    acceleration: "Aplique acelerador em rampa na saída; se patinar, reduza diferencial traseiro de aceleração antes de mexer nas molas.",
+  }
+
+  return `${guides[tuneType]} ${intentGuides[intent]}`
 }
 
 function generateWarnings(
@@ -123,9 +140,10 @@ function estimatePI(targetClass: CarClass): number {
 export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
   const profile    = analyzeCar(car)
   const drivetrain = resolveDrivetrain(car, request.preferred_drivetrain, request.tune_type)
+  const fh6Intent  = request.fh6_intent ?? "balanced"
 
   // Parts selection — passes engine_swap flag
-  const parts = selectParts(car, profile, request.tune_type, drivetrain, request.target_class, request.engine_swap)
+  const parts = selectParts(car, profile, request.tune_type, drivetrain, request.target_class, request.engine_swap, fh6Intent)
 
   // When engine swap is active, simulate a car with ~80% more power for tune calculations.
   // This makes the physics formulas generate stiffer springs, more conservative differential,
@@ -137,7 +155,7 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
     ? { ...profile, isPowerful: true, isLowPower: false }
     : profile
 
-  const tuning = buildTune(carForTune, profileForTune, request.tune_type, drivetrain)
+  let tuning = buildTune(carForTune, profileForTune, request.tune_type, drivetrain)
 
   // Difficulty adjustments on top of physics base
   if (request.difficulty === "easy") {
@@ -154,18 +172,48 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
     tuning.antiroll_bars.rear  = Math.min(65, tuning.antiroll_bars.rear  + 3)
   }
 
+  tuning = applyFH6Intent(tuning, {
+    car: carForTune,
+    profile: profileForTune,
+    tuneType: request.tune_type,
+    drivetrain,
+    intent: fh6Intent,
+    style: request.style,
+    control: request.control,
+    difficulty: request.difficulty,
+  })
+
+  const intentWeaknesses = getFH6IntentCarWeaknesses(car, fh6Intent)
+  const baseWeaknesses = getWeaknesses(car, request.tune_type)
+  const weaknesses = intentWeaknesses.length > 0
+    ? [...baseWeaknesses.filter((item) => !item.startsWith("Nenhuma")), ...intentWeaknesses]
+    : baseWeaknesses
+
   return {
     car,
     target_class: request.target_class,
     tune_type:    request.tune_type,
+    fh6_intent:   fh6Intent,
     drivetrain,
     parts,
     tuning,
-    summary:    generateSummary(car, request.tune_type, drivetrain, request.style),
-    how_to_drive: generateHowToDrive(request.tune_type, drivetrain),
-    strengths:  getStrengths(car, request.tune_type),
-    weaknesses: getWeaknesses(car, request.tune_type),
-    warnings:   generateWarnings(car, request.tune_type, drivetrain, request.preferred_drivetrain, request.engine_swap),
+    summary:    generateSummary(car, request.tune_type, drivetrain, request.style, fh6Intent),
+    how_to_drive: generateHowToDrive(request.tune_type, drivetrain, fh6Intent),
+    strengths:  [...getStrengths(car, request.tune_type), ...getFH6IntentStrengths(fh6Intent), ...getFH6IntentCarStrengths(car, fh6Intent)],
+    weaknesses,
+    warnings:   [
+      ...generateWarnings(car, request.tune_type, drivetrain, request.preferred_drivetrain, request.engine_swap),
+      ...getFH6IntentWarnings({
+        car: carForTune,
+        profile: profileForTune,
+        tuneType: request.tune_type,
+        drivetrain,
+        intent: fh6Intent,
+        style: request.style,
+        control: request.control,
+        difficulty: request.difficulty,
+      }),
+    ],
     pi_estimate: estimatePI(request.target_class),
   }
 }

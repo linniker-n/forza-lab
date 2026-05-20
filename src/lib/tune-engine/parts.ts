@@ -1,4 +1,4 @@
-import type { Car, CarClass, Drivetrain, Parts, TuneType } from "@/types"
+import type { Car, CarClass, Drivetrain, Parts, TuneIntent, TuneType } from "@/types"
 import type { CarProfile } from "./analyze"
 
 // 1 = D/C class (light upgrade), 2 = B/A (medium), 3 = S1/S2 (full race), 4 = R/X (extreme)
@@ -117,7 +117,12 @@ function tireParts(tuneType: TuneType, depth: Depth): string[] {
   }
 }
 
-function aeroParts(tuneType: TuneType): string[] {
+function aeroParts(tuneType: TuneType, intent: TuneIntent): string[] {
+  if (intent === "speed") return tuneType === "grip" ? ["Rear Wing (Low)"] : []
+  if (intent === "control") return ["Adjustable Rear Wing"]
+  if (intent === "cornering") return ["Front Splitter (High)", "Adjustable Rear Wing"]
+  if (intent === "acceleration" && tuneType !== "drag") return ["Rear Wing (Low)"]
+
   switch (tuneType) {
     case "grip":    return ["Front Splitter (High)", "Adjustable Rear Wing"]
     case "drag":    return []
@@ -172,6 +177,7 @@ export function selectParts(
   targetDrivetrain: Drivetrain,
   targetClass: CarClass,
   engineSwap = false,
+  intent: TuneIntent = "balanced",
 ): Parts {
   const needsConversion = targetDrivetrain !== car.drivetrain
   const conversionParts: string[] = needsConversion ? [`${targetDrivetrain} Conversion`] : []
@@ -193,6 +199,6 @@ export function selectParts(
     platform:   platformParts(tuneType, depth),
     drivetrain: [...conversionParts, ...drivetrainParts(tuneType, depth)],
     tires:      tireParts(tuneType, depth),
-    aero:       aeroParts(tuneType),
+    aero:       aeroParts(tuneType, intent),
   }
 }

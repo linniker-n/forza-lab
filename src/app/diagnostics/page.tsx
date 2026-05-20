@@ -4,8 +4,9 @@ import { useState } from "react"
 import Link from "next/link"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CARS } from "@/data/cars"
+import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
 import { diagnose as runDiagnostic, PROBLEM_LABELS } from "@/lib/tune-engine/diagnostics"
-import type { Car, DiagnosticProblem, DiagnosticResult, TuneType } from "@/types"
+import type { Car, DiagnosticProblem, DiagnosticResult, TuneIntent, TuneType } from "@/types"
 
 const PROBLEMS = Object.entries(PROBLEM_LABELS) as [DiagnosticProblem, string][]
 
@@ -18,6 +19,15 @@ const TUNE_TYPES: { v: TuneType | ""; l: string }[] = [
   { v: "cross_country", l: "Cross Country" },
   { v: "top_speed", l: "Top Speed" },
   { v: "grip", l: "Grip" },
+]
+
+const FH6_INTENTS: { v: TuneIntent | ""; l: string }[] = [
+  { v: "", l: "Sem perfil" },
+  { v: "balanced", l: "Balanceado" },
+  { v: "control", l: "Controle" },
+  { v: "speed", l: "Velocidade" },
+  { v: "cornering", l: "Curvas" },
+  { v: "acceleration", l: "Aceleracao" },
 ]
 
 const ICONS: Record<DiagnosticProblem, string> = {
@@ -49,6 +59,7 @@ export default function DiagnosticsPage() {
   const [carSearch, setCarSearch] = useState("")
   const [car, setCar] = useState<Car | null>(null)
   const [tuneType, setTuneType] = useState<TuneType | "">("")
+  const [intent, setIntent] = useState<TuneIntent | "">("")
 
   const carMatches = carSearch.length >= 2
     ? CARS.filter((item) => `${item.brand} ${item.model} ${item.year}`.toLowerCase().includes(carSearch.toLowerCase())).slice(0, 6)
@@ -61,6 +72,7 @@ export default function DiagnosticsPage() {
       setResult(runDiagnostic(selected, {
         car: car ?? undefined,
         tuneType: tuneType || undefined,
+        intent: intent || undefined,
       }))
     } finally { setLoading(false) }
   }
@@ -141,6 +153,19 @@ export default function DiagnosticsPage() {
                     onClick={() => setTuneType(type.v)}
                   >
                     {type.l}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-2 flex-wrap">
+                {FH6_INTENTS.map((item) => (
+                  <button
+                    key={item.v || "none"}
+                    type="button"
+                    className={`filter-chip${intent === item.v ? " active" : ""}`}
+                    onClick={() => setIntent(item.v)}
+                  >
+                    {item.v ? getFH6IntentLabel(item.v) : item.l}
                   </button>
                 ))}
               </div>

@@ -11,8 +11,9 @@ import { getFirebaseDb } from "@/lib/firebase/client"
 import { useSettings } from "@/lib/settings/context"
 import { translateParts } from "@/lib/settings/translations"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
+import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
 import { generateTune } from "@/lib/tune-engine/generator"
-import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneRequest, TuneType } from "@/types"
+import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType } from "@/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 
 type Difficulty = "easy" | "balanced" | "aggressive"
@@ -25,6 +26,13 @@ const TUNE_TYPES: { v: TuneType; l: string; desc: string; cls: string }[] = [
   { v: "cross_country", l: "Cross Country",   desc: "Lama, saltos, terreno pesado", cls: "tag-cross_country" },
   { v: "top_speed",     l: "Top Speed",       desc: "Speed traps, autoestradas",  cls: "tag-top_speed" },
   { v: "grip",          l: "Grip / Circuito", desc: "Tempo de volta, técnico",    cls: "tag-grip" },
+]
+const FH6_INTENTS: { v: TuneIntent; l: string; desc: string }[] = [
+  { v: "balanced",     l: "Balanceado", desc: "Base geral para mapa aberto, sem depender de pista." },
+  { v: "control",      l: "Controle", desc: "Estavel, previsivel e facil de corrigir no limite." },
+  { v: "speed",        l: "Velocidade", desc: "Retas longas, speed traps e final maior." },
+  { v: "cornering",    l: "Bom de curva", desc: "Mais frente, grip lateral e resposta tecnica." },
+  { v: "acceleration", l: "Saida forte", desc: "Largada, retomada e tracao na saida de curva." },
 ]
 const CLASSES: CarClass[] = ["D","C","B","A","S1","S2","R","X"]
 const DIFFICULTY: { v: Difficulty; l: string; desc: string }[] = [
@@ -220,6 +228,9 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
                 <span className={`badge-class badge-${tune.target_class}`}>Classe {tune.target_class}</span>
                 <span className="badge-class" style={{ color: "var(--blue-bright)", background: "var(--blue-dim)", borderColor: "var(--border-blue)" }}>
                   {TUNE_LABELS[tune.tune_type]}
+                </span>
+                <span className="badge-class" style={{ color: "#34d399", background: "rgba(52,211,153,0.08)", borderColor: "rgba(52,211,153,0.22)" }}>
+                  FH6 {getFH6IntentLabel(tune.fh6_intent ?? "balanced")}
                 </span>
                 <span className="badge-class" style={{ color: "var(--text-muted)", background: "transparent", borderColor: "var(--border-strong)" }}>
                   ~{tune.pi_estimate} PI
@@ -508,6 +519,7 @@ function WizardInner() {
   const [style, setStyle]     = useState<DrivingStyle>("competitive")
   const [ctrl, setCtrl]       = useState<ControlType>("controller")
   const [dt, setDt]           = useState<TuneRequest["preferred_drivetrain"]>("original")
+  const [intent, setIntent]   = useState<TuneIntent>("balanced")
   const [engineSwap, setEngineSwap] = useState(false)
   const [loading, setLoading] = useState(false)
   const [result, setResult]   = useState<GeneratedTune | null>(null)
@@ -530,6 +542,7 @@ function WizardInner() {
         preferred_drivetrain: dt,
         difficulty: diff,
         engine_swap: engineSwap,
+        fh6_intent: intent,
       }
       setResult(generateTune(request, car)); setStep(4)
     } catch (e: unknown) {
@@ -537,7 +550,7 @@ function WizardInner() {
     } finally { setLoading(false) }
   }
 
-  if (step === 4 && result) return <TuneResult tune={result} onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false) }} />
+  if (step === 4 && result) return <TuneResult tune={result} onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false); setIntent("balanced") }} />
 
   const steps = [
     { n: 1, l: "Carro" },
@@ -652,6 +665,29 @@ function WizardInner() {
         {/* ── STEP 3 ── */}
         {step === 3 && (
           <div className="space-y-6 anim-up" style={{ animationDelay: "100ms" }}>
+
+            {/* FH6 intent */}
+            <div className="space-y-2">
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Objetivo FH6</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+                {FH6_INTENTS.map((item) => (
+                  <button
+                    key={item.v}
+                    type="button"
+                    onClick={() => setIntent(item.v)}
+                    className="r-card text-left p-3 transition-all"
+                    style={{
+                      border: intent === item.v ? "1px solid var(--border-blue)" : undefined,
+                      background: intent === item.v ? "var(--blue-dim)" : undefined,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{item.l}</p>
+                    <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 2, lineHeight: 1.45 }}>{item.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Class */}
             <div className="space-y-2">
