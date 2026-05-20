@@ -8,6 +8,9 @@ import { RequireAuth } from "@/components/auth/RequireAuth"
 import { getCarImageUrl } from "@/data/cars"
 import { getFirebaseDb } from "@/lib/firebase/client"
 import { diagnose as runDiagnostic, PROBLEM_LABELS } from "@/lib/tune-engine/diagnostics"
+import { useSettings } from "@/lib/settings/context"
+import type { AppSettings } from "@/lib/settings/context"
+import { formatPressure, formatSpring } from "@/lib/settings/units"
 import type { DiagnosticProblem, DiagnosticResult, GeneratedTune } from "@/types"
 import { collection, deleteDoc, doc, getDocs, orderBy, query } from "firebase/firestore"
 
@@ -53,35 +56,86 @@ function mapFirestoreTune(id: string, data: Record<string, unknown>): SavedTune 
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Helpers de diagnóstico contextualizado
+// Helpers de diagnóstico contextualizado — unit-aware
 // ─────────────────────────────────────────────────────────────────────────────
 
-function getParameterCurrentValue(param: string, tune: GeneratedTune): string | null {
+type BaseUnit = "psi" | "lbfin" | "percent" | "degrees" | "ratio" | "text"
+
+interface ParamValue {
+  display: string        // valor formatado nas unidades do usuário
+  raw: number | null     // valor bruto na unidade base (para calcular delta)
+  unit: BaseUnit
+}
+
+function getParamValue(
+  param: string,
+  tune: GeneratedTune,
+  s: AppSettings,
+): ParamValue | null {
   const t = tune.tuning
-  const map: Record<string, string | null> = {
-    "Barra estabilizadora dianteira": String(t.antiroll_bars.front),
-    "Barra dianteira":                String(t.antiroll_bars.front),
-    "Barra estabilizadora traseira":  String(t.antiroll_bars.rear),
-    "Diferencial traseiro (aceleração)": t.differential.rear_accel !== undefined ? `${t.differential.rear_accel}%` : null,
-    "Diferencial traseiro (desaceleração)": t.differential.rear_decel !== undefined ? `${t.differential.rear_decel}%` : null,
-    "Diferencial dianteiro (aceleração)": t.differential.front_accel !== undefined ? `${t.differential.front_accel}%` : null,
-    "Diferencial dianteiro":          t.differential.front_accel !== undefined ? `${t.differential.front_accel}%` : null,
-    "Diferencial central (AWD)":      t.differential.center_balance !== undefined ? `${t.differential.center_balance}%` : null,
-    "Pressão dos pneus dianteiros":   `${t.tires.front} PSI`,
-    "Pressão dos pneus traseiros":    `${t.tires.rear} PSI`,
-    "Pressão dos pneus":              `${t.tires.front} / ${t.tires.rear} PSI`,
-    "Molas traseiras":                String(t.springs.rear),
-    "Rebound (rebote)":               `${t.damping.rebound_front} / ${t.damping.rebound_rear}`,
-    "Rebound dianteiro":              String(t.damping.rebound_front),
-    "Bump (compressão)":              `${t.damping.bump_front} / ${t.damping.bump_rear}`,
-    "Balanceamento de freios":        `${t.brakes.balance}%`,
-    "Pressão de freio":               `${t.brakes.pressure}%`,
-    "Cambagem dianteira":             `${t.alignment.camber_front}°`,
-    "Toe dianteiro":                  `${t.alignment.toe_front}°`,
-    "Aero dianteiro":                 t.aero.front,
-    "Aero traseiro":                  t.aero.rear,
+
+  const mk = (raw: number, unit: BaseUnit, display: string): ParamValue =>
+    ({ raw, unit, display })
+
+  switch (param) {
+    // Pressão dos pneus
+    case "Pressão dos pneus dianteiros":
+      return mk(t.tires.front,  "psi", formatPressure(t.tires.front,  s.pressureUnit))
+    case "Pressão dos pneus traseiros":
+      return mk(t.tires.rear,   "psi", formatPressure(t.tires.rear,   s.pressureUnit))
+    case "Pressão dos pneus":
+      return { raw: null, unit: "psi", display: `${formatPressure(t.tires.front, s.pressureUnit)} / ${formatPressure(t.tires.rear, s.pressureUnit)}` }
+
+    // Molas
+    case "Molas traseiras":
+      return mk(t.springs.rear,  "lbfin", formatSpring(t.springs.rear,  s.springUnit))
+    case "Molas dianteiras":
+      return mk(t.springs.front, "lbfin", formatSpring(t.springs.front, s.springUnit))
+
+    // Amortecedores
+    case "Rebound (rebote)":
+      return { raw: null, unit: "ratio", display: `${t.damping.rebound_front} / ${t.damping.rebound_rear}` }
+    case "Rebound dianteiro":
+      return mk(t.damping.rebound_front, "ratio", String(t.damping.rebound_front))
+    case "Bump (compressão)":
+      return { raw: null, unit: "ratio", display: `${t.damping.bump_front} / ${t.damping.bump_rear}` }
+
+    // Barras estabilizadoras
+    case "Barra estabilizadora dianteira":
+    case "Barra dianteira":
+      return mk(t.antiroll_bars.front, "ratio", String(t.antiroll_bars.front))
+    case "Barra estabilizadora traseira":
+      return mk(t.antiroll_bars.rear, "ratio", String(t.antiroll_bars.rear))
+
+    // Diferencial
+    case "Diferencial traseiro (aceleração)":
+      return t.differential.rear_accel  !== undefined ? mk(t.differential.rear_accel,    "percent", `${t.differential.rear_accel}%`) : null
+    case "Diferencial traseiro (desaceleração)":
+      return t.differential.rear_decel  !== undefined ? mk(t.differential.rear_decel,    "percent", `${t.differential.rear_decel}%`) : null
+    case "Diferencial dianteiro (aceleração)":
+    case "Diferencial dianteiro":
+      return t.differential.front_accel !== undefined ? mk(t.differential.front_accel,   "percent", `${t.differential.front_accel}%`) : null
+    case "Diferencial central (AWD)":
+      return t.differential.center_balance !== undefined ? mk(t.differential.center_balance, "percent", `${t.differential.center_balance}%`) : null
+
+    // Freios
+    case "Balanceamento de freios":
+      return mk(t.brakes.balance,  "percent", `${t.brakes.balance}%`)
+    case "Pressão de freio":
+      return mk(t.brakes.pressure, "percent", `${t.brakes.pressure}%`)
+
+    // Alinhamento
+    case "Cambagem dianteira":
+      return mk(t.alignment.camber_front, "degrees", `${t.alignment.camber_front}°`)
+    case "Toe dianteiro":
+      return mk(t.alignment.toe_front, "degrees", `${t.alignment.toe_front}°`)
+
+    // Aero (texto descritivo, sem valor numérico)
+    case "Aero dianteiro": return { raw: null, unit: "text", display: t.aero.front }
+    case "Aero traseiro":  return { raw: null, unit: "text", display: t.aero.rear  }
+
+    default: return null
   }
-  return map[param] ?? null
 }
 
 function parseNumericDelta(adj: string): number | null {
@@ -89,18 +143,22 @@ function parseNumericDelta(adj: string): number | null {
   const m = clean.match(/([+-]?\s*\d+(?:[.,]\d+)?)/)
   if (!m) return null
   const val = parseFloat(m[1].replace(",", ".").replace(" ", ""))
-  if (isNaN(val)) return null
-  return val
+  return isNaN(val) ? null : val
 }
 
-function computeTargetValue(currentStr: string, adj: string): string | null {
-  const currentNum = parseFloat(currentStr.replace(/[%°]|PSI/g, "").trim())
-  if (isNaN(currentNum)) return null
+function computeTarget(pv: ParamValue, adj: string, s: AppSettings): string | null {
+  if (pv.raw === null) return null
   const delta = parseNumericDelta(adj)
   if (delta === null) return null
-  const target = Math.round((currentNum + delta) * 10) / 10
-  const unit = currentStr.includes("%") ? "%" : currentStr.includes("°") ? "°" : currentStr.includes("PSI") ? " PSI" : ""
-  return `${target}${unit}`
+  const targetRaw = Math.round((pv.raw + delta) * 10) / 10
+
+  switch (pv.unit) {
+    case "psi":     return formatPressure(targetRaw, s.pressureUnit)
+    case "lbfin":   return formatSpring(targetRaw, s.springUnit)
+    case "percent": return `${Math.max(0, Math.min(100, targetRaw))}%`
+    case "degrees": return `${targetRaw}°`
+    default:        return String(targetRaw)
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -134,6 +192,7 @@ const PROB_COLORS: Record<DiagnosticProblem, string> = {
 function DiagnosticPanel({ tune, onClose }: { tune: GeneratedTune; onClose(): void }) {
   const [problem,  setProblem]  = useState<DiagnosticProblem | null>(null)
   const [result,   setResult]   = useState<DiagnosticResult | null>(null)
+  const { settings } = useSettings()
 
   function selectProblem(p: DiagnosticProblem) {
     setProblem(p)
@@ -242,11 +301,10 @@ function DiagnosticPanel({ tune, onClose }: { tune: GeneratedTune; onClose(): vo
           <div className="space-y-3">
             <p style={titleStyle}>{result.fixes.length} correções recomendadas</p>
             {result.fixes.map((fix, i) => {
-              const current = getParameterCurrentValue(fix.parameter, tune)
-              const adj     = fix.adjustment
-              // Try to compute a specific target value
-              const singleCurrent = current && !current.includes("/") ? current : null
-              const target  = singleCurrent ? computeTargetValue(singleCurrent, adj) : null
+              const pv     = getParamValue(fix.parameter, tune, settings)
+              const adj    = fix.adjustment
+              const target = pv ? computeTarget(pv, adj, settings) : null
+              const current = pv?.display ?? null
 
               return (
                 <div
