@@ -336,6 +336,6 @@ export function buildTune(
 }
 
 export { buildTune as adaptTuneToCar }
-export function getPresetTune(_tuneType: TuneType): TuningSetup {
+export function getPresetTune(): TuningSetup {
   throw new Error("getPresetTune is deprecated — use buildTune instead")
 }

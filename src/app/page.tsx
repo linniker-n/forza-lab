@@ -15,16 +15,6 @@ const FEATURED = CARS.filter((c) =>
    "mazda_furai_2008", "subaru_brz_2022_2022", "acura_nsx_type_s_2022"].includes(c.id)
 )
 
-const TUNE_TYPES = [
-  { slug: "street",        label: "Rua",         cls: "tag-street" },
-  { slug: "drag",          label: "Arrancada",   cls: "tag-drag" },
-  { slug: "drift",         label: "Drift",       cls: "tag-drift" },
-  { slug: "rally",         label: "Rally",       cls: "tag-rally" },
-  { slug: "cross_country", label: "Off-Road",    cls: "tag-cross_country" },
-  { slug: "top_speed",     label: "Top Speed",   cls: "tag-top_speed" },
-  { slug: "grip",          label: "Grip",        cls: "tag-grip" },
-]
-
 const FEATURES = [
   {
     num: "01",

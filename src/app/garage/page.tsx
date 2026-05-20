@@ -387,10 +387,15 @@ export default function GaragePage() {
     const localTunes = readSavedTunes(userId)
 
     // Exibe tunes locais IMEDIATAMENTE — sem esperar Firestore
-    setSaved(localTunes)
+    const localHandle = window.setTimeout(() => {
+      if (active) setSaved(localTunes)
+    }, 0)
 
     if (!db || !userId) {
-      return () => { active = false }
+      return () => {
+        active = false
+        window.clearTimeout(localHandle)
+      }
     }
 
     // Firestore carrega em background e atualiza quando pronto
@@ -415,7 +420,10 @@ export default function GaragePage() {
         setSyncNote("Garagem Firebase indisponível. Exibindo tunes salvas neste navegador.")
       })
 
-    return () => { active = false }
+    return () => {
+      active = false
+      window.clearTimeout(localHandle)
+    }
   }, [userId])
 
   async function removeTune(id: string) {

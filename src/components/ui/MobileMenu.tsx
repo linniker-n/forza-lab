@@ -22,7 +22,10 @@ export function MobileMenu() {
   const pathname = usePathname()
 
   // Fecha o menu quando a rota muda
-  useEffect(() => { setOpen(false) }, [pathname])
+  useEffect(() => {
+    const handle = window.setTimeout(() => setOpen(false), 0)
+    return () => window.clearTimeout(handle)
+  }, [pathname])
 
   // Bloqueia scroll do body quando aberto
   useEffect(() => {

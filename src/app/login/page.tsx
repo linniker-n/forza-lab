@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
 
 /** Detecta browsers embutidos (WhatsApp, Instagram, Facebook, Snapchat, Line...) */
@@ -36,12 +36,8 @@ export default function LoginPage() {
   const [error,      setError]      = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [copied,     setCopied]     = useState(false)
-  const [pageUrl,    setPageUrl]    = useState("")
+  const [pageUrl]    = useState(() => typeof window === "undefined" ? "" : window.location.href)
   const inApp = useMemo(() => detectInAppBrowser(), [])
-
-  useEffect(() => {
-    setPageUrl(window.location.href)
-  }, [])
 
   async function copyLink() {
     try {

@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react"
@@ -35,18 +34,17 @@ interface SettingsCtx {
 const Ctx = createContext<SettingsCtx | null>(null)
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<AppSettings>(DEFAULTS)
-
-  // Hydrate from localStorage on mount
-  useEffect(() => {
+  const [settings, setSettings] = useState<AppSettings>(() => {
+    if (typeof window === "undefined") return DEFAULTS
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY)
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<AppSettings>
-        setSettings((prev) => ({ ...prev, ...parsed }))
+        return { ...DEFAULTS, ...parsed }
       }
     } catch {}
-  }, [])
+    return DEFAULTS
+  })
 
   const update = useCallback((partial: Partial<AppSettings>) => {
     setSettings((prev) => {

@@ -14,16 +14,16 @@ const Ctx = createContext<ThemeCtx | null>(null)
 const STORAGE_KEY = "forza-tune-lab:theme"
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark")
-
-  useEffect(() => {
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "dark"
     try {
-      const stored = localStorage.getItem(STORAGE_KEY) as Theme | null
+      const stored = window.localStorage.getItem(STORAGE_KEY) as Theme | null
       if (stored === "light" || stored === "dark") {
-        setTheme(stored)
+        return stored
       }
     } catch {}
-  }, [])
+    return "dark"
+  })
 
   const toggle = useCallback(() => {
     setTheme((prev) => {

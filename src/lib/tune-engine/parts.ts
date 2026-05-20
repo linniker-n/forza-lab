@@ -135,8 +135,6 @@ function aeroParts(tuneType: TuneType): string[] {
 
 const JDM_BRANDS  = new Set(["Toyota","Nissan","Honda","Mazda","Subaru","Mitsubishi","Lexus","Infiniti","Acura","Datsun","Scion","Isuzu"])
 const US_BRANDS   = new Set(["Ford","Chevrolet","Dodge","GMC","Pontiac","Shelby","Jeep","Buick","Cadillac","Lincoln","Plymouth","Mercury","RAM","Chrysler"])
-const EUR_BRANDS  = new Set(["BMW","Mercedes-Benz","Mercedes-AMG","Volkswagen","Audi","Porsche","Lamborghini","Ferrari","Maserati","McLaren","Lotus","TVR","Jaguar","Land Rover","Lancia","Alfa Romeo","Renault","Peugeot","Volvo","Opel","MINI"])
-
 function recommendSwap(car: Car, tuneType: TuneType): string {
   const isJDM = JDM_BRANDS.has(car.brand)  || car.car_type.includes("jdm")
   const isUS  = US_BRANDS.has(car.brand)

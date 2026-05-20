@@ -10,7 +10,7 @@ import { CARS, getCarImageUrl } from "@/data/cars"
 import { getFirebaseDb } from "@/lib/firebase/client"
 import { useSettings } from "@/lib/settings/context"
 import { translateParts } from "@/lib/settings/translations"
-import { formatPressure, formatPower, formatTorque, formatSpring } from "@/lib/settings/units"
+import { formatPressure, formatSpring } from "@/lib/settings/units"
 import { generateTune } from "@/lib/tune-engine/generator"
 import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneRequest, TuneType } from "@/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
@@ -144,8 +144,6 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
   const { settings, update } = useSettings()
   const lang  = settings.partsLanguage
   const pUnit = settings.pressureUnit
-  const pwUnit = settings.powerUnit
-  const tUnit  = settings.torqueUnit
   const spUnit = settings.springUnit
   const [saveError, setSaveError] = useState<string | null>(null)
   const { user } = useAuth()
