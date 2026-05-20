@@ -41,9 +41,11 @@ function engineParts(car: Car, depth: Depth): string[] {
       parts.push("Race Supercharger", "Race Intercooler", "Race Fuel System")
     }
   } else {
-    // NA — compensate with more internal upgrades
-    if (depth >= 2) parts.push("Race Camshaft", "Race Valves")
-    if (depth >= 3) parts.push("Race Ignition", "Race Displacement")
+    // NA — Ensinamento (vídeo FH6): "evite o comando de válvulas se possível.
+    // A relação performance/PI é ruim. Prefiro trocar o motor a colocar um cam."
+    // Usamos Displacement + Valves + Ignition (melhor custo/PI que Camshaft)
+    if (depth >= 2) parts.push("Race Valves", "Race Displacement")
+    if (depth >= 3) parts.push("Race Ignition", "Race Pistons")
   }
 
   // Engine internals for serious builds
