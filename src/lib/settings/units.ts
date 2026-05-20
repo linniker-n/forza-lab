@@ -26,6 +26,20 @@ export function formatTorque(nm: number, unit: AppSettings["torqueUnit"]): strin
   return `${nm} Nm`
 }
 
+// ── Rigidez de molas ─────────────────────────────────────
+// O jogo (PT-BR) exibe em kgf/mm (máx. 338,1).
+// Internamente calculamos em lbf/in.  1 lbf/in = 0.175127 kgf/mm
+export function formatSpring(lbfin: number, unit: AppSettings["springUnit"]): string {
+  if (unit === "kgfmm") {
+    return `${(lbfin * 0.175127).toFixed(1)} kgf/mm`
+  }
+  return `${lbfin} lbf/in`
+}
+
+export function springLabel(unit: AppSettings["springUnit"]): string {
+  return unit === "kgfmm" ? "kgf/mm" : "lbf/in"
+}
+
 // ── Labels de unidade ────────────────────────────────────
 export function pressureLabel(unit: AppSettings["pressureUnit"]): string {
   return unit === "bar" ? "bar" : "PSI"

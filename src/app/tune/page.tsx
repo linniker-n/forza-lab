@@ -10,7 +10,7 @@ import { CARS, getCarImageUrl } from "@/data/cars"
 import { getFirebaseDb } from "@/lib/firebase/client"
 import { useSettings } from "@/lib/settings/context"
 import { translateParts } from "@/lib/settings/translations"
-import { formatPressure, formatPower, formatTorque } from "@/lib/settings/units"
+import { formatPressure, formatPower, formatTorque, formatSpring } from "@/lib/settings/units"
 import { generateTune } from "@/lib/tune-engine/generator"
 import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneRequest, TuneType } from "@/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
@@ -142,10 +142,11 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const { settings, update } = useSettings()
-  const lang = settings.partsLanguage
+  const lang  = settings.partsLanguage
   const pUnit = settings.pressureUnit
   const pwUnit = settings.powerUnit
-  const tUnit = settings.torqueUnit
+  const tUnit  = settings.torqueUnit
+  const spUnit = settings.springUnit
   const [saveError, setSaveError] = useState<string | null>(null)
   const { user } = useAuth()
 
@@ -298,6 +299,18 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
             ))}
           </div>
         </div>
+
+        <div className="flex items-center gap-1.5">
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>Molas</span>
+          <div className="flex rounded" style={{ border: "1px solid var(--border-strong)", overflow: "hidden" }}>
+            {(["kgfmm", "lbfin"] as const).map((v, i) => (
+              <button key={v} type="button" onClick={() => update({ springUnit: v })}
+                style={{ fontSize: 11, fontWeight: 700, padding: "3px 8px", lineHeight: 1.5, background: settings.springUnit === v ? "var(--blue)" : "transparent", color: settings.springUnit === v ? "#fff" : "var(--text-muted)", border: "none", cursor: "pointer", borderLeft: i > 0 ? "1px solid var(--border-strong)" : "none" }}>
+                {v === "kgfmm" ? "kgf/mm" : "lbf/in"}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Warnings */}
@@ -396,8 +409,8 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="r-card p-5">
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Molas</p>
-          <TR l="Rigidez dianteira" v={String(tune.tuning.springs.front)} />
-          <TR l="Rigidez traseira"  v={String(tune.tuning.springs.rear)} />
+          <TR l="Rigidez dianteira" v={formatSpring(tune.tuning.springs.front, spUnit)} />
+          <TR l="Rigidez traseira"  v={formatSpring(tune.tuning.springs.rear,  spUnit)} />
           <TR l="Altura dianteira"  v={rideHeightLabel(tune.tuning.springs.ride_height_front)} mono={false} />
           <TR l="Altura traseira"   v={rideHeightLabel(tune.tuning.springs.ride_height_rear)} mono={false} />
         </div>

@@ -151,6 +151,26 @@ export default function SettingsPage() {
           ]}
         />
 
+        {/* ── Rigidez de molas ── */}
+        <ToggleGroup<AppSettings["springUnit"]>
+          label="Rigidez de molas"
+          description="Unidade de rigidez das molas de suspensão. O jogo (versão PT-BR) usa kgf/mm com máximo de 338,1 — é o padrão recomendado."
+          current={settings.springUnit}
+          onChange={(v) => update({ springUnit: v })}
+          options={[
+            {
+              value: "kgfmm",
+              label: "kgf/mm",
+              sub: "100,7 kgf/mm — padrão do jogo",
+            },
+            {
+              value: "lbfin",
+              label: "lbf/in",
+              sub: "575 lbf/in — imperial",
+            },
+          ]}
+        />
+
         {/* Preview box */}
         <div className="r-card bracket p-5 space-y-3 anim-up">
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>
@@ -175,12 +195,12 @@ export default function SettingsPage() {
                 value: settings.torqueUnit === "kgfm" ? "91.2 kgf·m" : "894 Nm",
               },
               {
-                label: "Freios",
-                value: settings.partsLanguage === "ptbr" ? "Freios de corrida" : "Race brakes",
+                label: "Mola dianteira",
+                value: settings.springUnit === "lbfin" ? "575 lbf/in" : "100,7 kgf/mm",
               },
               {
-                label: "Suspensão",
-                value: settings.partsLanguage === "ptbr" ? "Suspensão de corrida" : "Race suspension",
+                label: "Freios",
+                value: settings.partsLanguage === "ptbr" ? "Freios de corrida" : "Race brakes",
               },
             ].map(({ label, value }) => (
               <div key={label} className="telem-row">

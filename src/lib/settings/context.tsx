@@ -14,6 +14,7 @@ export interface AppSettings {
   pressureUnit: "psi" | "bar"
   powerUnit: "hp" | "cv"
   torqueUnit: "nm" | "kgfm"
+  springUnit: "kgfmm" | "lbfin"
 }
 
 const DEFAULTS: AppSettings = {
@@ -21,6 +22,7 @@ const DEFAULTS: AppSettings = {
   pressureUnit: "psi",
   powerUnit: "hp",
   torqueUnit: "nm",
+  springUnit: "kgfmm",   // jogo usa kgf/mm nativamente
 }
 
 const STORAGE_KEY = "forza-tune-lab:settings"

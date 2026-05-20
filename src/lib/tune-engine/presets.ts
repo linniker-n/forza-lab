@@ -60,9 +60,10 @@ function calcSprings(
   const frontAxle = car.weight_kg * frontBias
   const rearAxle  = car.weight_kg * (1 - frontBias)
 
+  // Faixa do jogo: ~14 a 338,1 kgf/mm = ~80 a 1925 lbf/in
   return {
-    front: clamp(r25(frontAxle * ff), 100, 2000),
-    rear:  clamp(r25(rearAxle  * rf), 100, 2000),
+    front: clamp(r25(frontAxle * ff), 80, 1925),
+    rear:  clamp(r25(rearAxle  * rf), 80, 1925),
   }
 }
 
