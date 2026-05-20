@@ -127,20 +127,69 @@ function aeroParts(tuneType: TuneType): string[] {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Engine swap recommendation — por marca, origem e tipo de tune
+// ─────────────────────────────────────────────────────────────────────────────
+
+const JDM_BRANDS  = new Set(["Toyota","Nissan","Honda","Mazda","Subaru","Mitsubishi","Lexus","Infiniti","Acura","Datsun","Scion","Isuzu"])
+const US_BRANDS   = new Set(["Ford","Chevrolet","Dodge","GMC","Pontiac","Shelby","Jeep","Buick","Cadillac","Lincoln","Plymouth","Mercury","RAM","Chrysler"])
+const EUR_BRANDS  = new Set(["BMW","Mercedes-Benz","Mercedes-AMG","Volkswagen","Audi","Porsche","Lamborghini","Ferrari","Maserati","McLaren","Lotus","TVR","Jaguar","Land Rover","Lancia","Alfa Romeo","Renault","Peugeot","Volvo","Opel","MINI"])
+
+function recommendSwap(car: Car, tuneType: TuneType): string {
+  const isJDM = JDM_BRANDS.has(car.brand)  || car.car_type.includes("jdm")
+  const isUS  = US_BRANDS.has(car.brand)
+  const isDrift  = tuneType === "drift"
+  const isDrag   = tuneType === "drag"
+  const isRally  = tuneType === "rally" || tuneType === "cross_country"
+  const isSprint = tuneType === "top_speed" || tuneType === "grip"
+
+  if (isDrift) {
+    if (isJDM) return "2JZ-GTE Engine Swap"
+    if (isUS)  return "7.0L Chevrolet LS7 Engine Swap"
+    return "RB26DETT Engine Swap"
+  }
+  if (isDrag) {
+    if (isUS) return "Supercharged 6.2L LS9 Engine Swap"
+    return "5.0L Ford Coyote Engine Swap"
+  }
+  if (isRally) {
+    if (isJDM) return "Subaru EJ25 Turbo Engine Swap"
+    return "Mitsubishi 4B11T Engine Swap"
+  }
+  if (isSprint) {
+    return isJDM ? "2JZ-GTE Engine Swap" : "4.5L Ferrari V8 Engine Swap"
+  }
+  // Street / generic
+  if (isJDM) return "2JZ-GTE Engine Swap"
+  if (isUS)  return "5.0L Ford Coyote Engine Swap"
+  return "6.2L LS3 Engine Swap"
+}
+
 export function selectParts(
   car: Car,
   profile: CarProfile,
   tuneType: TuneType,
   targetDrivetrain: Drivetrain,
   targetClass: CarClass,
+  engineSwap = false,
 ): Parts {
   const needsConversion = targetDrivetrain !== car.drivetrain
   const conversionParts: string[] = needsConversion ? [`${targetDrivetrain} Conversion`] : []
 
-  const depth = CLASS_DEPTH[targetClass]
+  // Engine swap força profundidade mínima full-race (3) + adiciona o swap
+  const baseDepth = CLASS_DEPTH[targetClass]
+  const depth: Depth = engineSwap ? Math.max(baseDepth, 3) as Depth : baseDepth
+
+  const swapParts: string[] = engineSwap
+    ? [recommendSwap(car, tuneType), "Race Intercooler", "Race Fuel System"]
+    : []
+
+  const engine = engineSwap
+    ? [...swapParts, "Race Flywheel", "Race Clutch"]  // swap substitui o motor original
+    : engineParts(car, depth)
 
   return {
-    engine:     engineParts(car, depth),
+    engine,
     platform:   platformParts(tuneType, depth),
     drivetrain: [...conversionParts, ...drivetrainParts(tuneType, depth)],
     tires:      tireParts(tuneType, depth),

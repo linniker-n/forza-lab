@@ -49,8 +49,21 @@ function generateHowToDrive(tuneType: TuneType, drivetrain: Drivetrain): string 
   return guides[tuneType]
 }
 
-function generateWarnings(car: Car, tuneType: TuneType, drivetrain: Drivetrain, requestedDrivetrain: TuneRequest["preferred_drivetrain"]): TuneWarning[] {
+function generateWarnings(
+  car: Car,
+  tuneType: TuneType,
+  drivetrain: Drivetrain,
+  requestedDrivetrain: TuneRequest["preferred_drivetrain"],
+  engineSwap: boolean,
+): TuneWarning[] {
   const warnings: TuneWarning[] = []
+
+  if (engineSwap) {
+    warnings.push({
+      type: "info",
+      message: "Tune calculada com swap de motor ativo. Molas, diferencial e câmbio foram ajustados para potência ~80% acima do stock. Ajuste fino pode ser necessário após instalar o motor escolhido.",
+    })
+  }
 
   if (requestedDrivetrain !== "original" && requestedDrivetrain !== drivetrain) {
     warnings.push({
@@ -111,11 +124,20 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
   const profile    = analyzeCar(car)
   const drivetrain = resolveDrivetrain(car, request.preferred_drivetrain, request.tune_type)
 
-  // Parts selection now uses target class for upgrade depth
-  const parts = selectParts(car, profile, request.tune_type, drivetrain, request.target_class)
+  // Parts selection — passes engine_swap flag
+  const parts = selectParts(car, profile, request.tune_type, drivetrain, request.target_class, request.engine_swap)
 
-  // Physics-based tune calculation using real car weight
-  const tuning = buildTune(car, profile, request.tune_type, drivetrain)
+  // When engine swap is active, simulate a car with ~80% more power for tune calculations.
+  // This makes the physics formulas generate stiffer springs, more conservative differential,
+  // and shorter gearing — appropriate for a high-power swap build.
+  const carForTune = request.engine_swap
+    ? { ...car, power_hp: Math.round(car.power_hp * 1.8) }
+    : car
+  const profileForTune = request.engine_swap
+    ? { ...profile, isPowerful: true, isLowPower: false }
+    : profile
+
+  const tuning = buildTune(carForTune, profileForTune, request.tune_type, drivetrain)
 
   // Difficulty adjustments on top of physics base
   if (request.difficulty === "easy") {
@@ -143,7 +165,7 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
     how_to_drive: generateHowToDrive(request.tune_type, drivetrain),
     strengths:  getStrengths(car, request.tune_type),
     weaknesses: getWeaknesses(car, request.tune_type),
-    warnings:   generateWarnings(car, request.tune_type, drivetrain, request.preferred_drivetrain),
+    warnings:   generateWarnings(car, request.tune_type, drivetrain, request.preferred_drivetrain, request.engine_swap),
     pi_estimate: estimatePI(request.target_class),
   }
 }

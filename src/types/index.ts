@@ -80,6 +80,7 @@ export interface TuneRequest {
   control: ControlType
   preferred_drivetrain: Drivetrain | "original"
   difficulty: DifficultyLevel
+  engine_swap: boolean
 }
 
 export interface TirePressure {

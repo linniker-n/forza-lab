@@ -510,6 +510,7 @@ function WizardInner() {
   const [style, setStyle]     = useState<DrivingStyle>("competitive")
   const [ctrl, setCtrl]       = useState<ControlType>("controller")
   const [dt, setDt]           = useState<TuneRequest["preferred_drivetrain"]>("original")
+  const [engineSwap, setEngineSwap] = useState(false)
   const [loading, setLoading] = useState(false)
   const [result, setResult]   = useState<GeneratedTune | null>(null)
   const [error, setError]     = useState<string | null>(null)
@@ -530,6 +531,7 @@ function WizardInner() {
         control: ctrl,
         preferred_drivetrain: dt,
         difficulty: diff,
+        engine_swap: engineSwap,
       }
       setResult(generateTune(request, car)); setStep(4)
     } catch (e: unknown) {
@@ -537,7 +539,7 @@ function WizardInner() {
     } finally { setLoading(false) }
   }
 
-  if (step === 4 && result) return <TuneResult tune={result} onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch("") }} />
+  if (step === 4 && result) return <TuneResult tune={result} onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false) }} />
 
   const steps = [
     { n: 1, l: "Carro" },
@@ -713,6 +715,48 @@ function WizardInner() {
                 </div>
               ))}
             </div>
+
+            {/* Engine swap */}
+            <button
+              type="button"
+              onClick={() => setEngineSwap((v) => !v)}
+              className="w-full r-card text-left p-4 transition-all"
+              style={{
+                border: engineSwap ? "1px solid var(--border-blue)" : "1px solid var(--border-strong)",
+                background: engineSwap ? "var(--blue-dim)" : "var(--bg-card)",
+                cursor: "pointer",
+              }}
+            >
+              <div className="flex items-start gap-3">
+                {/* Checkbox visual */}
+                <div style={{
+                  width: 18, height: 18, borderRadius: 4, flexShrink: 0, marginTop: 2,
+                  border: `2px solid ${engineSwap ? "var(--blue)" : "var(--border-strong)"}`,
+                  background: engineSwap ? "var(--blue)" : "transparent",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  {engineSwap && (
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <path d="M2 5l2.5 2.5L8 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 3 }}>
+                    Swap de motor
+                  </p>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.55 }}>
+                    Gera a tune assumindo que o motor original foi trocado por um motor de alta potência
+                    (2JZ, LS V8, Coyote, etc.). Molas, diferencial e câmbio são calculados para potência ~80% acima do stock.
+                    {engineSwap && car && (
+                      <span style={{ color: "var(--blue-bright)", display: "block", marginTop: 4, fontWeight: 600 }}>
+                        Swap recomendado será indicado nas peças.
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </button>
 
             {error && (
               <div className="rounded-lg p-3" style={{ background: "var(--red-dim)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 12, color: "#fca5a5" }}>
