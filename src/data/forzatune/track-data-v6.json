@@ -1,0 +1,332 @@
+[
+  {
+    "full_name": "Autodromo Nazionale Monza",
+    "short_name": "Monza",
+    "id": "monza",
+    "x": 0.3636363636,
+    "y": 100.67,
+    "a": 1,
+    "m": "Long straights and sharp turns make downforce a disadvantage. Set as low as possible.",
+    "n": 1
+  },
+  {
+    "full_name": "Bernese Alps",
+    "short_name": "Bernese Alps",
+    "id": "bernese-alps",
+    "x": 0.2727272727,
+    "y": 100.5,
+    "a": 5,
+    "m": "An ongoing string of high speed corners make this a perfect track for significant downforce. ",
+    "n": 2
+  },
+  {
+    "full_name": "Brands Hatch",
+    "short_name": "Brands Hatch",
+    "id": "brands-hatch",
+    "x": 0.3636363636,
+    "y": 100.43,
+    "a": 4,
+    "m": "A mix of high and low-speed turns and moderate straights means downforce will be helpful here.",
+    "n": 3
+  },
+  {
+    "full_name": "Circuit de Catalunya",
+    "short_name": "Catalunya",
+    "id": "catalunya",
+    "x": 0.4545454545,
+    "y": 98.59,
+    "a": 3,
+    "m": "There are a few sections that will benefit from downforce. Increase aero downforce for School Circuit.",
+    "n": 4
+  },
+  {
+    "full_name": "Circuit de Spa-Francorchamps",
+    "short_name": "Spa-Francorchamps",
+    "id": "spa",
+    "x": 0.3636363636,
+    "y": 100.11,
+    "a": 2,
+    "m": "Maximize your setup for speed on the straights with little or no downforce.",
+    "n": 5
+  },
+  {
+    "full_name": "Circuit of the Americas",
+    "short_name": "COTA",
+    "id": "cota",
+    "x": 0.3636363636,
+    "y": 99.52,
+    "a": 3,
+    "m": "Downforce will help through the esses and high-speed corners, but decrease or remove downforce for the short East Route circuit.",
+    "n": 6
+  },
+  {
+    "full_name": "Daytona International Speedway",
+    "short_name": "Daytona",
+    "id": "daytona",
+    "x": 0.4545454545,
+    "y": 99.18,
+    "a": 0,
+    "m": "Run minimum downforce possible for all circuits.",
+    "n": 7
+  },
+  {
+    "full_name": "Dubai",
+    "short_name": "Dubai",
+    "id": "dubai",
+    "x": 0.4545454545,
+    "y": 98.45,
+    "a": 4,
+    "m": "Run high to max downforce on any of the Dubai circuits.",
+    "n": 8
+  },
+  {
+    "full_name": "Hockenheimring",
+    "short_name": "Hockenheim",
+    "id": "hockenheim",
+    "x": 0.3636363636,
+    "y": 100.71,
+    "a": 3,
+    "m": "A moderate amount of downforce will help through several sections.",
+    "n": 9
+  },
+  {
+    "full_name": "Homestead",
+    "short_name": "Homestead",
+    "id": "homestead",
+    "x": 0.3636363636,
+    "y": 100.12,
+    "a": 1,
+    "m": "Run little to no downforce except on Road Circuits where low levels of downforce will help on a few turns.",
+    "n": 10
+  },
+  {
+    "full_name": "Indianapolis Motor Speedway",
+    "short_name": "Indy",
+    "id": "indianapolis",
+    "x": 0.3636363636,
+    "y": 99.79,
+    "a": 1,
+    "m": "Run little to no downforce.",
+    "n": 11
+  },
+  {
+    "full_name": "Le Mans Circuit de la Sarthe",
+    "short_name": "Le Mans",
+    "id": "lemans",
+    "x": 0.3636363636,
+    "y": 99.91,
+    "a": 1,
+    "m": "Run little to no downforce except on the Bugatti Circuit where medium to high levels of downforce can help.",
+    "n": 12
+  },
+  {
+    "full_name": "Lime Rock",
+    "short_name": "Lime Rock",
+    "id": "lime-rock",
+    "x": 0.3636363636,
+    "y": 99.66,
+    "a": 5,
+    "m": "Downforce will help throughout the course and help maintain speed onto the main straight.",
+    "n": 13
+  },
+  {
+    "full_name": "Long Beach",
+    "short_name": "Long Beach",
+    "id": "long-beach",
+    "x": 0.3636363636,
+    "y": 99.65,
+    "a": 1,
+    "m": "Little or no downforce recommended because of the combination of straights and slow corners.",
+    "n": 14
+  },
+  {
+    "full_name": "Maple Valley Raceway",
+    "short_name": "Maple Valley",
+    "id": "maple-valley",
+    "x": 0.3636363636,
+    "y": 99.5,
+    "a": 4,
+    "m": "A continuous set of sweeping corners make this a perfect track for downforce. ",
+    "n": 15
+  },
+  {
+    "full_name": "Mazda Raceway Laguna Seca",
+    "short_name": "Laguna Seca",
+    "id": "laguna-seca",
+    "x": 0.6363636364,
+    "y": 96.0,
+    "a": 5,
+    "m": "Use plenty of downforce to carry speed throughout track.",
+    "n": 16
+  },
+  {
+    "full_name": "Mount Panorama",
+    "short_name": "Mt. Panorama",
+    "id": "mt-panorama",
+    "x": 0.3636363636,
+    "y": 100.48,
+    "a": 1,
+    "m": "Run low downforce to balance high-speed straights with sweeping corners on uphill section.",
+    "n": 17
+  },
+  {
+    "full_name": "Mugello Autodromo Internazionale",
+    "short_name": "Mugello",
+    "id": "mugello",
+    "x": 0.4545454545,
+    "y": 98.03,
+    "a": 3,
+    "m": "The combination of straights and high-speed corners make moderate downforce levels appropriate.",
+    "n": 18
+  },
+  {
+    "full_name": "Nurburgring",
+    "short_name": "Nurburgring",
+    "id": "nurburgring",
+    "x": 0.6363636364,
+    "y": 96.0,
+    "a": 2,
+    "m": "Run low to medium downforce for Nordschleife and Full Circuits to maintain top speed.",
+    "n": 19
+  },
+  {
+    "full_name": "Prague",
+    "short_name": "Prague",
+    "id": "prague",
+    "x": 0.3636363636,
+    "y": 100.78,
+    "a": 5,
+    "m": "Significant downforce will help maintain speed through the mostly sweeping corners.",
+    "n": 20
+  },
+  {
+    "full_name": "Rio de Janeiro",
+    "short_name": "Rio de Janeiro",
+    "id": "rio",
+    "x": 0.6363636364,
+    "y": 96.0,
+    "a": 3,
+    "m": "Downforce will help stay planted especially through the waterfront and tunnel sections.",
+    "n": 21
+  },
+  {
+    "full_name": "Road America",
+    "short_name": "Road America",
+    "id": "road-america",
+    "x": 0.3636363636,
+    "y": 100.59,
+    "a": 3,
+    "m": "Use downforce to help recover time through mid-speed corners. Consider lowering for East Route.",
+    "n": 22
+  },
+  {
+    "full_name": "Road Atlanta",
+    "short_name": "Road Atlanta",
+    "id": "road-atlanta",
+    "x": 0.3636363636,
+    "y": 100.76,
+    "a": 3,
+    "m": "Medium to high downforce recommended.",
+    "n": 23
+  },
+  {
+    "full_name": "Sebring International Raceway",
+    "short_name": "Sebring",
+    "id": "sebring",
+    "x": 0.2727272727,
+    "y": 100.82,
+    "a": 2,
+    "m": "Low or no downforce recommended. Club Circuit will benefit from slightly higher downforce.",
+    "n": 24
+  },
+  {
+    "full_name": "Silverstone Racing Circuit",
+    "short_name": "Silverstone",
+    "id": "silverstone",
+    "x": 0.3636363636,
+    "y": 100.68,
+    "a": 3,
+    "m": "Moderate amoutns of downforce will help through many sections of this track.",
+    "n": 25
+  },
+  {
+    "full_name": "Sonoma Raceway",
+    "short_name": "Sonoma",
+    "id": "sonoma",
+    "x": 0.4545454545,
+    "y": 98.93,
+    "a": 4,
+    "m": "Use high downforce values to improve grip through numerous sweeping sections.",
+    "n": 26
+  },
+  {
+    "full_name": "Suzuka Circuit",
+    "short_name": "Suzuka",
+    "id": "suzuka",
+    "x": 0.2727272727,
+    "y": 100.8,
+    "a": 4,
+    "m": "Downforce will help maintain grip through numerous mid and higher speed corners.",
+    "n": 27
+  },
+  {
+    "full_name": "Test Track Airfield",
+    "short_name": "Test Track",
+    "id": "test-track",
+    "x": 0.3636363636,
+    "y": 100.5,
+    "a": 3,
+    "m": "Moderate amounts of downforce will help on a few sections.",
+    "n": 28
+  },
+  {
+    "full_name": "Top Gear Test Track",
+    "short_name": "Top Gear",
+    "id": "top-gear",
+    "x": 0.3636363636,
+    "y": 100.61,
+    "a": 4,
+    "m": "Run high downforce to help generate extra grip despite lower speeds.",
+    "n": 29
+  },
+  {
+    "full_name": "Virginia International Raceway",
+    "short_name": "VIR",
+    "id": "vir",
+    "x": 0.2727272727,
+    "y": 101.09,
+    "a": 3,
+    "m": "Medium downforce recommended given the straights. Consider high downforce for shorter circuits.",
+    "n": 30
+  },
+  {
+    "full_name": "Watkins Glen",
+    "short_name": "Watkins Glen",
+    "id": "watkins-glen",
+    "x": 0.5454545455,
+    "y": 97.05,
+    "a": 3,
+    "m": "Medium downforce recommended given the straights. Consider high downforce for shorter circuits.",
+    "n": 31
+  },
+  {
+    "full_name": "Yas Marina Circuit",
+    "short_name": "Yas Marina",
+    "id": "yas-marina",
+    "x": 0.3636363636,
+    "y": 100.47,
+    "a": 3,
+    "m": "Medium to high downforce with slightly less on Full and North circuits.",
+    "n": 32
+  },
+  {
+    "full_name": "Nurburgring Grand Prix",
+    "short_name": "Nurburgring GP",
+    "id": "nurburgring-gp",
+    "x": 0.3636363636,
+    "y": 99.52,
+    "a": 4,
+    "m": "This is an aero-friendly circuit, with several turns that will benefit from extra downforce. ",
+    "n": 33
+  }
+]

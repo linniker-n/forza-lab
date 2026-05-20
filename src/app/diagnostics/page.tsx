@@ -5,10 +5,12 @@ import Link from "next/link"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CARS } from "@/data/cars"
 import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
-import { diagnose as runDiagnostic, PROBLEM_LABELS } from "@/lib/tune-engine/diagnostics"
-import type { Car, DiagnosticProblem, DiagnosticResult, TuneIntent, TuneType } from "@/types"
+import { diagnose as runDiagnostic, DIAGNOSTIC_BEHAVIOR_LABELS, DIAGNOSTIC_PHASE_LABELS, PROBLEM_LABELS } from "@/lib/tune-engine/diagnostics"
+import type { Car, DiagnosticBehavior, DiagnosticPhase, DiagnosticProblem, DiagnosticResult, TuneIntent, TuneType } from "@/types"
 
 const PROBLEMS = Object.entries(PROBLEM_LABELS) as [DiagnosticProblem, string][]
+const PHASES = Object.entries(DIAGNOSTIC_PHASE_LABELS) as [DiagnosticPhase, string][]
+const BEHAVIORS = Object.entries(DIAGNOSTIC_BEHAVIOR_LABELS) as [DiagnosticBehavior, string][]
 
 const TUNE_TYPES: { v: TuneType | ""; l: string }[] = [
   { v: "", l: "Sem tipo" },
@@ -60,6 +62,8 @@ export default function DiagnosticsPage() {
   const [car, setCar] = useState<Car | null>(null)
   const [tuneType, setTuneType] = useState<TuneType | "">("")
   const [intent, setIntent] = useState<TuneIntent | "">("")
+  const [phase, setPhase] = useState<DiagnosticPhase | "">("")
+  const [behavior, setBehavior] = useState<DiagnosticBehavior | "">("")
 
   const carMatches = carSearch.length >= 2
     ? CARS.filter((item) => `${item.brand} ${item.model} ${item.year}`.toLowerCase().includes(carSearch.toLowerCase())).slice(0, 6)
@@ -73,6 +77,8 @@ export default function DiagnosticsPage() {
         car: car ?? undefined,
         tuneType: tuneType || undefined,
         intent: intent || undefined,
+        phase: phase || undefined,
+        behavior: behavior || undefined,
       }))
     } finally { setLoading(false) }
   }
@@ -219,6 +225,41 @@ export default function DiagnosticsPage() {
                   )}
                 </button>
               ))}
+            </div>
+
+            {/* ── Wizard detail ── */}
+            <div className="r-card p-4 space-y-4 anim-up" style={{ animationDelay: "90ms" }}>
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                  Quando acontece
+                </p>
+                <div className="flex gap-2 flex-wrap mt-2">
+                  <button type="button" className={`filter-chip${phase === "" ? " active" : ""}`} onClick={() => setPhase("")}>
+                    Geral
+                  </button>
+                  {PHASES.map(([key, label]) => (
+                    <button key={key} type="button" className={`filter-chip${phase === key ? " active" : ""}`} onClick={() => setPhase(key)}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                  Como aparece
+                </p>
+                <div className="flex gap-2 flex-wrap mt-2">
+                  <button type="button" className={`filter-chip${behavior === "" ? " active" : ""}`} onClick={() => setBehavior("")}>
+                    Geral
+                  </button>
+                  {BEHAVIORS.map(([key, label]) => (
+                    <button key={key} type="button" className={`filter-chip${behavior === key ? " active" : ""}`} onClick={() => setBehavior(key)}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* ── Submit ── */}

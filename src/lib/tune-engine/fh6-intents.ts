@@ -10,6 +10,7 @@ import type {
   TuningSetup,
 } from "@/types"
 import type { CarProfile } from "./analyze"
+import { getTrackProfileWarning } from "./fh6-track-profiles"
 
 const AERO_LEVELS: TuningSetup["aero"]["front"][] = [
   "min",
@@ -129,31 +130,31 @@ function applyBalancedIntent(tune: TuningSetup, context: IntentContext) {
 }
 
 function applyControlIntent(tune: TuningSetup, context: IntentContext) {
-  multiplyAxleValues(tune.tires, 0.98, 0.96)
-  multiplyAxleValues(tune.antiroll_bars, 0.92, 0.88)
-  multiplyAxleValues(tune.springs, 0.95, 0.93)
-  multiplyDamping(tune.damping, 0.94, 0.92)
+  multiplyAxleValues(tune.tires, 0.96, 0.93)
+  multiplyAxleValues(tune.antiroll_bars, 0.86, 0.78)
+  multiplyAxleValues(tune.springs, 0.9, 0.86)
+  multiplyDamping(tune.damping, 0.9, 0.86)
 
-  tune.aero.rear = shiftAero(tune.aero.rear, 1)
-  tune.alignment.toe_rear = r1(clamp(tune.alignment.toe_rear + 0.1, -0.2, 0.4))
-  tune.alignment.camber_rear = r1(clamp(tune.alignment.camber_rear + 0.2, -5, 0))
-  tune.brakes.pressure = clamp(tune.brakes.pressure - 5, 60, 150)
+  tune.aero.rear = shiftAero(tune.aero.rear, 2)
+  tune.alignment.toe_rear = r1(clamp(tune.alignment.toe_rear + 0.2, -0.2, 0.4))
+  tune.alignment.camber_rear = r1(clamp(tune.alignment.camber_rear + 0.3, -5, 0))
+  tune.brakes.pressure = clamp(tune.brakes.pressure - 8, 60, 150)
 
   if (tune.differential.front_accel !== undefined) {
-    tune.differential.front_accel = clamp(tune.differential.front_accel - 5, 5, 100)
+    tune.differential.front_accel = clamp(tune.differential.front_accel - 8, 5, 100)
   }
   if (tune.differential.rear_accel !== undefined) {
-    tune.differential.rear_accel = clamp(tune.differential.rear_accel - 12, 15, 100)
+    tune.differential.rear_accel = clamp(tune.differential.rear_accel - 20, 15, 100)
   }
   if (tune.differential.rear_decel !== undefined) {
-    tune.differential.rear_decel = clamp(tune.differential.rear_decel - 5, 5, 100)
+    tune.differential.rear_decel = clamp(tune.differential.rear_decel - 10, 5, 100)
   }
   if (tune.differential.center_balance !== undefined) {
-    tune.differential.center_balance = clamp(tune.differential.center_balance - 4, 45, 80)
+    tune.differential.center_balance = clamp(tune.differential.center_balance - 8, 45, 80)
   }
 
   if (context.profile.isPowerful && tune.differential.rear_accel !== undefined) {
-    tune.differential.rear_accel = clamp(tune.differential.rear_accel - 5, 15, 100)
+    tune.differential.rear_accel = clamp(tune.differential.rear_accel - 8, 15, 100)
   }
   if (context.profile.isHeavy) {
     tune.aero.rear = shiftAero(tune.aero.rear, 1)
@@ -161,71 +162,71 @@ function applyControlIntent(tune: TuningSetup, context: IntentContext) {
 }
 
 function applySpeedIntent(tune: TuningSetup, context: IntentContext) {
-  tune.tires.front = r1(tune.tires.front + 0.6)
-  tune.tires.rear = r1(tune.tires.rear + 0.6)
-  tune.gearing.final_drive = r2(clamp(tune.gearing.final_drive * 0.9, 2.2, 5.5))
-  tune.alignment.camber_front = r1(clamp(tune.alignment.camber_front + 0.4, -5, 0))
-  tune.alignment.camber_rear = r1(clamp(tune.alignment.camber_rear + 0.3, -5, 0))
+  tune.tires.front = r1(tune.tires.front + 1.0)
+  tune.tires.rear = r1(tune.tires.rear + 1.2)
+  tune.gearing.final_drive = r2(clamp(tune.gearing.final_drive * 0.82, 2.2, 5.5))
+  tune.alignment.camber_front = r1(clamp(tune.alignment.camber_front + 0.6, -5, 0))
+  tune.alignment.camber_rear = r1(clamp(tune.alignment.camber_rear + 0.5, -5, 0))
   tune.alignment.toe_front = 0
   tune.alignment.toe_rear = r1(clamp(tune.alignment.toe_rear, 0, 0.2))
-  tune.aero.front = shiftAero(tune.aero.front, -2)
-  tune.aero.rear = shiftAero(tune.aero.rear, context.profile.isPowerful ? -1 : -2)
+  tune.aero.front = shiftAero(tune.aero.front, -3)
+  tune.aero.rear = shiftAero(tune.aero.rear, context.profile.isPowerful ? -1 : -3)
   tune.brakes.pressure = clamp(tune.brakes.pressure + 5, 60, 150)
 
-  multiplyAxleValues(tune.springs, 1.04, 1.04)
-  multiplyDamping(tune.damping, 1.04, 1.04)
+  multiplyAxleValues(tune.springs, 1.08, 1.08)
+  multiplyDamping(tune.damping, 1.08, 1.08)
 
   if (tune.differential.rear_accel !== undefined) {
-    tune.differential.rear_accel = clamp(tune.differential.rear_accel - 4, 15, 100)
+    tune.differential.rear_accel = clamp(tune.differential.rear_accel - 8, 15, 100)
   }
   if (tune.differential.center_balance !== undefined) {
-    tune.differential.center_balance = clamp(tune.differential.center_balance - 2, 45, 80)
+    tune.differential.center_balance = clamp(tune.differential.center_balance - 5, 45, 80)
   }
 }
 
 function applyCorneringIntent(tune: TuningSetup, context: IntentContext) {
-  multiplyAxleValues(tune.tires, 0.98, 0.98)
-  tune.gearing.final_drive = r2(clamp(tune.gearing.final_drive * 1.04, 2.2, 5.5))
-  tune.alignment.camber_front = r1(clamp(tune.alignment.camber_front - 0.35, -5, 0))
-  tune.alignment.camber_rear = r1(clamp(tune.alignment.camber_rear - 0.2, -5, 0))
-  tune.alignment.toe_front = r1(clamp(tune.alignment.toe_front - 0.1, -0.4, 0.4))
+  multiplyAxleValues(tune.tires, 0.95, 0.96)
+  tune.gearing.final_drive = r2(clamp(tune.gearing.final_drive * 1.1, 2.2, 5.5))
+  tune.alignment.camber_front = r1(clamp(tune.alignment.camber_front - 0.55, -5, 0))
+  tune.alignment.camber_rear = r1(clamp(tune.alignment.camber_rear - 0.35, -5, 0))
+  tune.alignment.toe_front = r1(clamp(tune.alignment.toe_front - 0.2, -0.4, 0.4))
   tune.alignment.toe_rear = r1(clamp(tune.alignment.toe_rear + 0.1, -0.2, 0.4))
-  tune.alignment.caster = r1(clamp(tune.alignment.caster + 0.3, 4.5, 7.0))
-  tune.aero.front = shiftAero(tune.aero.front, 1)
-  tune.aero.rear = shiftAero(tune.aero.rear, 1)
-  tune.antiroll_bars.front = r1(clamp(tune.antiroll_bars.front * 0.96, 3, 65))
-  tune.antiroll_bars.rear = r1(clamp(tune.antiroll_bars.rear * 1.08, 3, 65))
-  multiplyAxleValues(tune.springs, 1.03, context.profile.isHeavy ? 1.02 : 1.04)
-  multiplyDamping(tune.damping, 1.04, 1.05)
+  tune.alignment.caster = r1(clamp(tune.alignment.caster + 0.5, 4.5, 7.0))
+  tune.aero.front = shiftAero(tune.aero.front, 2)
+  tune.aero.rear = shiftAero(tune.aero.rear, 2)
+  tune.antiroll_bars.front = r1(clamp(tune.antiroll_bars.front * 0.9, 3, 65))
+  tune.antiroll_bars.rear = r1(clamp(tune.antiroll_bars.rear * 1.18, 3, 65))
+  multiplyAxleValues(tune.springs, 1.06, context.profile.isHeavy ? 1.04 : 1.08)
+  multiplyDamping(tune.damping, 1.08, 1.1)
 
   if (tune.differential.front_accel !== undefined) {
     tune.differential.front_accel = clamp(tune.differential.front_accel - 3, 5, 100)
   }
   if (tune.differential.rear_decel !== undefined) {
-    tune.differential.rear_decel = clamp(tune.differential.rear_decel + 4, 5, 100)
+    tune.differential.rear_decel = clamp(tune.differential.rear_decel + 8, 5, 100)
   }
   if (tune.differential.center_balance !== undefined) {
-    tune.differential.center_balance = clamp(tune.differential.center_balance + 3, 45, 85)
+    tune.differential.center_balance = clamp(tune.differential.center_balance + 5, 45, 85)
   }
 }
 
 function applyAccelerationIntent(tune: TuningSetup, context: IntentContext) {
-  tune.tires.front = r1(tune.tires.front + 0.2)
-  tune.tires.rear = r1(tune.tires.rear - 1.0)
-  tune.gearing.final_drive = r2(clamp(tune.gearing.final_drive * (context.profile.isPowerful ? 1.02 : 1.08), 2.2, 5.5))
+  tune.tires.front = r1(tune.tires.front + 0.4)
+  tune.tires.rear = r1(tune.tires.rear - 1.5)
+  tune.gearing.final_drive = r2(clamp(tune.gearing.final_drive * (context.profile.isPowerful ? 1.06 : 1.14), 2.2, 5.5))
   tune.springs.front = r1(tune.springs.front * 1.02)
-  tune.springs.rear = r1(tune.springs.rear * 0.94)
-  tune.damping.rebound_rear = r1(tune.damping.rebound_rear * 0.94)
-  tune.damping.bump_rear = r1(tune.damping.bump_rear * 0.9)
-  tune.antiroll_bars.rear = r1(clamp(tune.antiroll_bars.rear * 0.94, 3, 65))
+  tune.springs.rear = r1(tune.springs.rear * 0.86)
+  tune.damping.rebound_rear = r1(tune.damping.rebound_rear * 0.88)
+  tune.damping.bump_rear = r1(tune.damping.bump_rear * 0.82)
+  tune.antiroll_bars.rear = r1(clamp(tune.antiroll_bars.rear * 0.86, 3, 65))
   tune.brakes.pressure = clamp(tune.brakes.pressure - 3, 60, 150)
 
   if (tune.differential.rear_accel !== undefined) {
-    const boost = context.profile.isPowerful ? 2 : 7
+    const boost = context.profile.isPowerful ? 6 : 12
     tune.differential.rear_accel = clamp(tune.differential.rear_accel + boost, 15, 100)
   }
   if (tune.differential.center_balance !== undefined) {
-    tune.differential.center_balance = clamp(tune.differential.center_balance + 4, 45, 85)
+    tune.differential.center_balance = clamp(tune.differential.center_balance + 8, 45, 85)
   }
 }
 
@@ -280,6 +281,40 @@ export function getFH6IntentStrengths(intent: TuneIntent): string[] {
       return ["Mais tracao na largada e retomada", "Diferencial e pneus ajustados para saida de curva"]
     default:
       return ["Base neutra para FH6 sem depender de pista especifica"]
+  }
+}
+
+export function getFH6IntentTuningNotes(intent: TuneIntent): string[] {
+  switch (intent) {
+    case "control":
+      return [
+        "Diferencial menos travado para reduzir sustos na saida.",
+        "Barras, molas e damping mais macios para dar margem de correcao.",
+        "Mais estabilidade traseira com toe-in e aero traseiro.",
+      ]
+    case "speed":
+      return [
+        "Final drive mais longo para velocidade final.",
+        "Aero e cambagem reduzidos para diminuir arrasto.",
+        "Suspensao mais firme para estabilidade em alta.",
+      ]
+    case "cornering":
+      return [
+        "Final drive mais curto para retomada entre curvas.",
+        "Mais cambagem, caster e aero para grip lateral.",
+        "Traseira mais rotativa com barra traseira mais forte.",
+      ]
+    case "acceleration":
+      return [
+        "Final drive mais curto para largada e retomada.",
+        "Traseira mais macia e pneu traseiro com mais contato.",
+        "Diferencial mais travado para colocar torque no chao.",
+      ]
+    default:
+      return [
+        "Mantem compromisso entre controle, curva e velocidade.",
+        "Ajusta apenas peso, potencia e estabilidade sem exagerar o carro.",
+      ]
   }
 }
 
@@ -353,6 +388,10 @@ export function getFH6IntentWarnings(context: IntentContext): TuneWarning[] {
   warnings.push({
     type: "info",
     message: `Perfil FH6 "${FH6_INTENT_LABELS[context.intent]}": ${FH6_INTENT_DESCRIPTIONS[context.intent]}`,
+  })
+  warnings.push({
+    type: "tip",
+    message: getTrackProfileWarning(context.intent),
   })
 
   if (context.intent === "speed" && context.car.power_hp < 350) {

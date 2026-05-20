@@ -8,12 +8,14 @@
  *    freio traseiro vs balanceamento
  */
 
-import type { Car, DiagnosticFix, DiagnosticProblem, DiagnosticResult, TuneIntent, TuneType } from "@/types"
+import type { Car, DiagnosticBehavior, DiagnosticFix, DiagnosticPhase, DiagnosticProblem, DiagnosticResult, TuneIntent, TuneType } from "@/types"
 
 interface DiagnosticContext {
   car?: Car
   tuneType?: TuneType
   intent?: TuneIntent
+  phase?: DiagnosticPhase
+  behavior?: DiagnosticBehavior
 }
 
 const FIXES: Record<DiagnosticProblem, { diagnosis: string; fixes: DiagnosticFix[] }> = {
@@ -301,10 +303,116 @@ const FIXES: Record<DiagnosticProblem, { diagnosis: string; fixes: DiagnosticFix
   },
 }
 
+function addWizardBranches(
+  problem: DiagnosticProblem,
+  context: DiagnosticContext,
+  fixes: DiagnosticFix[],
+  contextNotes: string[],
+) {
+  if (!context.phase && !context.behavior) return
+
+  if (context.phase) {
+    contextNotes.push(`Fase do sintoma: ${DIAGNOSTIC_PHASE_LABELS[context.phase]}.`)
+  }
+  if (context.behavior) {
+    contextNotes.push(`Comportamento observado: ${DIAGNOSTIC_BEHAVIOR_LABELS[context.behavior]}.`)
+  }
+
+  if (problem === "understeer" && context.phase === "entry") {
+    fixes.unshift({
+      parameter: "Freio + barra dianteira",
+      adjustment: "Frear antes; depois -2 na barra dianteira",
+      reason: "Understeer de entrada costuma vir de excesso de velocidade ou frente muito rigida. Corrija tecnica primeiro, depois amacie a dianteira.",
+    })
+  }
+
+  if (problem === "understeer" && context.phase === "exit") {
+    fixes.unshift({
+      parameter: "Diferencial dianteiro/central",
+      adjustment: "Front accel -8% ou center +5% para tras",
+      reason: "Se sai de frente na aceleracao, o diferencial esta puxando o carro para fora. Menos trava na frente ajuda o carro apontar.",
+    })
+  }
+
+  if (problem === "oversteer" && context.phase === "entry") {
+    fixes.unshift({
+      parameter: "Diferencial traseiro (desaceleracao)",
+      adjustment: "-6% a -12%",
+      reason: "Traseira solta ao entrar geralmente e lift-off ou diff de desaceleracao travado demais.",
+    })
+  }
+
+  if (problem === "oversteer" && context.phase === "mid") {
+    fixes.unshift({
+      parameter: "Barra estabilizadora traseira",
+      adjustment: "-3 pontos",
+      reason: "No meio da curva, barra traseira rigida demais tira carga do pneu traseiro externo e deixa a traseira viva.",
+    })
+  }
+
+  if ((problem === "oversteer" || problem === "wheelspin") && context.phase === "exit") {
+    fixes.unshift({
+      parameter: "Diferencial traseiro (aceleracao)",
+      adjustment: "-10% primeiro",
+      reason: "Saida de curva solta ou patinando quase sempre responde melhor a diferencial do que a grandes mudancas de mola.",
+    })
+  }
+
+  if (context.phase === "high_speed" && (problem === "oversteer" || problem === "brake_instability")) {
+    fixes.unshift({
+      parameter: "Aero traseiro",
+      adjustment: "+1 nivel",
+      reason: "Instabilidade em alta e um caso classico para mais downforce traseiro antes de endurecer suspensao.",
+    })
+  }
+
+  if (context.phase === "bumps" || problem === "bouncing") {
+    fixes.unshift({
+      parameter: "Bump e altura",
+      adjustment: "Bump -0.5 se quica; altura +1 se bate no chassi",
+      reason: "Em piso irregular, quicar e bater no chassi parecem iguais no volante, mas pedem ajustes opostos. Teste um de cada vez.",
+    })
+  }
+
+  if (context.behavior === "sudden" && (problem === "oversteer" || problem === "wheelspin")) {
+    fixes.unshift({
+      parameter: "Pneu traseiro + diferencial",
+      adjustment: "Rear tire -0.7 PSI e rear accel -8%",
+      reason: "Perda repentina indica pico de torque ou pneu traseiro sem janela. A combinacao deixa a transicao menos brusca.",
+    })
+  }
+
+  if (context.behavior === "progressive" && (problem === "understeer" || problem === "slow_cornering")) {
+    fixes.unshift({
+      parameter: "Cambagem e pressao dianteira",
+      adjustment: "Camber -0.2 e front tire -0.5 PSI",
+      reason: "Quando a perda e progressiva, normalmente falta grip sustentado na frente em vez de um erro isolado de entrada.",
+    })
+  }
+
+  if (context.behavior === "braking" || problem === "brake_instability") {
+    fixes.unshift({
+      parameter: "Balanceamento de freio",
+      adjustment: "+2% para frente",
+      reason: "Se o sintoma aparece freando, estabilize a frente antes de mexer em barras ou diferencial.",
+    })
+  }
+
+  if (context.behavior === "on_throttle" && problem !== "slow_straight") {
+    fixes.unshift({
+      parameter: "Acelerador e relacao de 1a/2a",
+      adjustment: "Alongar 1a/2a ou reduzir final drive 0.05",
+      reason: "Sintoma ao acelerar pode ser torque chegando rapido demais. Uma marcha menos curta deixa o carro mais limpo.",
+    })
+  }
+}
+
 export function diagnose(problem: DiagnosticProblem, context: DiagnosticContext = {}): DiagnosticResult {
   const data  = FIXES[problem]
   const fixes = [...data.fixes]
   const contextNotes: string[] = []
+
+  addWizardBranches(problem, context, fixes, contextNotes)
 
   if (context.car) {
     const label = `${context.car.brand} ${context.car.model} ${context.car.year}`
@@ -428,4 +536,20 @@ export const PROBLEM_LABELS: Record<DiagnosticProblem, string> = {
   bouncing:          "Carro pula / rebota demais",
   drift_loss:        "Carro não segura o drift",
   brake_instability: "Carro instável na frenagem",
+}
+export const DIAGNOSTIC_PHASE_LABELS: Record<DiagnosticPhase, string> = {
+  entry: "Entrada de curva",
+  mid: "Meio da curva",
+  exit: "Saida de curva",
+  high_speed: "Alta velocidade",
+  low_speed: "Baixa velocidade",
+  bumps: "Ondulacao / salto",
+}
+
+export const DIAGNOSTIC_BEHAVIOR_LABELS: Record<DiagnosticBehavior, string> = {
+  progressive: "Perda progressiva",
+  sudden: "Perda repentina",
+  on_throttle: "Acontece acelerando",
+  off_throttle: "Acontece sem acelerar",
+  braking: "Acontece freando",
 }

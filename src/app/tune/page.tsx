@@ -11,12 +11,59 @@ import { getFirebaseDb } from "@/lib/firebase/client"
 import { useSettings } from "@/lib/settings/context"
 import { translateParts } from "@/lib/settings/translations"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
-import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
+import { getFH6IntentLabel, getFH6IntentTuningNotes } from "@/lib/tune-engine/fh6-intents"
 import { generateTune } from "@/lib/tune-engine/generator"
-import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType } from "@/types"
+import type { AdvancedGearingInput, Car, CarCategory, CarClass, ControlType, Drivetrain, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType } from "@/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 
 type Difficulty = "easy" | "balanced" | "aggressive"
+type CarInputMode = "database" | "calculator"
+
+interface ManualCarInput {
+  brand: string
+  model: string
+  year: string
+  weightKg: string
+  frontWeightPercent: string
+  basePi: string
+  powerHp: string
+  torqueNm: string
+  drivetrain: Drivetrain
+  aspiration: Car["aspiration"]
+  category: CarCategory
+}
+
+interface GearCalculatorForm {
+  redlineRpm: string
+  targetSpeedKmh: string
+  numberOfGears: string
+  currentFinalDrive: string
+  currentFirstGear: string
+  firstGearSpeedKmh: string
+}
+
+const DEFAULT_MANUAL_CAR: ManualCarInput = {
+  brand: "Custom",
+  model: "FH6 Build",
+  year: "2026",
+  weightKg: "1500",
+  frontWeightPercent: "52",
+  basePi: "700",
+  powerHp: "450",
+  torqueNm: "550",
+  drivetrain: "AWD",
+  aspiration: "Turbo",
+  category: "sport",
+}
+
+const DEFAULT_GEAR_CALC: GearCalculatorForm = {
+  redlineRpm: "7500",
+  targetSpeedKmh: "320",
+  numberOfGears: "6",
+  currentFinalDrive: "",
+  currentFirstGear: "",
+  firstGearSpeedKmh: "",
+}
 
 const TUNE_TYPES: { v: TuneType; l: string; desc: string; cls: string }[] = [
   { v: "street",        l: "Rua / Estrada",  desc: "Asfalto, sprints, urbano",   cls: "tag-street" },
@@ -56,6 +103,29 @@ const DRIVETRAINS: { v: TuneRequest["preferred_drivetrain"]; l: string }[] = [
   { v: "RWD",      l: "RWD" },
   { v: "FWD",      l: "FWD" },
 ]
+const MANUAL_DRIVETRAINS: { v: Drivetrain; l: string }[] = [
+  { v: "AWD", l: "AWD" },
+  { v: "RWD", l: "RWD" },
+  { v: "FWD", l: "FWD" },
+]
+const MANUAL_ASPIRATIONS: { v: Car["aspiration"]; l: string }[] = [
+  { v: "NA", l: "Aspirado" },
+  { v: "Turbo", l: "Turbo" },
+  { v: "Supercharged", l: "Supercharger" },
+  { v: "Electric", l: "Eletrico" },
+]
+const MANUAL_CATEGORIES: { v: CarCategory; l: string }[] = [
+  { v: "sport", l: "Esportivo" },
+  { v: "supercar", l: "Supercarro" },
+  { v: "hypercar", l: "Hypercar" },
+  { v: "muscle", l: "Muscle" },
+  { v: "jdm", l: "JDM" },
+  { v: "offroad", l: "Off-road" },
+  { v: "suv", l: "SUV" },
+  { v: "truck", l: "Truck" },
+  { v: "buggy", l: "Buggy" },
+  { v: "classic", l: "Classico" },
+]
 const TUNE_LABELS: Record<TuneType, string> = {
   street: "Rua", drag: "Drag", drift: "Drift",
   rally: "Rally", cross_country: "Cross Country", top_speed: "Top Speed", grip: "Grip",
@@ -66,6 +136,106 @@ function scoreColor(s: number) {
   if (s >= 8) return "#34d399"
   if (s >= 6) return "#fbbf24"
   return "#64748b"
+}
+
+function num(value: string): number {
+  return Number(value.replace(",", "."))
+}
+
+function clampNum(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
+
+function classFromPi(pi: number): CarClass {
+  if (pi >= 999) return "X"
+  if (pi >= 901) return "S2"
+  if (pi >= 801) return "S1"
+  if (pi >= 701) return "A"
+  if (pi >= 601) return "B"
+  if (pi >= 501) return "C"
+  return "D"
+}
+
+function slug(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "custom"
+}
+
+function isManualCarValid(input: ManualCarInput): boolean {
+  return (
+    input.brand.trim().length > 0 &&
+    input.model.trim().length > 0 &&
+    Number.isFinite(num(input.weightKg)) &&
+    Number.isFinite(num(input.frontWeightPercent)) &&
+    Number.isFinite(num(input.basePi)) &&
+    Number.isFinite(num(input.powerHp)) &&
+    Number.isFinite(num(input.torqueNm))
+  )
+}
+
+function buildManualCar(input: ManualCarInput): Car {
+  const weight = clampNum(Math.round(num(input.weightKg)), 400, 4000)
+  const frontWeight = clampNum(num(input.frontWeightPercent), 35, 70)
+  const pi = clampNum(Math.round(num(input.basePi)), 100, 999)
+  const power = clampNum(Math.round(num(input.powerHp)), 50, 2500)
+  const torque = clampNum(Math.round(num(input.torqueNm)), 50, 3000)
+  const year = clampNum(Math.round(num(input.year) || 2026), 1900, 2035)
+  const carType = [input.category]
+  const available_conversions = MANUAL_DRIVETRAINS
+    .map((item) => item.v)
+    .filter((item) => item !== input.drivetrain)
+
+  return {
+    id: `manual_${slug(input.brand)}_${slug(input.model)}_${year}`,
+    game: "Forza Horizon 6",
+    brand: input.brand.trim(),
+    model: input.model.trim(),
+    year,
+    base_class: classFromPi(pi),
+    base_pi: pi,
+    drivetrain: input.drivetrain,
+    front_weight_percent: frontWeight,
+    weight_kg: weight,
+    power_hp: power,
+    torque_nm: torque,
+    aspiration: input.aspiration,
+    car_type: carType,
+    recommended_use: ["street", "drag", "drift", "rally", "cross_country", "top_speed", "grip"],
+    available_conversions,
+    meta_score: {
+      street: 6,
+      drag: power > 600 ? 8 : 6,
+      drift: input.drivetrain === "RWD" ? 8 : 5,
+      rally: input.drivetrain === "AWD" || input.category === "offroad" ? 8 : 5,
+      cross_country: ["offroad", "truck", "suv", "buggy"].includes(input.category) ? 8 : 4,
+      top_speed: power > 650 ? 8 : 6,
+    },
+    notes: `Criado na calculadora manual. Peso dianteiro: ${frontWeight}%.`,
+  }
+}
+
+function optionalNum(value: string): number | undefined {
+  if (!value.trim()) return undefined
+  const parsed = num(value)
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
+function isGearCalculatorValid(input: GearCalculatorForm): boolean {
+  return (
+    Number.isFinite(num(input.redlineRpm)) &&
+    Number.isFinite(num(input.targetSpeedKmh)) &&
+    Number.isFinite(num(input.numberOfGears))
+  )
+}
+
+function buildGearCalculatorInput(input: GearCalculatorForm): AdvancedGearingInput {
+  return {
+    redline_rpm: clampNum(Math.round(num(input.redlineRpm)), 4500, 11000),
+    target_speed_kmh: clampNum(Math.round(num(input.targetSpeedKmh)), 120, 520),
+    number_of_gears: clampNum(Math.round(num(input.numberOfGears)), 6, 10),
+    current_final_drive: optionalNum(input.currentFinalDrive),
+    current_first_gear: optionalNum(input.currentFirstGear),
+    first_gear_speed_kmh: optionalNum(input.firstGearSpeedKmh),
+  }
 }
 
 /* ── Small car thumbnail in picker ── */
@@ -153,6 +323,7 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
   const lang  = settings.partsLanguage
   const pUnit = settings.pressureUnit
   const spUnit = settings.springUnit
+  const intentNotes = getFH6IntentTuningNotes(tune.fh6_intent ?? "balanced")
   const [saveError, setSaveError] = useState<string | null>(null)
   const { user } = useAuth()
 
@@ -253,6 +424,19 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
           {saveError && (
             <p style={{ fontSize: 11, color: "#fbbf24", marginTop: 10 }}>{saveError}</p>
           )}
+        </div>
+      </div>
+
+      <div className="r-card p-4" style={{ border: "1px solid rgba(52,211,153,0.18)" }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#34d399", marginBottom: 8 }}>
+          O que o objetivo FH6 alterou
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {intentNotes.map((note) => (
+            <p key={note} style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.55 }}>
+              {note}
+            </p>
+          ))}
         </div>
       </div>
 
@@ -379,10 +563,10 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
         </div>
         <div className="r-card p-5">
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 12 }}>Câmbio</p>
-          <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+          <div className="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-11 gap-2">
             {[
               { l: "Final", v: tune.tuning.gearing.final_drive },
-              ...([1,2,3,4,5,6,7] as const).map((g) => ({
+              ...([1,2,3,4,5,6,7,8,9,10] as const).map((g) => ({
                 l: `${g}ª`,
                 v: tune.tuning.gearing[`gear_${g}` as keyof typeof tune.tuning.gearing] as number | undefined,
               })).filter((x) => x.v !== undefined),
@@ -511,8 +695,10 @@ function WizardInner() {
   const queryCar = CARS.find((c) => c.id === sp.get("car")) ?? null
   const queryType = TUNE_TYPES.find((type) => type.v === sp.get("type"))?.v ?? null
   const [step, setStep]       = useState(() => queryCar ? (queryType ? 3 : 2) : 1)
+  const [inputMode, setInputMode] = useState<CarInputMode>("database")
   const [search, setSearch]   = useState("")
   const [car, setCar]         = useState<Car | null>(() => queryCar)
+  const [manual, setManual]   = useState<ManualCarInput>(DEFAULT_MANUAL_CAR)
   const [tuneType, setTT]     = useState<TuneType | null>(() => queryType)
   const [cls, setCls]         = useState<CarClass>("A")
   const [diff, setDiff]       = useState<Difficulty>("balanced")
@@ -521,6 +707,8 @@ function WizardInner() {
   const [dt, setDt]           = useState<TuneRequest["preferred_drivetrain"]>("original")
   const [intent, setIntent]   = useState<TuneIntent>("balanced")
   const [engineSwap, setEngineSwap] = useState(false)
+  const [gearCalcEnabled, setGearCalcEnabled] = useState(false)
+  const [gearCalc, setGearCalc] = useState<GearCalculatorForm>(DEFAULT_GEAR_CALC)
   const [loading, setLoading] = useState(false)
   const [result, setResult]   = useState<GeneratedTune | null>(null)
   const [error, setError]     = useState<string | null>(null)
@@ -528,6 +716,25 @@ function WizardInner() {
   const filtered = search.length >= 2
     ? CARS.filter((c) => `${c.brand} ${c.model} ${c.year}`.toLowerCase().includes(search.toLowerCase())).slice(0, 14)
     : CARS.slice(0, 14)
+  const manualValid = isManualCarValid(manual)
+  const gearCalcValid = isGearCalculatorValid(gearCalc)
+
+  function updateManual<K extends keyof ManualCarInput>(key: K, value: ManualCarInput[K]) {
+    setManual((current) => ({ ...current, [key]: value }))
+  }
+
+  function updateGearCalc<K extends keyof GearCalculatorForm>(key: K, value: GearCalculatorForm[K]) {
+    setGearCalc((current) => ({ ...current, [key]: value }))
+  }
+
+  function goToTuneType() {
+    if (inputMode === "calculator") {
+      if (!manualValid) return
+      setCar(buildManualCar(manual))
+    }
+    if (inputMode === "database" && !car) return
+    setStep(2)
+  }
 
   async function generate() {
     if (!car || !tuneType) return
@@ -543,6 +750,7 @@ function WizardInner() {
         difficulty: diff,
         engine_swap: engineSwap,
         fh6_intent: intent,
+        gearing_calculator: gearCalcEnabled && gearCalcValid ? buildGearCalculatorInput(gearCalc) : undefined,
       }
       setResult(generateTune(request, car)); setStep(4)
     } catch (e: unknown) {
@@ -550,7 +758,7 @@ function WizardInner() {
     } finally { setLoading(false) }
   }
 
-  if (step === 4 && result) return <TuneResult tune={result} onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false); setIntent("balanced") }} />
+  if (step === 4 && result) return <TuneResult tune={result} onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false); setIntent("balanced"); setInputMode("database"); setGearCalcEnabled(false); setGearCalc(DEFAULT_GEAR_CALC) }} />
 
   const steps = [
     { n: 1, l: "Carro" },
@@ -596,16 +804,98 @@ function WizardInner() {
         {/* ── STEP 1 ── */}
         {step === 1 && (
           <div className="space-y-4 anim-up" style={{ animationDelay: "100ms" }}>
-            <input type="text" className="r-input" placeholder="Buscar por marca, modelo ou ano..."
-              value={search} onChange={(e) => setSearch(e.target.value)} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto" style={{ maxHeight: 460 }}>
-              {filtered.map((c) => (
-                <CarThumb key={c.id} car={c} selected={car?.id === c.id} onSelect={() => setCar(c)} />
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { v: "database", l: "Base de carros", d: "Escolher um carro do app" },
+                { v: "calculator", l: "Calculadora manual", d: "Peso, PI, potencia e % dianteiro" },
+              ] as const).map((mode) => (
+                <button
+                  key={mode.v}
+                  type="button"
+                  onClick={() => { setInputMode(mode.v); if (mode.v === "calculator") setCar(null) }}
+                  className="r-card text-left p-4 transition-all"
+                  style={{
+                    border: inputMode === mode.v ? "1px solid var(--border-blue)" : undefined,
+                    background: inputMode === mode.v ? "var(--blue-dim)" : undefined,
+                    cursor: "pointer",
+                  }}
+                >
+                  <p style={{ fontSize: 13, fontWeight: 800, color: "var(--text)" }}>{mode.l}</p>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>{mode.d}</p>
+                </button>
               ))}
             </div>
+
+            {inputMode === "database" ? (
+              <>
+                <input type="text" className="r-input" placeholder="Buscar por marca, modelo ou ano..."
+                  value={search} onChange={(e) => setSearch(e.target.value)} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto" style={{ maxHeight: 460 }}>
+                  {filtered.map((c) => (
+                    <CarThumb key={c.id} car={c} selected={car?.id === c.id} onSelect={() => setCar(c)} />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="r-card p-4 space-y-4">
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Calculadora manual</p>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, lineHeight: 1.55 }}>
+                    Use quando o carro nao estiver na base ou quando voce tiver peso/potencia depois dos upgrades. O peso dianteiro alimenta o calculo de molas, barras e damping.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input className="r-input" value={manual.brand} onChange={(e) => updateManual("brand", e.target.value)} placeholder="Marca" />
+                  <input className="r-input" value={manual.model} onChange={(e) => updateManual("model", e.target.value)} placeholder="Modelo / nome da build" />
+                  <input className="r-input" value={manual.year} onChange={(e) => updateManual("year", e.target.value)} inputMode="numeric" placeholder="Ano" />
+                  <input className="r-input" value={manual.basePi} onChange={(e) => updateManual("basePi", e.target.value)} inputMode="numeric" placeholder="PI atual" />
+                  <input className="r-input" value={manual.weightKg} onChange={(e) => updateManual("weightKg", e.target.value)} inputMode="decimal" placeholder="Peso kg" />
+                  <input className="r-input" value={manual.frontWeightPercent} onChange={(e) => updateManual("frontWeightPercent", e.target.value)} inputMode="decimal" placeholder="Peso dianteiro %" />
+                  <input className="r-input" value={manual.powerHp} onChange={(e) => updateManual("powerHp", e.target.value)} inputMode="decimal" placeholder="Potencia hp" />
+                  <input className="r-input" value={manual.torqueNm} onChange={(e) => updateManual("torqueNm", e.target.value)} inputMode="decimal" placeholder="Torque Nm" />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-2">
+                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Tracao</p>
+                    <div className="flex gap-1 flex-wrap">
+                      {MANUAL_DRIVETRAINS.map((item) => (
+                        <button key={item.v} type="button" onClick={() => updateManual("drivetrain", item.v)} className={`filter-chip${manual.drivetrain === item.v ? " active" : ""}`}>
+                          {item.l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Motor</p>
+                    <div className="flex gap-1 flex-wrap">
+                      {MANUAL_ASPIRATIONS.map((item) => (
+                        <button key={item.v} type="button" onClick={() => updateManual("aspiration", item.v)} className={`filter-chip${manual.aspiration === item.v ? " active" : ""}`}>
+                          {item.l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Categoria</p>
+                    <div className="flex gap-1 flex-wrap">
+                      {MANUAL_CATEGORIES.map((item) => (
+                        <button key={item.v} type="button" onClick={() => updateManual("category", item.v)} className={`filter-chip${manual.category === item.v ? " active" : ""}`}>
+                          {item.l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end pt-2">
-              <button type="button" disabled={!car} onClick={() => setStep(2)} className="r-btn r-btn-primary"
-                style={{ paddingLeft: 28, paddingRight: 28, paddingTop: 10, paddingBottom: 10, opacity: car ? 1 : 0.4 }}>
+              <button type="button" disabled={inputMode === "database" ? !car : !manualValid} onClick={goToTuneType} className="r-btn r-btn-primary"
+                style={{ paddingLeft: 28, paddingRight: 28, paddingTop: 10, paddingBottom: 10, opacity: (inputMode === "database" ? car : manualValid) ? 1 : 0.4 }}>
                 Próximo — Tipo de Tune
               </button>
             </div>
@@ -792,6 +1082,56 @@ function WizardInner() {
               </div>
             </button>
 
+            {/* Advanced gearing */}
+            <div
+              className="r-card p-4 space-y-4"
+              style={{
+                border: gearCalcEnabled ? "1px solid var(--border-blue)" : "1px solid var(--border-strong)",
+                background: gearCalcEnabled ? "var(--blue-dim)" : "var(--bg-card)",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setGearCalcEnabled((value) => !value)}
+                className="w-full text-left"
+                style={{ background: "transparent", border: 0, padding: 0, cursor: "pointer" }}
+              >
+                <div className="flex items-start gap-3">
+                  <div style={{
+                    width: 18, height: 18, borderRadius: 4, flexShrink: 0, marginTop: 2,
+                    border: `2px solid ${gearCalcEnabled ? "var(--blue)" : "var(--border-strong)"}`,
+                    background: gearCalcEnabled ? "var(--blue)" : "transparent",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    {gearCalcEnabled && (
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                        <path d="M2 5l2.5 2.5L8 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 3 }}>
+                      Calculadora avancada de cambio
+                    </p>
+                    <p style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.55 }}>
+                      Recria o fluxo do APK: RPM, velocidade alvo, quantidade de marchas e relacoes atuais quando voce tiver esses dados.
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              {gearCalcEnabled && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <input className="r-input" value={gearCalc.redlineRpm} onChange={(e) => updateGearCalc("redlineRpm", e.target.value)} inputMode="numeric" placeholder="Redline RPM" />
+                  <input className="r-input" value={gearCalc.targetSpeedKmh} onChange={(e) => updateGearCalc("targetSpeedKmh", e.target.value)} inputMode="numeric" placeholder="Velocidade alvo km/h" />
+                  <input className="r-input" value={gearCalc.numberOfGears} onChange={(e) => updateGearCalc("numberOfGears", e.target.value)} inputMode="numeric" placeholder="Marchas" />
+                  <input className="r-input" value={gearCalc.currentFinalDrive} onChange={(e) => updateGearCalc("currentFinalDrive", e.target.value)} inputMode="decimal" placeholder="Final drive atual" />
+                  <input className="r-input" value={gearCalc.currentFirstGear} onChange={(e) => updateGearCalc("currentFirstGear", e.target.value)} inputMode="decimal" placeholder="Relacao da 1a atual" />
+                  <input className="r-input" value={gearCalc.firstGearSpeedKmh} onChange={(e) => updateGearCalc("firstGearSpeedKmh", e.target.value)} inputMode="decimal" placeholder="Velocidade maxima em 1a" />
+                </div>
+              )}
+            </div>
+
             {error && (
               <div className="rounded-lg p-3" style={{ background: "var(--red-dim)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 12, color: "#fca5a5" }}>
                 {error}
@@ -800,8 +1140,8 @@ function WizardInner() {
 
             <div className="flex justify-between pt-2">
               <button type="button" onClick={() => setStep(2)} className="r-btn r-btn-ghost">Voltar</button>
-              <button type="button" onClick={generate} disabled={loading} className="r-btn r-btn-primary"
-                style={{ paddingLeft: 32, paddingRight: 32, paddingTop: 10, paddingBottom: 10, opacity: loading ? 0.7 : 1 }}>
+              <button type="button" onClick={generate} disabled={loading || (gearCalcEnabled && !gearCalcValid)} className="r-btn r-btn-primary"
+                style={{ paddingLeft: 32, paddingRight: 32, paddingTop: 10, paddingBottom: 10, opacity: loading || (gearCalcEnabled && !gearCalcValid) ? 0.7 : 1 }}>
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <span className="w-3.5 h-3.5 border-2 rounded-full animate-spin"

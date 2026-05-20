@@ -52,6 +52,7 @@ export interface Car {
   base_class: CarClass
   base_pi: number
   drivetrain: Drivetrain
+  front_weight_percent?: number
   weight_kg: number
   power_hp: number
   torque_nm: number
@@ -83,6 +84,7 @@ export interface TuneRequest {
   difficulty: DifficultyLevel
   engine_swap: boolean
   fh6_intent: TuneIntent
+  gearing_calculator?: AdvancedGearingInput
 }
 
 export interface TirePressure {
@@ -99,6 +101,18 @@ export interface Gearing {
   gear_5: number
   gear_6: number
   gear_7?: number
+  gear_8?: number
+  gear_9?: number
+  gear_10?: number
+}
+
+export interface AdvancedGearingInput {
+  redline_rpm: number
+  target_speed_kmh: number
+  number_of_gears: number
+  current_final_drive?: number
+  current_first_gear?: number
+  first_gear_speed_kmh?: number
 }
 
 export interface Alignment {
@@ -196,6 +210,9 @@ export type DiagnosticProblem =
   | "bouncing"
   | "drift_loss"
   | "brake_instability"
+
+export type DiagnosticPhase = "entry" | "mid" | "exit" | "high_speed" | "low_speed" | "bumps"
+export type DiagnosticBehavior = "progressive" | "sudden" | "on_throttle" | "off_throttle" | "braking"
 
 export interface DiagnosticFix {
   parameter: string

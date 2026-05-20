@@ -12,6 +12,7 @@
 
 import type { Car, Drivetrain, TuneType, TuningSetup } from "@/types"
 import type { CarProfile } from "./analyze"
+import { getCalibrationFrontWeightPercent } from "./forzatune-calibration"
 
 function clamp(val: number, min: number, max: number): number {
   return Math.min(Math.max(val, min), max)
@@ -52,9 +53,13 @@ const SPRING_FACTORS: Record<TuneType, { f: number; r: number }> = {
 }
 
 function calcSprings(car: Car, tuneType: TuneType, drivetrain: Drivetrain) {
-  const frontBias =
-    drivetrain === "AWD" ? 0.52 :
-    drivetrain === "RWD" ? 0.45 : 0.62
+  const calibratedFrontWeight = getCalibrationFrontWeightPercent(car, drivetrain)
+  const frontBias = car.front_weight_percent !== undefined
+    ? clamp(car.front_weight_percent / 100, 0.35, 0.7)
+    : calibratedFrontWeight !== null
+      ? clamp(calibratedFrontWeight / 100, 0.35, 0.7)
+    : drivetrain === "AWD" ? 0.52 :
+      drivetrain === "RWD" ? 0.45 : 0.62
 
   const { f: ff, r: rf } = SPRING_FACTORS[tuneType]
   const frontAxle = car.weight_kg * frontBias
