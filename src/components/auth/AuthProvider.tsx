@@ -23,7 +23,7 @@ interface AuthContextValue {
   signOut(): Promise<void>
 }
 
-const EMAIL_STORAGE_KEY = "forza-tune-lab:email-for-sign-in"
+const EMAIL_STORAGE_KEY = "forza-lab:email-for-sign-in"
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 function actionCodeSettings() {

@@ -11,7 +11,7 @@ interface ThemeCtx {
 
 const Ctx = createContext<ThemeCtx | null>(null)
 
-const STORAGE_KEY = "forza-tune-lab:theme"
+const STORAGE_KEY = "forza-lab:theme"
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {

@@ -22,7 +22,7 @@ interface SavedTune {
 }
 
 function storageKey(userId?: string) {
-  return `forza-tune-lab:saved-tunes:${userId ?? "local"}`
+  return `forza-lab:saved-tunes:${userId ?? "local"}`
 }
 
 function readSavedTunes(userId?: string): SavedTune[] {

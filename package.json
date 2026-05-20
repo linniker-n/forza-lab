@@ -1,12 +1,12 @@
 {
-  "name": "forza-tune-lab",
+  "name": "forza-lab",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "preview": "npx serve@latest out",
-    "pages:deploy": "npm run build && npx wrangler pages deploy out --project-name forza-tune-lab",
+    "pages:deploy": "npm run build && npx wrangler pages deploy out --project-name forza-lab",
     "lint": "eslint",
     "sync:fandom-cars": "node scripts/sync-fandom-cars.mjs"
   },

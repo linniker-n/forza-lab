@@ -44,7 +44,7 @@ export function AppHeader() {
     <header className="app-header">
       <div className="header-top-line" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-        <Link href="/" className="app-logo" aria-label="Forza Tune Lab">
+        <Link href="/" className="app-logo" aria-label="Forza Lab">
           <span className="logo-icon">
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
               <path d="M3 2v11M3 2h9l-3 4h3l-3 4H3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -52,7 +52,6 @@ export function AppHeader() {
           </span>
           <span className="logo-text">
             <b className="logo-forza">FORZA</b>
-            <b className="logo-tune">TUNE</b>
             <b className="logo-lab">LAB</b>
           </span>
         </Link>

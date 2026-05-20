@@ -1,4 +1,4 @@
-# Forza Tune Lab
+# Forza Lab
 
 Aplicativo de tunagens para Forza Horizon 6. O projeto combina uma base local de carros sincronizada do Forza Wiki com um motor de regras para gerar peças, ajustes finos, ranking técnico, comparação e diagnóstico de comportamento.
 

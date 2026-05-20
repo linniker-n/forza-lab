@@ -329,7 +329,7 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
   async function saveTune() {
     setSaving(true)
     setSaveError(null)
-    const storageKey = `forza-tune-lab:saved-tunes:${user?.uid ?? "local"}`
+    const storageKey = `forza-lab:saved-tunes:${user?.uid ?? "local"}`
     let savedTunes: unknown = []
     try {
       const raw = window.localStorage.getItem(storageKey)

@@ -24,7 +24,7 @@ const DEFAULTS: AppSettings = {
   springUnit: "kgfmm",   // jogo usa kgf/mm nativamente
 }
 
-const STORAGE_KEY = "forza-tune-lab:settings"
+const STORAGE_KEY = "forza-lab:settings"
 
 interface SettingsCtx {
   settings: AppSettings

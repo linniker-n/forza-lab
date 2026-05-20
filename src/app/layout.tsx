@@ -11,13 +11,13 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Forza Tune Lab - Tunes para Forza Horizon 6",
+  title: "Forza Lab - Tunes para Forza Horizon 6",
   description: "Motor competitivo para FH6 com tunagem, diagnostico, calculadora e garagem.",
 }
 
 const themeScript = `
   try {
-    var t = localStorage.getItem('forza-tune-lab:theme');
+    var t = localStorage.getItem('forza-lab:theme');
     if (t === 'light' || t === 'dark') {
       document.documentElement.setAttribute('data-theme', t);
     }
@@ -41,8 +41,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <footer className="app-footer">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <span className="footer-badge">FT</span>
-                    <span className="footer-brand">Forza Tune Lab</span>
+                    <span className="footer-badge">FL</span>
+                    <span className="footer-brand">Forza Lab</span>
                   </div>
                   <p className="footer-copy">
                     Desenvolvido por{" "}

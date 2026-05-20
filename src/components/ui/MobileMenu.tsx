@@ -120,7 +120,7 @@ export function MobileMenu() {
           borderBottom: "1px solid var(--border)",
         }}>
           <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text)" }}>
-            Forza Tune Lab
+            Forza Lab
           </span>
           <button
             type="button"
