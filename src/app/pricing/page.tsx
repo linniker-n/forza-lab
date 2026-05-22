@@ -51,7 +51,7 @@ export default function PricingPage() {
     try {
       const app = getFirebaseApp()
       if (!app) throw new Error("Firebase não inicializado")
-      const functions = getFunctions(app, "southamerica-east1")
+      const functions = getFunctions(app, "us-central1")
       const createSession = httpsCallable<
         { priceId: string; successUrl: string; cancelUrl: string },
         { url: string }
