@@ -3,9 +3,9 @@ import type { AppSettings } from "./context"
 // ── Pressão ─────────────────────────────────────────────
 export function formatPressure(psi: number, unit: AppSettings["pressureUnit"]): string {
   if (unit === "bar") {
-    return `${(psi * 0.06895).toFixed(2)} bar`
+    return `${(psi * 0.06895).toFixed(1)} bar`
   }
-  return `${psi} PSI`
+  return `${psi.toFixed(1)} PSI`
 }
 
 // ── Potência ─────────────────────────────────────────────
@@ -55,7 +55,7 @@ export function torqueLabel(unit: AppSettings["torqueUnit"]): string {
 
 // ── Valor numérico bruto (para exibição em campos separados) ──
 export function pressureValue(psi: number, unit: AppSettings["pressureUnit"]): string {
-  return unit === "bar" ? (psi * 0.06895).toFixed(2) : String(psi)
+  return unit === "bar" ? (psi * 0.06895).toFixed(1) : psi.toFixed(1)
 }
 
 export function powerValue(hp: number, unit: AppSettings["powerUnit"]): string {

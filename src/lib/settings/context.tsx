@@ -18,7 +18,7 @@ export interface AppSettings {
 
 const DEFAULTS: AppSettings = {
   partsLanguage: "en",
-  pressureUnit: "psi",
+  pressureUnit: "bar",    // jogo PT-BR exibe em BAR por padrão
   powerUnit: "hp",
   torqueUnit: "nm",
   springUnit: "kgfmm",   // jogo usa kgf/mm nativamente
