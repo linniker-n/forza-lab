@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export const metadata: Metadata = {
   title: "Forza Lab - Tunes para Forza Horizon 6",
-  description: "Motor competitivo para FH6 com tunagem, diagnostico, calculadora e garagem.",
+  description: "Motor competitivo para FH6 com tunagem, diagnostico, calculadora, comunidade e garagem.",
 }
 
 const themeScript = `
