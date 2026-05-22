@@ -1,4 +1,10 @@
 import type { Car, CarClass, Drivetrain, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType, TuneWarning } from "@/types"
+
+// Tipos que usam os padrões fixos da comunidade pro — devem ser re-aplicados
+// depois de applyFH6Intent e applyPrecisionModel para garantir valores exatos.
+const PRO_TYPES = new Set<TuneType>(["street", "grip", "drag", "cross_country", "top_speed"])
+const PRO_TIRE_PSI     = 21.8   // 1.5 BAR
+const PRO_SPRING_LBFIN = 457    // ≈ 80 kgf/mm
 import { analyzeCar } from "./analyze"
 import {
   applyFH6Intent,
@@ -204,6 +210,33 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
       powerHp: carForTune.power_hp,
       weightKg: carForTune.weight_kg,
     })
+  }
+
+  // Re-aplica padrões fixos da comunidade pro após todas as camadas de ajuste.
+  // applyFH6Intent e applyPrecisionModel podem sobrescrever os valores — isso garante
+  // que o resultado final sempre bata com os padrões informados.
+  if (PRO_TYPES.has(request.tune_type)) {
+    tuning.tires    = { front: PRO_TIRE_PSI, rear: PRO_TIRE_PSI }
+    tuning.alignment = { camber_front: 0, camber_rear: 0, toe_front: 0, toe_rear: 0, caster: 7 }
+    tuning.antiroll_bars = { front: 1, rear: 65 }
+    tuning.springs = {
+      ...tuning.springs,
+      front: PRO_SPRING_LBFIN,
+      rear:  PRO_SPRING_LBFIN,
+      ride_height_front: "max",
+      ride_height_rear:  "high",
+    }
+    tuning.damping  = { rebound_front: 8, rebound_rear: 8, bump_front: 3, bump_rear: 3 }
+    tuning.aero     = { front: "max", rear: "medium-high" }
+    if (drivetrain === "RWD") {
+      tuning.differential.rear_accel = 100
+      tuning.differential.rear_decel = 0
+    } else if (drivetrain === "AWD") {
+      tuning.differential = { front_accel: 100, front_decel: 0, rear_accel: 100, rear_decel: 0, center_balance: 70 }
+    } else if (drivetrain === "FWD") {
+      tuning.differential.front_accel = tuning.differential.front_accel ?? 35
+      tuning.differential.front_decel = tuning.differential.front_decel ?? 10
+    }
   }
 
   const intentWeaknesses = getFH6IntentCarWeaknesses(car, fh6Intent)
