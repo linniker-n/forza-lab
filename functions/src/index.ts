@@ -6,19 +6,14 @@ admin.initializeApp()
 const db = admin.firestore()
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Stripe client — chaves via Firebase Functions config
-// Deploy: firebase functions:config:set stripe.secret="sk_live_..." stripe.webhook_secret="whsec_..."
-// Local:  copie .runtimeconfig.json com as chaves de teste
+// Stripe client — chaves via variáveis de ambiente (.env na pasta functions/)
 // ─────────────────────────────────────────────────────────────────────────────
 function getStripe(): Stripe {
-  const secret = functions.config().stripe?.secret ?? process.env.STRIPE_SECRET_KEY ?? ""
-  return new Stripe(secret, { apiVersion: "2024-12-18.acacia" })
+  const secret = process.env.STRIPE_SECRET_KEY ?? ""
+  return new Stripe(secret, { apiVersion: "2024-06-20" })
 }
 
-const PRICE_IDS = {
-  pro_monthly: functions.config().stripe?.price_monthly ?? process.env.STRIPE_PRICE_MONTHLY ?? "",
-  pro_yearly:  functions.config().stripe?.price_yearly  ?? process.env.STRIPE_PRICE_YEARLY  ?? "",
-}
+// Price IDs lidos em runtime via process.env (definidos em functions/.env)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // createCheckoutSession — chamado pelo frontend via Firebase SDK
@@ -66,7 +61,7 @@ export const createCheckoutSession = functions.https.onCall(async (data, context
 // ─────────────────────────────────────────────────────────────────────────────
 export const stripeWebhook = functions.https.onRequest(async (req, res) => {
   const stripe        = getStripe()
-  const webhookSecret = functions.config().stripe?.webhook_secret ?? process.env.STRIPE_WEBHOOK_SECRET ?? ""
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET ?? ""
   const sig           = req.headers["stripe-signature"] as string
 
   let event: Stripe.Event
