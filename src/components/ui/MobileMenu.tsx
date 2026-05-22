@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { useSubscription } from "@/lib/subscription/context"
 
 const NAV_LINKS = [
   { href: "/tune",        label: "Criar tune" },
@@ -19,6 +20,7 @@ const NAV_LINKS = [
 export function MobileMenu() {
   const [open, setOpen] = useState(false)
   const { user, signOut } = useAuth()
+  const { isPro } = useSubscription()
   const pathname = usePathname()
 
   useEffect(() => {
@@ -174,12 +176,24 @@ export function MobileMenu() {
         }}>
           {user ? (
             <>
-              <p className="profile-email" style={{ margin: 0 }}>
-                {user.displayName ? `${user.displayName} · ${user.email}` : user.email}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="profile-email" style={{ margin: 0 }}>
+                  {user.displayName ? `${user.displayName}` : user.email}
+                </p>
+                {isPro && (
+                  <span style={{ fontSize: 9, fontWeight: 800, color: "var(--fh6-teal)", letterSpacing: "0.1em", padding: "2px 7px", borderRadius: 10, border: "1px solid rgba(44,206,204,0.3)", background: "rgba(44,206,204,0.08)" }}>
+                    PRO
+                  </span>
+                )}
+              </div>
               <Link href="/profile" className="r-btn r-btn-ghost w-full" style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center" }}>
                 Editar perfil
               </Link>
+              {!isPro && (
+                <Link href="/pricing" className="r-btn w-full" style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center", background: "rgba(44,206,204,0.1)", border: "1px solid rgba(44,206,204,0.3)", color: "var(--fh6-teal)", fontWeight: 700 }}>
+                  Upgrade para Pro ↗
+                </Link>
+              )}
               <Link href="/settings" className="r-btn r-btn-ghost w-full" style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center" }}>
                 Configuracoes
               </Link>

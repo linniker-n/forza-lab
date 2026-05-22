@@ -5,6 +5,9 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { RequireAuth } from "@/components/auth/RequireAuth"
+import { useSubscription } from "@/lib/subscription/context"
+import { UpgradeModal } from "@/components/paywall/UpgradeModal"
+import { FREE_LIMITS } from "@/lib/subscription/limits"
 import { getCarImageUrl } from "@/data/cars"
 import { getFirebaseDb } from "@/lib/firebase/client"
 import { diagnose as runDiagnostic, PROBLEM_LABELS } from "@/lib/tune-engine/diagnostics"
@@ -379,7 +382,11 @@ export default function GaragePage() {
   const [saved,        setSaved]       = useState<SavedTune[]>([])
   const [syncNote,     setSyncNote]    = useState<string | null>(null)
   const [diagOpenId,   setDiagOpenId]  = useState<string | null>(null)
+  const [showUpgrade,  setShowUpgrade] = useState(false)
   const { user } = useAuth()
+  const { isPro } = useSubscription()
+  const garageLimit = isPro ? Infinity : FREE_LIMITS.garageSlots
+  const isGarageFull = !isPro && saved.length >= FREE_LIMITS.garageSlots
   const userId = user?.uid
 
   useEffect(() => {
@@ -464,6 +471,7 @@ export default function GaragePage() {
 
   return (
     <RequireAuth>
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} reason="garage_limit" />
       <div className="dot-grid" style={{ minHeight: "100dvh" }}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
 
@@ -485,6 +493,30 @@ export default function GaragePage() {
             <Link href="/tune" className="r-btn r-btn-primary">Criar tune</Link>
           </div>
         </div>
+
+        {/* Slot usage bar — free users */}
+        {!isPro && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg anim-up"
+            style={{ background: "var(--bg-card)", border: `1px solid ${isGarageFull ? "rgba(239,68,68,0.3)" : "var(--border-strong)"}` }}>
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1.5">
+                <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
+                  Slots da garagem: <span style={{ color: isGarageFull ? "#f87171" : "var(--text)", fontWeight: 700 }}>{Math.min(saved.length, FREE_LIMITS.garageSlots)}/{FREE_LIMITS.garageSlots}</span>
+                </p>
+                <button type="button" onClick={() => setShowUpgrade(true)} style={{ fontSize: 10, fontWeight: 700, color: "var(--fh6-teal)", background: "none", border: "none", cursor: "pointer" }}>
+                  Pro ilimitado →
+                </button>
+              </div>
+              <div style={{ height: 4, borderRadius: 2, background: "var(--border-strong)", overflow: "hidden" }}>
+                <div style={{
+                  height: "100%", borderRadius: 2, transition: "width 0.3s",
+                  width: `${Math.min((saved.length / FREE_LIMITS.garageSlots) * 100, 100)}%`,
+                  background: isGarageFull ? "#ef4444" : "var(--fh6-teal)",
+                }} />
+              </div>
+            </div>
+          </div>
+        )}
 
         {syncNote && (
           <p className="rounded-lg p-3 anim-up" style={{ fontSize: 12, color: "#fbbf24", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)" }}>

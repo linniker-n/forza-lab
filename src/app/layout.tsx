@@ -4,6 +4,7 @@ import Link from "next/link"
 import { AuthProvider } from "@/components/auth/AuthProvider"
 import { AppHeader } from "@/components/ui/AppHeader"
 import { SettingsProvider } from "@/lib/settings/context"
+import { SubscriptionProvider } from "@/lib/subscription/context"
 import { ThemeProvider } from "@/lib/theme/context"
 import "./globals.css"
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="app-root">
         <ThemeProvider>
           <AuthProvider>
+            <SubscriptionProvider>
             <SettingsProvider>
               <AppHeader />
 
@@ -63,11 +65,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <Link href="/cars"       className="footer-link">Carros</Link>
                     <Link href="/meta"       className="footer-link">Meta</Link>
                     <Link href="/garage"     className="footer-link">Garagem</Link>
+                    <Link href="/pricing"    className="footer-link">Pro</Link>
                     <Link href="/support"    className="footer-link">Suporte</Link>
                   </nav>
                 </div>
               </footer>
             </SettingsProvider>
+            </SubscriptionProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

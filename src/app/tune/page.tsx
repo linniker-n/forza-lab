@@ -10,6 +10,8 @@ import { CARS, getCarImageUrl } from "@/data/cars"
 import { getFirebaseDb } from "@/lib/firebase/client"
 import { shareTune } from "@/lib/firebase/community"
 import { loadUserProfile } from "@/lib/firebase/profile"
+import { useSubscription } from "@/lib/subscription/context"
+import { UpgradeModal } from "@/components/paywall/UpgradeModal"
 import { useSettings } from "@/lib/settings/context"
 import { translateParts } from "@/lib/settings/translations"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
@@ -693,6 +695,8 @@ function WizardInner() {
   const [loading, setLoading] = useState(false)
   const [result, setResult]   = useState<GeneratedTune | null>(null)
   const [error, setError]     = useState<string | null>(null)
+  const [showUpgrade, setShowUpgrade] = useState(false)
+  const { canGenerate, remainingTunes, incrementTuneUsage, isPro } = useSubscription()
 
   // Auto-corrige classe se carro selecionado tiver PI acima da classe atual
   useEffect(() => {
@@ -729,6 +733,7 @@ function WizardInner() {
 
   async function generate() {
     if (!car || !tuneType) return
+    if (!canGenerate) { setShowUpgrade(true); return }
     setLoading(true); setError(null)
     try {
       const request: TuneRequest = {
@@ -742,7 +747,9 @@ function WizardInner() {
         engine_swap: engineSwap,
         fh6_intent: intent,
       }
-      setResult(generateTune(request, car)); setStep(4)
+      setResult(generateTune(request, car))
+      setStep(4)
+      void incrementTuneUsage()
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro ao gerar tune")
     } finally { setLoading(false) }
@@ -757,6 +764,8 @@ function WizardInner() {
   ]
 
   return (
+    <>
+    <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} reason="tune_limit" />
     <div className="dot-grid" style={{ minHeight: "100dvh" }}>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-8">
 
@@ -765,6 +774,26 @@ function WizardInner() {
           <p className="section-label">Gerador</p>
           <h1 className="page-title">Criar Tune</h1>
         </div>
+
+        {/* Uso diário — free */}
+        {!isPro && (
+          <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg anim-up"
+            style={{ background: "var(--bg-card)", border: `1px solid ${remainingTunes === 0 ? "rgba(239,68,68,0.3)" : "var(--border-strong)"}` }}>
+            <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
+              {remainingTunes === 0
+                ? "Limite diário atingido. Volte amanhã ou faça upgrade."
+                : `Tunes restantes hoje: `}
+              {remainingTunes > 0 && (
+                <span style={{ color: remainingTunes <= 1 ? "#fbbf24" : "var(--text)", fontWeight: 700 }}>
+                  {remainingTunes}/3
+                </span>
+              )}
+            </p>
+            <a href="/pricing" style={{ fontSize: 11, fontWeight: 700, color: "var(--fh6-teal)", textDecoration: "none", whiteSpace: "nowrap" }}>
+              Pro →
+            </a>
+          </div>
+        )}
 
         {/* Steps */}
         <div className="flex items-center gap-1 anim-up" style={{ animationDelay: "60ms" }}>
@@ -1100,6 +1129,7 @@ function WizardInner() {
         )}
       </div>
     </div>
+    </>
   )
 }
 

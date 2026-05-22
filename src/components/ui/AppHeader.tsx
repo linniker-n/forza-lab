@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { useSubscription } from "@/lib/subscription/context"
 import { ThemeToggle } from "@/components/ui/ThemeToggle"
 import { MobileMenu } from "@/components/ui/MobileMenu"
 
@@ -25,6 +26,7 @@ function isActive(pathname: string, href: string): boolean {
 export function AppHeader() {
   const pathname = usePathname()
   const { loading, user, signOut } = useAuth()
+  const { isPro } = useSubscription()
   const [profileOpen, setProfileOpen] = useState(false)
   const profileRef = useRef<HTMLDivElement | null>(null)
 
@@ -90,8 +92,20 @@ export function AppHeader() {
                   aria-expanded={profileOpen}
                   aria-haspopup="menu"
                 >
-                  <span className="profile-avatar">{(user?.displayName || user?.email)?.[0]?.toUpperCase() ?? "P"}</span>
-                  <span className="profile-label">{user?.displayName || "Perfil"}</span>
+                  <span className="profile-avatar" style={{ position: "relative" }}>
+                    {(user?.displayName || user?.email)?.[0]?.toUpperCase() ?? "P"}
+                    {isPro && (
+                      <span style={{
+                        position: "absolute", bottom: -3, right: -3,
+                        width: 10, height: 10, borderRadius: "50%",
+                        background: "var(--fh6-teal)", border: "1.5px solid var(--bg-card)",
+                      }} />
+                    )}
+                  </span>
+                  <span className="profile-label">
+                    {user?.displayName || "Perfil"}
+                    {isPro && <span style={{ marginLeft: 5, fontSize: 8, fontWeight: 800, color: "var(--fh6-teal)", letterSpacing: "0.08em" }}>PRO</span>}
+                  </span>
                 </button>
                 {profileOpen && (
                   <div className="profile-popover" role="menu">
@@ -99,6 +113,11 @@ export function AppHeader() {
                     <Link href="/profile" className="profile-item" role="menuitem">
                       Editar perfil
                     </Link>
+                    {!isPro && (
+                      <Link href="/pricing" className="profile-item" role="menuitem" style={{ color: "var(--fh6-teal)", fontWeight: 700 }}>
+                        Upgrade para Pro ↗
+                      </Link>
+                    )}
                     <Link href="/settings" className="profile-item" role="menuitem">
                       Configuracoes
                     </Link>
