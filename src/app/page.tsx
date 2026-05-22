@@ -70,10 +70,11 @@ export default function HomePage() {
           ════════════════════════════════════════════════════════ */}
       <section className="fh6-hero">
 
-        {/* Vídeo fundo */}
+        {/* Vídeo fundo — WebM para Chrome/Firefox/Edge, fallback CSS para Safari */}
         <video
           autoPlay muted loop playsInline
           aria-hidden="true"
+          poster="/hero-poster.jpg"
           style={{
             position: "absolute", inset: 0,
             width: "100%", height: "100%",
@@ -81,6 +82,7 @@ export default function HomePage() {
             pointerEvents: "none",
           }}
         >
+          <source src="/hero.mp4" type="video/mp4" />
           <source src="/hero.webm" type="video/webm" />
         </video>
 
