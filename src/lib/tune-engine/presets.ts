@@ -261,6 +261,16 @@ const RIDE_HEIGHT: Record<TuneType, { front: TuningSetup["springs"]["ride_height
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// PADRÕES PRO (comunidade FH6) — aplicados a todos os tipos exceto rally e drift
+//
+// Testados por pro players: pressão 1.5 BAR, molas 80 kgf/mm, barras 1/65,
+// amortecedores 8/8/3/3, cambagem e convergência zerados, caster 7.
+// ─────────────────────────────────────────────────────────────────────────────
+const PRO_TYPES = new Set<TuneType>(["street", "grip", "drag", "cross_country", "top_speed"])
+const PRO_TIRE_PSI    = 21.8  // 1.5 BAR
+const PRO_SPRING_LBFIN = 457  // ≈ 80 kgf/mm (80 / 0.175127)
+
+// ─────────────────────────────────────────────────────────────────────────────
 // BUILD PRINCIPAL
 // ─────────────────────────────────────────────────────────────────────────────
 export function buildTune(
@@ -269,57 +279,89 @@ export function buildTune(
   tuneType: TuneType,
   targetDrivetrain: Drivetrain,
 ): TuningSetup {
-  const springs = calcSprings(car, tuneType, targetDrivetrain)
-  const arbs    = calcARBs(springs, tuneType)   // agora usa multipliers por tipo
-  const dampers = calcDampers(springs)
-  const rh      = RIDE_HEIGHT[tuneType]
-  const diff    = baseDifferential(tuneType, targetDrivetrain)
-  const gearing = { ...GEARING_PRESETS[tuneType] }
+  const isPro = PRO_TYPES.has(tuneType)
 
-  // Escala final drive por relação potência/peso
-  // Ensinamento: câmbio em formato escadinha, final drive ajustado para não
-  // cortar giro (aceleração) nem deixar marcha final sem uso (velocidade)
+  // Springs
+  const springs = isPro
+    ? { front: PRO_SPRING_LBFIN, rear: PRO_SPRING_LBFIN }
+    : calcSprings(car, tuneType, targetDrivetrain)
+
+  // ARBs
+  const arbs = isPro
+    ? { front: 1, rear: 65 }
+    : calcARBs(springs, tuneType)
+
+  // Dampers
+  const dampers = isPro
+    ? { rebound_front: 8, rebound_rear: 8, bump_front: 3, bump_rear: 3 }
+    : calcDampers(springs)
+
+  // Ride height
+  const rh = isPro
+    ? { front: "max" as const, rear: "high" as const }
+    : RIDE_HEIGHT[tuneType]
+
+  // Gearing — sempre physics-based (escadinha)
+  const gearing = { ...GEARING_PRESETS[tuneType] }
   const ptw = car.power_hp / car.weight_kg
   if (ptw > 0.35) gearing.final_drive = r2(gearing.final_drive * (1 - (ptw - 0.35) * 0.10))
   if (ptw < 0.18) gearing.final_drive = r2(gearing.final_drive * (1 + (0.18 - ptw) * 0.12))
   gearing.final_drive = clamp(r2(gearing.final_drive), 2.20, 5.50)
 
-  // Pressão de pneus — ajuste por peso (mais pesado = ligeiramente mais pressão)
-  const tires = { ...TIRE_PRESETS[tuneType] }
-  if (profile.isHeavy) {
-    tires.front = r1(tires.front + 1.0)
-    tires.rear  = r1(tires.rear  + 1.5)
-  }
-  if (profile.isLight) {
-    tires.front = r1(tires.front - 0.5)
-    tires.rear  = r1(tires.rear  - 0.5)
-  }
+  // Tires
+  const tires = isPro
+    ? { front: PRO_TIRE_PSI, rear: PRO_TIRE_PSI }
+    : (() => {
+        const t = { ...TIRE_PRESETS[tuneType] }
+        if (profile.isHeavy) { t.front = r1(t.front + 1.0); t.rear = r1(t.rear + 1.5) }
+        if (profile.isLight) { t.front = r1(t.front - 0.5); t.rear = r1(t.rear - 0.5) }
+        return t
+      })()
 
-  // Alinhamento — correção por tração
-  const alignment = { ...ALIGNMENT_PRESETS[tuneType] }
-  if (targetDrivetrain === "FWD") {
-    // FWD: menos cambagem dianteira para reduzir understeer na saída de curva
-    alignment.camber_front = r1(clamp(alignment.camber_front - 0.3, -5.0, 0))
-    alignment.toe_front    = r1(alignment.toe_front - 0.1) // leve toe-in ajuda rotação
-  }
-  if (targetDrivetrain === "RWD" && tuneType === "grip") {
-    // RWD grip: ligeiramente mais cambagem traseira para compensar carga extra na saída
-    alignment.camber_rear = r1(clamp(alignment.camber_rear - 0.2, -5.0, 0))
-  }
+  // Alignment
+  const alignment = isPro
+    ? { camber_front: 0.0, camber_rear: 0.0, toe_front: 0.0, toe_rear: 0.0, caster: 7.0 }
+    : (() => {
+        const a = { ...ALIGNMENT_PRESETS[tuneType] }
+        if (targetDrivetrain === "FWD") {
+          a.camber_front = r1(clamp(a.camber_front - 0.3, -5.0, 0))
+          a.toe_front    = r1(a.toe_front - 0.1)
+        }
+        if (targetDrivetrain === "RWD" && tuneType === "grip") {
+          a.camber_rear = r1(clamp(a.camber_rear - 0.2, -5.0, 0))
+        }
+        return a
+      })()
 
-  // Freios — mais pressão para carros pesados
+  // Freios — sempre physics-based
   const brakes = { ...BRAKE_PRESETS[tuneType] }
   if (profile.isHeavy) brakes.pressure = clamp(brakes.pressure + 10, 60, 150)
 
-  // Diferencial — ajuste por potência
-  // Ensinamento: "I always go 100 as starting point" — mas para carros muito potentes
-  // reduzimos um pouco para evitar wheelspin crônico
-  const differential = { ...diff }
-  if (profile.isPowerful && differential.rear_accel !== undefined) {
-    differential.rear_accel = clamp(differential.rear_accel - 10, 20, 100)
-  }
-  if (profile.isMuscle && tuneType === "drag") {
-    differential.rear_accel = 92
+  // Aero
+  const aero = isPro
+    ? { front: "max" as const, rear: "medium-high" as const }
+    : AERO_PRESETS[tuneType]
+
+  // Differential
+  const differential = { ...baseDifferential(tuneType, targetDrivetrain) }
+  if (isPro) {
+    if (targetDrivetrain === "RWD") {
+      differential.rear_accel = 100
+      differential.rear_decel = 0
+    } else if (targetDrivetrain === "AWD") {
+      differential.front_accel   = 100
+      differential.front_decel   = 0
+      differential.rear_accel    = 100
+      differential.rear_decel    = 0
+      differential.center_balance = 70
+    }
+  } else {
+    if (profile.isPowerful && differential.rear_accel !== undefined) {
+      differential.rear_accel = clamp(differential.rear_accel - 10, 20, 100)
+    }
+    if (profile.isMuscle && tuneType === "drag") {
+      differential.rear_accel = 92
+    }
   }
 
   return {
@@ -334,7 +376,7 @@ export function buildTune(
       ride_height_rear:  rh.rear,
     },
     damping: dampers,
-    aero:    AERO_PRESETS[tuneType],
+    aero,
     brakes,
     differential,
   }

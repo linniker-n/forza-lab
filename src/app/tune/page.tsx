@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
@@ -13,7 +13,7 @@ import { translateParts } from "@/lib/settings/translations"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
 import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
 import { generateTune } from "@/lib/tune-engine/generator"
-import type { AdvancedGearingInput, Car, CarCategory, CarClass, ControlType, Drivetrain, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType } from "@/types"
+import type { Car, CarCategory, CarClass, ControlType, Drivetrain, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType } from "@/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 
 type Difficulty = "easy" | "balanced" | "aggressive"
@@ -33,15 +33,6 @@ interface ManualCarInput {
   category: CarCategory
 }
 
-interface GearCalculatorForm {
-  redlineRpm: string
-  targetSpeedKmh: string
-  numberOfGears: string
-  currentFinalDrive: string
-  currentFirstGear: string
-  firstGearSpeedKmh: string
-}
-
 const DEFAULT_MANUAL_CAR: ManualCarInput = {
   brand: "Custom",
   model: "FH6 Build",
@@ -54,15 +45,6 @@ const DEFAULT_MANUAL_CAR: ManualCarInput = {
   drivetrain: "AWD",
   aspiration: "Turbo",
   category: "sport",
-}
-
-const DEFAULT_GEAR_CALC: GearCalculatorForm = {
-  redlineRpm: "7500",
-  targetSpeedKmh: "320",
-  numberOfGears: "6",
-  currentFinalDrive: "",
-  currentFirstGear: "",
-  firstGearSpeedKmh: "",
 }
 
 const TUNE_TYPES: { v: TuneType; l: string; desc: string; cls: string }[] = [
@@ -210,31 +192,6 @@ function buildManualCar(input: ManualCarInput): Car {
       top_speed: power > 650 ? 8 : 6,
     },
     notes: `Criado na calculadora manual. Peso dianteiro: ${frontWeight}%.`,
-  }
-}
-
-function optionalNum(value: string): number | undefined {
-  if (!value.trim()) return undefined
-  const parsed = num(value)
-  return Number.isFinite(parsed) ? parsed : undefined
-}
-
-function isGearCalculatorValid(input: GearCalculatorForm): boolean {
-  return (
-    Number.isFinite(num(input.redlineRpm)) &&
-    Number.isFinite(num(input.targetSpeedKmh)) &&
-    Number.isFinite(num(input.numberOfGears))
-  )
-}
-
-function buildGearCalculatorInput(input: GearCalculatorForm): AdvancedGearingInput {
-  return {
-    redline_rpm: clampNum(Math.round(num(input.redlineRpm)), 4500, 11000),
-    target_speed_kmh: clampNum(Math.round(num(input.targetSpeedKmh)), 120, 520),
-    number_of_gears: clampNum(Math.round(num(input.numberOfGears)), 6, 10),
-    current_final_drive: optionalNum(input.currentFinalDrive),
-    current_first_gear: optionalNum(input.currentFirstGear),
-    first_gear_speed_kmh: optionalNum(input.firstGearSpeedKmh),
   }
 }
 
@@ -686,31 +643,39 @@ function WizardInner() {
   const [car, setCar]         = useState<Car | null>(() => queryCar)
   const [manual, setManual]   = useState<ManualCarInput>(DEFAULT_MANUAL_CAR)
   const [tuneType, setTT]     = useState<TuneType | null>(() => queryType)
-  const [cls, setCls]         = useState<CarClass>("A")
+  const [cls, setCls]         = useState<CarClass>(() => queryCar?.base_class ?? "A")
   const [diff, setDiff]       = useState<Difficulty>("balanced")
   const [style, setStyle]     = useState<DrivingStyle>("competitive")
   const [ctrl, setCtrl]       = useState<ControlType>("controller")
   const [dt, setDt]           = useState<TuneRequest["preferred_drivetrain"]>("original")
   const [intent, setIntent]   = useState<TuneIntent>("balanced")
   const [engineSwap, setEngineSwap] = useState(false)
-  const [gearCalcEnabled, setGearCalcEnabled] = useState(false)
-  const [gearCalc, setGearCalc] = useState<GearCalculatorForm>(DEFAULT_GEAR_CALC)
   const [loading, setLoading] = useState(false)
   const [result, setResult]   = useState<GeneratedTune | null>(null)
   const [error, setError]     = useState<string | null>(null)
+
+  // Auto-corrige classe se carro selecionado tiver PI acima da classe atual
+  useEffect(() => {
+    if (!car) return
+    const minIdx = CLASSES.indexOf(car.base_class)
+    const curIdx = CLASSES.indexOf(cls)
+    if (curIdx < minIdx) setCls(car.base_class)
+  }, [car]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = search.length >= 2
     ? CARS.filter((c) => `${c.brand} ${c.model} ${c.year}`.toLowerCase().includes(search.toLowerCase())).slice(0, 14)
     : CARS.slice(0, 14)
   const manualValid = isManualCarValid(manual)
-  const gearCalcValid = isGearCalculatorValid(gearCalc)
+
+  // Classes disponíveis para o carro selecionado (não pode tunar abaixo da classe base)
+  const effectiveBaseClass: CarClass =
+    inputMode === "calculator" && manualValid
+      ? classFromPi(num(manual.basePi))
+      : car?.base_class ?? "D"
+  const availableClasses = CLASSES.filter((_, i) => i >= CLASSES.indexOf(effectiveBaseClass))
 
   function updateManual<K extends keyof ManualCarInput>(key: K, value: ManualCarInput[K]) {
     setManual((current) => ({ ...current, [key]: value }))
-  }
-
-  function updateGearCalc<K extends keyof GearCalculatorForm>(key: K, value: GearCalculatorForm[K]) {
-    setGearCalc((current) => ({ ...current, [key]: value }))
   }
 
   function goToTuneType() {
@@ -736,7 +701,6 @@ function WizardInner() {
         difficulty: diff,
         engine_swap: engineSwap,
         fh6_intent: intent,
-        gearing_calculator: gearCalcEnabled && gearCalcValid ? buildGearCalculatorInput(gearCalc) : undefined,
       }
       setResult(generateTune(request, car)); setStep(4)
     } catch (e: unknown) {
@@ -744,7 +708,7 @@ function WizardInner() {
     } finally { setLoading(false) }
   }
 
-  if (step === 4 && result) return <TuneResult tune={result} onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false); setIntent("balanced"); setInputMode("database"); setGearCalcEnabled(false); setGearCalc(DEFAULT_GEAR_CALC) }} />
+  if (step === 4 && result) return <TuneResult tune={result} onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false); setIntent("balanced"); setInputMode("database"); setCls("A") }} />
 
   const steps = [
     { n: 1, l: "Carro" },
@@ -969,13 +933,18 @@ function WizardInner() {
             <div className="space-y-2">
               <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Classe alvo</p>
               <div className="flex gap-2 flex-wrap">
-                {CLASSES.map((c) => (
+                {availableClasses.map((c) => (
                   <button key={c} type="button" onClick={() => setCls(c)}
                     className={`class-chip${cls === c ? " active" : ""}`} style={{ minWidth: 44 }}>
                     {c}
                   </button>
                 ))}
               </div>
+              {availableClasses.length < CLASSES.length && (
+                <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4 }}>
+                  Classes abaixo de {effectiveBaseClass} não estão disponíveis para este carro.
+                </p>
+              )}
             </div>
 
             {/* Difficulty */}
@@ -1068,56 +1037,6 @@ function WizardInner() {
               </div>
             </button>
 
-            {/* Advanced gearing */}
-            <div
-              className="r-card p-4 space-y-4"
-              style={{
-                border: gearCalcEnabled ? "1px solid var(--border-blue)" : "1px solid var(--border-strong)",
-                background: gearCalcEnabled ? "var(--blue-dim)" : "var(--bg-card)",
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => setGearCalcEnabled((value) => !value)}
-                className="w-full text-left"
-                style={{ background: "transparent", border: 0, padding: 0, cursor: "pointer" }}
-              >
-                <div className="flex items-start gap-3">
-                  <div style={{
-                    width: 18, height: 18, borderRadius: 4, flexShrink: 0, marginTop: 2,
-                    border: `2px solid ${gearCalcEnabled ? "var(--blue)" : "var(--border-strong)"}`,
-                    background: gearCalcEnabled ? "var(--blue)" : "transparent",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    {gearCalcEnabled && (
-                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                        <path d="M2 5l2.5 2.5L8 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
-                  </div>
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 3 }}>
-                      Calculadora avancada de cambio
-                    </p>
-                    <p style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.55 }}>
-                      Recria o fluxo do APK: RPM, velocidade alvo, quantidade de marchas e relacoes atuais quando voce tiver esses dados.
-                    </p>
-                  </div>
-                </div>
-              </button>
-
-              {gearCalcEnabled && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  <input className="r-input" value={gearCalc.redlineRpm} onChange={(e) => updateGearCalc("redlineRpm", e.target.value)} inputMode="numeric" placeholder="Redline RPM" />
-                  <input className="r-input" value={gearCalc.targetSpeedKmh} onChange={(e) => updateGearCalc("targetSpeedKmh", e.target.value)} inputMode="numeric" placeholder="Velocidade alvo km/h" />
-                  <input className="r-input" value={gearCalc.numberOfGears} onChange={(e) => updateGearCalc("numberOfGears", e.target.value)} inputMode="numeric" placeholder="Marchas" />
-                  <input className="r-input" value={gearCalc.currentFinalDrive} onChange={(e) => updateGearCalc("currentFinalDrive", e.target.value)} inputMode="decimal" placeholder="Final drive atual" />
-                  <input className="r-input" value={gearCalc.currentFirstGear} onChange={(e) => updateGearCalc("currentFirstGear", e.target.value)} inputMode="decimal" placeholder="Relacao da 1a atual" />
-                  <input className="r-input" value={gearCalc.firstGearSpeedKmh} onChange={(e) => updateGearCalc("firstGearSpeedKmh", e.target.value)} inputMode="decimal" placeholder="Velocidade maxima em 1a" />
-                </div>
-              )}
-            </div>
-
             {error && (
               <div className="rounded-lg p-3" style={{ background: "var(--red-dim)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 12, color: "#fca5a5" }}>
                 {error}
@@ -1126,8 +1045,8 @@ function WizardInner() {
 
             <div className="flex justify-between pt-2">
               <button type="button" onClick={() => setStep(2)} className="r-btn r-btn-ghost">Voltar</button>
-              <button type="button" onClick={generate} disabled={loading || (gearCalcEnabled && !gearCalcValid)} className="r-btn r-btn-primary"
-                style={{ paddingLeft: 32, paddingRight: 32, paddingTop: 10, paddingBottom: 10, opacity: loading || (gearCalcEnabled && !gearCalcValid) ? 0.7 : 1 }}>
+              <button type="button" onClick={generate} disabled={loading} className="r-btn r-btn-primary"
+                style={{ paddingLeft: 32, paddingRight: 32, paddingTop: 10, paddingBottom: 10, opacity: loading ? 0.7 : 1 }}>
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <span className="w-3.5 h-3.5 border-2 rounded-full animate-spin"
