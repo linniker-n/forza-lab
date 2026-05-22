@@ -41,7 +41,11 @@ export const CARS_TOTAL = payload.count
 export const CARS: Car[] = payload.cars
 
 export function getCarImageUrl(car: Car): string {
-  if (car.image_url) return car.image_url
+  if (car.image_url) {
+    // Remove os parâmetros de cache-bust (?cb=...) das URLs do wikia.
+    // Eles causam redirect chains desnecessárias — a imagem é a mesma sem eles.
+    return car.image_url.replace(/\?cb=\d+$/, "")
+  }
   if (!car.imagin_make || !car.imagin_model) return ""
   const make = encodeURIComponent(car.imagin_make)
   const model = encodeURIComponent(car.imagin_model)

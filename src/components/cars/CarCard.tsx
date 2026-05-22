@@ -59,19 +59,24 @@ export function CarCard({ car, index = 0, highlightKey }: Props) {
             style={{ objectFit: "contain", padding: "12px" }}
             onError={() => setImgErr(true)}
             priority={index < 8}
+            loading={index < 8 ? "eager" : "lazy"}
           />
         ) : (
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-1"
-            style={{ opacity: 0.25 }}
-          >
-            <span
-              className="mono-val"
-              style={{ fontSize: 26, letterSpacing: "-0.04em", color: "var(--text)" }}
-            >
-              {car.brand.slice(0, 3).toUpperCase()}
+          /* Fallback quando imagem não carrega ou não existe */
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+            <div style={{
+              width: 48, height: 48, borderRadius: 10,
+              background: "var(--blue-dim)", border: "1px solid var(--border-blue)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+                <path d="M1 12L6 5l4 5 3-3 5 6" stroke="var(--blue-bright)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="17" cy="3" r="2" stroke="var(--blue-bright)" strokeWidth="1.5"/>
+              </svg>
+            </div>
+            <span className="mono-val" style={{ fontSize: 11, color: "var(--text-muted)", letterSpacing: "0.04em" }}>
+              {car.brand.slice(0, 8).toUpperCase()}
             </span>
-            <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{car.year}</span>
           </div>
         )}
 

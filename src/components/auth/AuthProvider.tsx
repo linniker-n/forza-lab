@@ -23,7 +23,9 @@ interface AuthContextValue {
   signOut(): Promise<void>
 }
 
-const EMAIL_STORAGE_KEY = "forza-lab:email-for-sign-in"
+// Mantém ambas as chaves para compatibilidade com sessões antigas
+const EMAIL_STORAGE_KEY     = "forza-tune-lab:email-for-sign-in"
+const EMAIL_STORAGE_KEY_NEW = "forza-lab:email-for-sign-in"
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 function actionCodeSettings() {
@@ -50,19 +52,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithEmail = useCallback(async (email: string) => {
     if (!auth) throw new Error("Firebase não configurado.")
-    window.localStorage.setItem(EMAIL_STORAGE_KEY, email)
+    // Salva em ambas as chaves para compatibilidade
+    window.localStorage.setItem(EMAIL_STORAGE_KEY,     email)
+    window.localStorage.setItem(EMAIL_STORAGE_KEY_NEW, email)
     await sendSignInLinkToEmail(auth, email, actionCodeSettings())
   }, [auth])
 
   const completeEmailSignIn = useCallback(async (fallbackEmail?: string) => {
     if (!auth) throw new Error("Firebase não configurado.")
-    if (!isSignInWithEmailLink(auth, window.location.href)) return
 
-    const email = fallbackEmail || window.localStorage.getItem(EMAIL_STORAGE_KEY)
-    if (!email) throw new Error("Informe novamente o email para concluir o login.")
+    // Se a URL não contém os parâmetros do magic link, não é um link válido
+    if (!isSignInWithEmailLink(auth, window.location.href)) {
+      throw new Error("Link de acesso inválido ou expirado. Solicite um novo na página de login.")
+    }
 
-    await signInWithEmailLink(auth, email, window.location.href)
+    // Tenta ler o email de ambas as chaves (compatibilidade entre versões)
+    const savedEmail =
+      fallbackEmail ||
+      window.localStorage.getItem(EMAIL_STORAGE_KEY_NEW) ||
+      window.localStorage.getItem(EMAIL_STORAGE_KEY)
+
+    if (!savedEmail) {
+      throw new Error(
+        "Você abriu o link em um browser diferente do que usou para enviar o email. " +
+        "Por favor, informe seu email novamente para concluir."
+      )
+    }
+
+    await signInWithEmailLink(auth, savedEmail, window.location.href)
     window.localStorage.removeItem(EMAIL_STORAGE_KEY)
+    window.localStorage.removeItem(EMAIL_STORAGE_KEY_NEW)
   }, [auth])
 
   const signInWithGoogle = useCallback(async () => {
