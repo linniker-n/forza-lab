@@ -56,12 +56,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </a>
                   </p>
                   <nav className="flex gap-4 flex-wrap justify-center">
-                    <Link href="/tune" className="footer-link">Tune</Link>
-                    <Link href="/diagnostics" className="footer-link">Diagnostico</Link>
+                    <Link href="/tune"       className="footer-link">Tune</Link>
+                    <Link href="/community"  className="footer-link">Comunidade</Link>
+                    <Link href="/diagnostics"className="footer-link">Diagnostico</Link>
                     <Link href="/calculator" className="footer-link">Calculadora</Link>
-                    <Link href="/cars" className="footer-link">Carros</Link>
-                    <Link href="/meta" className="footer-link">Meta</Link>
-                    <Link href="/garage" className="footer-link">Garagem</Link>
+                    <Link href="/cars"       className="footer-link">Carros</Link>
+                    <Link href="/meta"       className="footer-link">Meta</Link>
+                    <Link href="/garage"     className="footer-link">Garagem</Link>
+                    <Link href="/support"    className="footer-link">Suporte</Link>
                   </nav>
                 </div>
               </footer>

@@ -8,6 +8,8 @@ import { useAuth } from "@/components/auth/AuthProvider"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CARS, getCarImageUrl } from "@/data/cars"
 import { getFirebaseDb } from "@/lib/firebase/client"
+import { shareTune } from "@/lib/firebase/community"
+import { loadUserProfile } from "@/lib/firebase/profile"
 import { useSettings } from "@/lib/settings/context"
 import { translateParts } from "@/lib/settings/translations"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
@@ -276,12 +278,32 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
   const [err, setErr] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [shared, setShared] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const [shareError, setShareError] = useState<string | null>(null)
   const { settings, update } = useSettings()
   const lang  = settings.partsLanguage
   const pUnit = settings.pressureUnit
   const spUnit = settings.springUnit
   const [saveError, setSaveError] = useState<string | null>(null)
   const { user } = useAuth()
+
+  async function shareToCommunnity() {
+    if (!user) return
+    setSharing(true); setShareError(null)
+    try {
+      const authorName = user.displayName || user.email?.split("@")[0] || "Anônimo"
+      let photoBase64: string | undefined
+      try {
+        const profile = await loadUserProfile(user.uid)
+        photoBase64 = profile?.photoBase64
+      } catch {}
+      await shareTune(tune, user.uid, authorName, photoBase64)
+      setShared(true)
+    } catch (err) {
+      setShareError(err instanceof Error ? err.message : "Erro ao compartilhar.")
+    } finally { setSharing(false) }
+  }
 
   async function saveTune() {
     setSaving(true)
@@ -368,6 +390,15 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
               <button type="button" onClick={() => void saveTune()} disabled={saving} className="r-btn r-btn-outline" style={{ fontSize: 11, opacity: saving ? 0.7 : 1 }}>
                 {saved ? "Tune salva" : saving ? "Salvando..." : "Salvar tune"}
               </button>
+              <button
+                type="button"
+                onClick={() => void shareToCommunnity()}
+                disabled={sharing || shared}
+                className="r-btn r-btn-ghost"
+                style={{ fontSize: 11, opacity: sharing ? 0.7 : 1, color: shared ? "#34d399" : undefined }}
+              >
+                {shared ? "Compartilhada!" : sharing ? "Compartilhando..." : "Compartilhar"}
+              </button>
               <Link href="/garage" className="r-btn r-btn-ghost" style={{ fontSize: 11 }}>
                 Garagem
               </Link>
@@ -379,6 +410,15 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
           <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 12, lineHeight: 1.6 }}>{tune.summary}</p>
           {saveError && (
             <p style={{ fontSize: 11, color: "#fbbf24", marginTop: 10 }}>{saveError}</p>
+          )}
+          {shared && (
+            <p style={{ fontSize: 11, color: "#34d399", marginTop: 6 }}>
+              Tune compartilhada na comunidade!{" "}
+              <Link href="/community" style={{ color: "#34d399", textDecoration: "underline" }}>Ver comunidade →</Link>
+            </p>
+          )}
+          {shareError && (
+            <p style={{ fontSize: 11, color: "#fbbf24", marginTop: 6 }}>{shareError}</p>
           )}
         </div>
       </div>

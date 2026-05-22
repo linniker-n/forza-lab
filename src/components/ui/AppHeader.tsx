@@ -8,13 +8,14 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle"
 import { MobileMenu } from "@/components/ui/MobileMenu"
 
 const NAV_LINKS = [
-  { href: "/tune", label: "Criar tune" },
-  { href: "/diagnostics", label: "Diagnostico" },
+  { href: "/tune",       label: "Criar tune" },
+  { href: "/community",  label: "Comunidade" },
+  { href: "/diagnostics",label: "Diagnostico" },
   { href: "/calculator", label: "Calculadora" },
-  { href: "/cars", label: "Carros" },
-  { href: "/meta", label: "Meta" },
-  { href: "/compare", label: "Comparar" },
-  { href: "/garage", label: "Garagem" },
+  { href: "/cars",       label: "Carros" },
+  { href: "/meta",       label: "Meta" },
+  { href: "/compare",    label: "Comparar" },
+  { href: "/garage",     label: "Garagem" },
 ]
 
 function isActive(pathname: string, href: string): boolean {
@@ -89,14 +90,20 @@ export function AppHeader() {
                   aria-expanded={profileOpen}
                   aria-haspopup="menu"
                 >
-                  <span className="profile-avatar">{user?.email?.[0]?.toUpperCase() ?? "P"}</span>
-                  <span className="profile-label">Perfil</span>
+                  <span className="profile-avatar">{(user?.displayName || user?.email)?.[0]?.toUpperCase() ?? "P"}</span>
+                  <span className="profile-label">{user?.displayName || "Perfil"}</span>
                 </button>
                 {profileOpen && (
                   <div className="profile-popover" role="menu">
-                    <p className="profile-email">{user?.email}</p>
+                    <p className="profile-email">{user?.displayName ? `${user.displayName} · ${user.email}` : user?.email}</p>
+                    <Link href="/profile" className="profile-item" role="menuitem">
+                      Editar perfil
+                    </Link>
                     <Link href="/settings" className="profile-item" role="menuitem">
                       Configuracoes
+                    </Link>
+                    <Link href="/support" className="profile-item" role="menuitem">
+                      Suporte
                     </Link>
                     <button
                       type="button"

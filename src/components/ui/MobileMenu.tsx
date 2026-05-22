@@ -6,13 +6,14 @@ import { useEffect, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
 
 const NAV_LINKS = [
-  { href: "/tune", label: "Criar tune" },
+  { href: "/tune",        label: "Criar tune" },
+  { href: "/community",   label: "Comunidade" },
   { href: "/diagnostics", label: "Diagnostico" },
-  { href: "/calculator", label: "Calculadora" },
-  { href: "/cars", label: "Carros" },
-  { href: "/meta", label: "Meta" },
-  { href: "/compare", label: "Comparar" },
-  { href: "/garage", label: "Garagem" },
+  { href: "/calculator",  label: "Calculadora" },
+  { href: "/cars",        label: "Carros" },
+  { href: "/meta",        label: "Meta" },
+  { href: "/compare",     label: "Comparar" },
+  { href: "/garage",      label: "Garagem" },
 ]
 
 export function MobileMenu() {
@@ -174,10 +175,16 @@ export function MobileMenu() {
           {user ? (
             <>
               <p className="profile-email" style={{ margin: 0 }}>
-                {user.email}
+                {user.displayName ? `${user.displayName} · ${user.email}` : user.email}
               </p>
+              <Link href="/profile" className="r-btn r-btn-ghost w-full" style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center" }}>
+                Editar perfil
+              </Link>
               <Link href="/settings" className="r-btn r-btn-ghost w-full" style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center" }}>
                 Configuracoes
+              </Link>
+              <Link href="/support" className="r-btn r-btn-ghost w-full" style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center" }}>
+                Suporte
               </Link>
               <button
                 type="button"
