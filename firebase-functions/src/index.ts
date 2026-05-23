@@ -52,15 +52,22 @@ export const checkout = functions.https.onRequest(async (req, res) => {
   try {
     const stripe = getStripe()
 
-    // Busca ou cria customer Stripe
-    const profileRef = db.collection("userProfiles").doc(uid)
-    const profile    = await profileRef.get()
-    let customerId: string | undefined = profile.data()?.stripe_customer_id
+    // Busca customer salvo (best-effort — não falha o checkout se Firestore indisponível)
+    let customerId: string | undefined
+    try {
+      const snap = await db.collection("userProfiles").doc(uid).get()
+      customerId = snap.data()?.stripe_customer_id as string | undefined
+    } catch (fsErr) {
+      console.warn("Firestore lookup failed (non-fatal):", fsErr)
+    }
 
     if (!customerId) {
       const customer = await stripe.customers.create({ email, metadata: { firebase_uid: uid } })
       customerId = customer.id
-      await profileRef.set({ stripe_customer_id: customerId }, { merge: true })
+      // Salva customer ID — best-effort
+      try {
+        await db.collection("userProfiles").doc(uid).set({ stripe_customer_id: customerId }, { merge: true })
+      } catch { /* ignora */ }
     }
 
     const session = await stripe.checkout.sessions.create({
