@@ -31,6 +31,11 @@ const Ctx = createContext<SubscriptionCtx | null>(null)
 
 const today = () => new Date().toISOString().split("T")[0]
 
+// Emails com acesso total irrestrito — modo admin/deus
+const ADMIN_EMAILS = new Set([
+  "design.linniker@gmail.com",
+])
+
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -43,6 +48,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     if (authLoading) return
     if (!user) {
       setData({ tier: "free", status: null, stripeCustomerId: null, tuneUsageDate: null, tuneUsageCount: 0 })
+      setLoading(false)
+      return
+    }
+
+    // Modo admin — acesso total irrestrito
+    if (user.email && ADMIN_EMAILS.has(user.email)) {
+      setData({ tier: "pro", status: "active", stripeCustomerId: null, tuneUsageDate: null, tuneUsageCount: 0 })
       setLoading(false)
       return
     }

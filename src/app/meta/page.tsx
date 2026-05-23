@@ -112,7 +112,8 @@ export default function MetaPage() {
                 )}
               </div>
 
-              {ranked.map(({ car, score }, index) => {
+              <div style={{ overflowY: "auto", maxHeight: 600, display: "flex", flexDirection: "column", gap: 8 }}>
+              {ranked.slice(0, isPro ? 24 : Math.min(FREE_LIMITS.rankingVisible + 3, ranked.length)).map(({ car, score }, index) => {
                 const isLocked = !isPro && index >= FREE_LIMITS.rankingVisible
                 return (
                   <div key={car.id} style={{ position: "relative" }}>
@@ -157,6 +158,7 @@ export default function MetaPage() {
                   </div>
                 )
               })}
+              </div>
             </aside>
           </div>
         </div>
