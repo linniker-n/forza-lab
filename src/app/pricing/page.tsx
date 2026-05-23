@@ -65,9 +65,11 @@ export default function PricingPage() {
       })
 
       if (result.data.url) window.location.href = result.data.url
-    } catch (err) {
-      console.error(err)
-      alert("Erro ao iniciar checkout. Tente novamente.")
+    } catch (err: unknown) {
+      console.error("Checkout error:", err)
+      const code = (err as { code?: string })?.code ?? ""
+      const msg  = err instanceof Error ? err.message : String(err)
+      alert(`Erro ${code}: ${msg}`)
     } finally { setLoading(null) }
   }
 
