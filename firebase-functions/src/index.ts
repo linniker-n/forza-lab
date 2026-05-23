@@ -90,6 +90,52 @@ export const checkout = functions.https.onRequest(async (req, res) => {
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
+// customerPortal — abre o portal Stripe para gerenciar/cancelar assinatura
+// ─────────────────────────────────────────────────────────────────────────────
+export const customerPortal = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*")
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS")
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+  if (req.method === "OPTIONS") { res.status(204).send(""); return }
+  if (req.method !== "POST")   { res.status(405).send("Method Not Allowed"); return }
+
+  const authHeader = req.headers.authorization ?? ""
+  if (!authHeader.startsWith("Bearer ")) { res.status(401).json({ error: "Unauthorized" }); return }
+
+  let uid: string
+  try {
+    const decoded = await admin.auth().verifyIdToken(authHeader.split("Bearer ")[1])
+    uid = decoded.uid
+  } catch {
+    res.status(401).json({ error: "Token inválido" }); return
+  }
+
+  const { returnUrl } = req.body as { returnUrl?: string }
+
+  try {
+    const stripe = getStripe()
+
+    // Busca o stripe_customer_id salvo no perfil
+    const profileSnap = await db.collection("userProfiles").doc(uid).get()
+    const customerId  = profileSnap.data()?.stripe_customer_id as string | undefined
+
+    if (!customerId) {
+      res.status(400).json({ error: "Nenhuma assinatura encontrada para este usuário." }); return
+    }
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer:   customerId,
+      return_url: returnUrl ?? "https://forza-tune-lab.pages.dev/profile",
+    })
+
+    res.json({ url: session.url })
+  } catch (err) {
+    console.error("Portal error:", err)
+    res.status(500).json({ error: err instanceof Error ? err.message : "Erro interno" })
+  }
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
 // stripeWebhook — chamado pelo Stripe quando eventos ocorrem
 // Configura no Stripe Dashboard: Endpoint URL = https://<region>-<project>.cloudfunctions.net/stripeWebhook
 // ─────────────────────────────────────────────────────────────────────────────

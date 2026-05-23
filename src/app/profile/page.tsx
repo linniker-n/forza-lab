@@ -5,12 +5,19 @@ import Link from "next/link"
 import { useRef, useState } from "react"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { getFirebaseAuth } from "@/lib/firebase/client"
 import { loadUserProfile, resizeImageToBase64, saveUserProfile } from "@/lib/firebase/profile"
+import { useSubscription } from "@/lib/subscription/context"
+
+const PORTAL_URL = "https://us-central1-forza-tune-lab.cloudfunctions.net/customerPortal"
 
 function ProfileInner() {
   const { user } = useAuth()
+  const { isPro, status } = useSubscription()
   const fileRef = useRef<HTMLInputElement>(null)
   const [nickname, setNickname] = useState(() => user?.displayName ?? "")
+  const [openingPortal, setOpeningPortal] = useState(false)
+  const [portalError, setPortalError] = useState<string | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoBase64, setPhotoBase64] = useState<string | undefined>(undefined)
   const [loaded, setLoaded] = useState(false)
@@ -46,6 +53,26 @@ function ProfileInner() {
     } catch {
       setError("Não foi possível processar a imagem.")
     }
+  }
+
+  async function openPortal() {
+    if (!user) return
+    setOpeningPortal(true); setPortalError(null)
+    try {
+      const auth  = getFirebaseAuth()
+      const token = await auth?.currentUser?.getIdToken(true)
+      if (!token) throw new Error("Sessão expirada.")
+      const res  = await fetch(PORTAL_URL, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body:    JSON.stringify({ returnUrl: window.location.href }),
+      })
+      const data = await res.json() as { url?: string; error?: string }
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`)
+      if (data.url) window.open(data.url, "_blank", "noopener,noreferrer")
+    } catch (err) {
+      setPortalError(err instanceof Error ? err.message : "Erro ao abrir portal.")
+    } finally { setOpeningPortal(false) }
   }
 
   async function save(e: React.FormEvent) {
@@ -163,6 +190,56 @@ function ProfileInner() {
             </p>
           )}
         </form>
+
+        {/* Subscription management */}
+        <div className="r-card p-5 space-y-4" style={{ border: isPro ? "1px solid rgba(44,206,204,0.4)" : "1px solid var(--border-strong)" }}>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 4 }}>Plano atual</p>
+              <div className="flex items-center gap-2">
+                <span style={{ fontSize: 13, fontWeight: 800, color: isPro ? "var(--fh6-teal)" : "var(--text)" }}>
+                  {isPro ? "Pro" : "Gratuito"}
+                </span>
+                {isPro && status === "active" && (
+                  <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 7px", borderRadius: 10, background: "rgba(44,206,204,0.12)", color: "var(--fh6-teal)", border: "1px solid rgba(44,206,204,0.3)" }}>ATIVO</span>
+                )}
+                {isPro && status === "past_due" && (
+                  <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 7px", borderRadius: 10, background: "rgba(245,158,11,0.12)", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.3)" }}>PAGAMENTO PENDENTE</span>
+                )}
+                {isPro && status === "canceled" && (
+                  <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 7px", borderRadius: 10, background: "rgba(239,68,68,0.12)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}>CANCELADO</span>
+                )}
+              </div>
+            </div>
+            {isPro ? (
+              <button type="button" onClick={() => void openPortal()} disabled={openingPortal}
+                className="r-btn r-btn-ghost" style={{ fontSize: 12, opacity: openingPortal ? 0.6 : 1 }}>
+                {openingPortal ? "Abrindo..." : "Gerenciar assinatura ↗"}
+              </button>
+            ) : (
+              <Link href="/pricing" className="r-btn r-btn-primary" style={{ fontSize: 12 }}>Fazer upgrade →</Link>
+            )}
+          </div>
+
+          {isPro && (
+            <div className="rounded-lg p-3" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
+              <p style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.65 }}>
+                Para <strong style={{ color: "#f87171" }}>cancelar</strong>, trocar de plano ou atualizar o método
+                de pagamento, clique em <strong style={{ color: "var(--text)" }}>Gerenciar assinatura</strong>.
+                Você será redirecionado ao portal seguro do Stripe em nova aba.
+              </p>
+              <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 6 }}>
+                Ao cancelar, o acesso Pro permanece ativo até o fim do período já pago.
+              </p>
+            </div>
+          )}
+
+          {portalError && (
+            <div className="rounded-lg p-3" style={{ background: "var(--red-dim)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 12, color: "#fca5a5" }}>
+              {portalError}
+            </div>
+          )}
+        </div>
 
         <div className="r-card p-4 flex gap-3" style={{ border: "1px solid var(--border-blue)" }}>
           <div style={{ width: 28, height: 28, borderRadius: 6, background: "var(--blue-dim)", border: "1px solid var(--border-blue)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
