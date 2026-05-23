@@ -5,6 +5,8 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { RequireAuth } from "@/components/auth/RequireAuth"
+import { shareTune } from "@/lib/firebase/community"
+import { loadUserProfile } from "@/lib/firebase/profile"
 import { useSubscription } from "@/lib/subscription/context"
 import { UpgradeModal } from "@/components/paywall/UpgradeModal"
 import { FREE_LIMITS } from "@/lib/subscription/limits"
@@ -16,7 +18,7 @@ import { useSettings } from "@/lib/settings/context"
 import type { AppSettings } from "@/lib/settings/context"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
 import type { DiagnosticProblem, DiagnosticResult, GeneratedTune } from "@/types"
-import { collection, deleteDoc, doc, getDocs, orderBy, query } from "firebase/firestore"
+import { collection, deleteDoc, doc, getDocs, orderBy, query, updateDoc } from "firebase/firestore"
 
 interface SavedTune {
   id: string
@@ -377,11 +379,173 @@ function DiagnosticPanel({ tune, onClose }: { tune: GeneratedTune; onClose(): vo
 // ─────────────────────────────────────────────────────────────────────────────
 // Página principal da Garagem
 // ─────────────────────────────────────────────────────────────────────────────
+// Edit Tune Panel
+// ─────────────────────────────────────────────────────────────────────────────
+const RIDE_OPTS = ["low","medium-low","medium","medium-high","high","max"] as const
+const AERO_OPTS = ["min","low","medium","medium-high","high","max"] as const
+
+type TuningSetupMut = import("@/types").TuningSetup
+
+function Field({ label, value, onChange, step = 0.1, min, max }: {
+  label: string; value: number; onChange(v: number): void
+  step?: number; min?: number; max?: number
+}) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>{label}</span>
+      <input
+        type="number"
+        className="r-input"
+        style={{ padding: "4px 8px", fontSize: 12, height: 32 }}
+        value={value}
+        step={step}
+        min={min}
+        max={max}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+    </div>
+  )
+}
+
+function SelectField({ label, value, opts, onChange }: {
+  label: string; value: string; opts: readonly string[]
+  onChange(v: string): void
+}) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>{label}</span>
+      <select className="r-input" style={{ padding: "4px 8px", fontSize: 12, height: 32 }}
+        value={value} onChange={(e) => onChange(e.target.value)}>
+        {opts.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </div>
+  )
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--fh6-teal)", marginTop: 12, marginBottom: 6 }}>{children}</p>
+}
+
+function EditTunePanel({ tune, onSave, onClose, onShare }: {
+  tune: import("@/types").GeneratedTune
+  onSave(t: TuningSetupMut): void
+  onClose(): void
+  onShare(t: TuningSetupMut): void
+}) {
+  const [t, setT] = useState<TuningSetupMut>(JSON.parse(JSON.stringify(tune.tuning)))
+
+  function up<K extends keyof TuningSetupMut>(section: K, patch: Partial<TuningSetupMut[K]>) {
+    setT((prev) => ({ ...prev, [section]: { ...prev[section] as object, ...patch } }))
+  }
+
+  return (
+    <div className="r-card p-5 space-y-1 anim-up" style={{ border: "1px solid var(--border-blue)", background: "var(--bg-elevated)" }}>
+      <div className="flex items-center justify-between mb-3">
+        <p style={{ fontSize: 13, fontWeight: 800, color: "var(--text)" }}>Editar tunagem</p>
+        <button type="button" onClick={onClose} style={{ fontSize: 11, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>✕ Fechar</button>
+      </div>
+
+      <SectionTitle>Pneus (PSI)</SectionTitle>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Dianteiro" value={t.tires.front} onChange={(v) => up("tires", { front: v })} min={14} max={50} />
+        <Field label="Traseiro"  value={t.tires.rear}  onChange={(v) => up("tires", { rear: v })}  min={14} max={50} />
+      </div>
+
+      <SectionTitle>Alinhamento</SectionTitle>
+      <div className="grid grid-cols-3 gap-2">
+        <Field label="Camb. D"  value={t.alignment.camber_front} onChange={(v) => up("alignment", { camber_front: v })} min={-5} max={0} />
+        <Field label="Camb. T"  value={t.alignment.camber_rear}  onChange={(v) => up("alignment", { camber_rear: v })}  min={-5} max={0} />
+        <Field label="Caster"   value={t.alignment.caster}        onChange={(v) => up("alignment", { caster: v })}        min={0}  max={7} />
+        <Field label="Conv. D"  value={t.alignment.toe_front}    onChange={(v) => up("alignment", { toe_front: v })}    min={-3} max={3} step={0.1} />
+        <Field label="Conv. T"  value={t.alignment.toe_rear}     onChange={(v) => up("alignment", { toe_rear: v })}     min={-3} max={3} step={0.1} />
+      </div>
+
+      <SectionTitle>Barras Estabilizadoras</SectionTitle>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Dianteira" value={t.antiroll_bars.front} onChange={(v) => up("antiroll_bars", { front: v })} min={1} max={65} step={0.1} />
+        <Field label="Traseira"  value={t.antiroll_bars.rear}  onChange={(v) => up("antiroll_bars", { rear: v })}  min={1} max={65} step={0.1} />
+      </div>
+
+      <SectionTitle>Molas (lbf/in)</SectionTitle>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Dianteira" value={t.springs.front} onChange={(v) => up("springs", { front: v })} min={80} max={1925} step={25} />
+        <Field label="Traseira"  value={t.springs.rear}  onChange={(v) => up("springs", { rear: v })}  min={80} max={1925} step={25} />
+        <SelectField label="Alt. D" value={t.springs.ride_height_front} opts={RIDE_OPTS} onChange={(v) => up("springs", { ride_height_front: v as typeof RIDE_OPTS[number] })} />
+        <SelectField label="Alt. T" value={t.springs.ride_height_rear}  opts={RIDE_OPTS} onChange={(v) => up("springs", { ride_height_rear: v as typeof RIDE_OPTS[number] })} />
+      </div>
+
+      <SectionTitle>Amortecedores</SectionTitle>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Ret. D"  value={t.damping.rebound_front} onChange={(v) => up("damping", { rebound_front: v })} min={1} max={20} step={0.1} />
+        <Field label="Ret. T"  value={t.damping.rebound_rear}  onChange={(v) => up("damping", { rebound_rear: v })}  min={1} max={20} step={0.1} />
+        <Field label="Comp. D" value={t.damping.bump_front}    onChange={(v) => up("damping", { bump_front: v })}    min={1} max={20} step={0.1} />
+        <Field label="Comp. T" value={t.damping.bump_rear}     onChange={(v) => up("damping", { bump_rear: v })}     min={1} max={20} step={0.1} />
+      </div>
+
+      <SectionTitle>Aerodinâmica</SectionTitle>
+      <div className="grid grid-cols-2 gap-2">
+        <SelectField label="Downforce D" value={t.aero.front} opts={AERO_OPTS} onChange={(v) => up("aero", { front: v as typeof AERO_OPTS[number] })} />
+        <SelectField label="Downforce T" value={t.aero.rear}  opts={AERO_OPTS} onChange={(v) => up("aero", { rear: v as typeof AERO_OPTS[number] })} />
+      </div>
+
+      <SectionTitle>Freios</SectionTitle>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Equilíbrio %" value={t.brakes.balance}  onChange={(v) => up("brakes", { balance: v })}  min={0}  max={100} step={1} />
+        <Field label="Pressão %"    value={t.brakes.pressure} onChange={(v) => up("brakes", { pressure: v })} min={0} max={150} step={1} />
+      </div>
+
+      <SectionTitle>Diferencial</SectionTitle>
+      <div className="grid grid-cols-2 gap-2">
+        {t.differential.front_accel !== undefined && (
+          <Field label="Front Ac. %" value={t.differential.front_accel} onChange={(v) => up("differential", { front_accel: v })} min={0} max={100} step={1} />
+        )}
+        {t.differential.front_decel !== undefined && (
+          <Field label="Front De. %" value={t.differential.front_decel} onChange={(v) => up("differential", { front_decel: v })} min={0} max={100} step={1} />
+        )}
+        <Field label="Rear Ac. %"  value={t.differential.rear_accel}  onChange={(v) => up("differential", { rear_accel: v })}  min={0} max={100} step={1} />
+        <Field label="Rear De. %"  value={t.differential.rear_decel}  onChange={(v) => up("differential", { rear_decel: v })}  min={0} max={100} step={1} />
+        {t.differential.center_balance !== undefined && (
+          <Field label="Centro %" value={t.differential.center_balance} onChange={(v) => up("differential", { center_balance: v })} min={0} max={100} step={1} />
+        )}
+      </div>
+
+      <SectionTitle>Câmbio</SectionTitle>
+      <div className="grid grid-cols-3 gap-2">
+        <Field label="Final Drive" value={t.gearing.final_drive} onChange={(v) => up("gearing", { final_drive: v })} min={2.2} max={5.5} step={0.01} />
+        {([1,2,3,4,5,6,7,8,9,10] as const).map((g) => {
+          const k = `gear_${g}` as keyof typeof t.gearing
+          const v = t.gearing[k] as number | undefined
+          return v !== undefined ? (
+            <Field key={g} label={`${g}ª`} value={v}
+              onChange={(nv) => up("gearing", { [k]: nv })} min={0.5} max={5} step={0.01} />
+          ) : null
+        })}
+      </div>
+
+      <div className="flex gap-2 pt-4">
+        <button type="button" onClick={() => onSave(t)} className="r-btn r-btn-primary flex-1" style={{ fontSize: 12, paddingTop: 10, paddingBottom: 10 }}>
+          Salvar alterações
+        </button>
+        <button type="button" onClick={() => onShare(t)} className="r-btn r-btn-outline" style={{ fontSize: 12, paddingTop: 10, paddingBottom: 10 }}>
+          Compartilhar
+        </button>
+        <button type="button" onClick={onClose} className="r-btn r-btn-ghost" style={{ fontSize: 12 }}>
+          Cancelar
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function GaragePage() {
   const [saved,        setSaved]       = useState<SavedTune[]>([])
   const [syncNote,     setSyncNote]    = useState<string | null>(null)
   const [diagOpenId,   setDiagOpenId]  = useState<string | null>(null)
+  const [editOpenId,   setEditOpenId]  = useState<string | null>(null)
+  const [sharingId,    setSharingId]   = useState<string | null>(null)
+  const [sharedId,     setSharedId]    = useState<string | null>(null)
   const [showUpgrade,  setShowUpgrade] = useState(false)
   const { user } = useAuth()
   const { isPro } = useSubscription()
@@ -447,6 +611,38 @@ export default function GaragePage() {
     window.localStorage.setItem(storageKey(user?.uid), JSON.stringify(next))
     setSaved(next)
     if (diagOpenId === id) setDiagOpenId(null)
+  }
+
+  async function saveEditedTune(id: string, newTuning: import("@/types").TuningSetup) {
+    const db = getFirebaseDb()
+    const updated = saved.map((s) => s.id !== id ? s : { ...s, tune: { ...s.tune, tuning: newTuning } })
+    setSaved(updated)
+    window.localStorage.setItem(storageKey(user?.uid), JSON.stringify(updated))
+    if (db && user) {
+      try {
+        await updateDoc(doc(db, "users", user.uid, "savedTunes", id), { "tune.tuning": newTuning })
+      } catch { /* best-effort */ }
+    }
+    setEditOpenId(null)
+    setSyncNote("Tunagem atualizada com suas alterações.")
+    setTimeout(() => setSyncNote(null), 3000)
+  }
+
+  async function shareEditedTune(id: string, newTuning: import("@/types").TuningSetup) {
+    if (!user) return
+    const item = saved.find((s) => s.id === id)
+    if (!item) return
+    setSharingId(id)
+    try {
+      const authorName = user.displayName || user.email?.split("@")[0] || "Anônimo"
+      let photoBase64: string | undefined
+      try { const p = await loadUserProfile(user.uid); photoBase64 = p?.photoBase64 } catch {}
+      const tuneToshare = { ...item.tune, tuning: newTuning }
+      await shareTune(tuneToshare, user.uid, authorName, photoBase64)
+      setSharedId(id)
+      setEditOpenId(null)
+    } catch { setSyncNote("Erro ao compartilhar.") }
+    finally { setSharingId(null) }
   }
 
   async function clearGarage() {
@@ -581,7 +777,7 @@ export default function GaragePage() {
                       <div className="flex flex-row sm:flex-col gap-2 flex-wrap">
                         <button
                           type="button"
-                          onClick={() => setDiagOpenId(diagOpen ? null : item.id)}
+                          onClick={() => { setDiagOpenId(diagOpen ? null : item.id); setEditOpenId(null) }}
                           className="r-btn"
                           style={{
                             fontSize: 11, padding: "6px 12px",
@@ -591,6 +787,28 @@ export default function GaragePage() {
                           }}
                         >
                           🔧 Diagnosticar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setEditOpenId(editOpenId === item.id ? null : item.id); setDiagOpenId(null) }}
+                          className="r-btn"
+                          style={{
+                            fontSize: 11, padding: "6px 12px",
+                            background: editOpenId === item.id ? "rgba(44,206,204,0.12)" : "transparent",
+                            color: editOpenId === item.id ? "var(--fh6-teal)" : "var(--text-muted)",
+                            border: `1px solid ${editOpenId === item.id ? "rgba(44,206,204,0.4)" : "var(--border-strong)"}`,
+                          }}
+                        >
+                          ✏️ Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void shareEditedTune(item.id, tune.tuning)}
+                          disabled={sharingId === item.id}
+                          className="r-btn r-btn-ghost"
+                          style={{ fontSize: 11, color: sharedId === item.id ? "#34d399" : undefined, opacity: sharingId === item.id ? 0.6 : 1 }}
+                        >
+                          {sharedId === item.id ? "✓ Compartilhado" : sharingId === item.id ? "..." : "Compartilhar"}
                         </button>
                         <Link
                           href={`/tune?car=${tune.car.id}&type=${tune.tune_type}`}
@@ -611,11 +829,21 @@ export default function GaragePage() {
                     </div>
                   </article>
 
-                  {/* ── Diagnostic panel (expands below the card) ── */}
+                  {/* ── Diagnostic panel ── */}
                   {diagOpen && (
                     <DiagnosticPanel
                       tune={tune}
                       onClose={() => setDiagOpenId(null)}
+                    />
+                  )}
+
+                  {/* ── Edit tune panel ── */}
+                  {editOpenId === item.id && (
+                    <EditTunePanel
+                      tune={tune}
+                      onClose={() => setEditOpenId(null)}
+                      onSave={(newTuning) => void saveEditedTune(item.id, newTuning)}
+                      onShare={(newTuning) => void shareEditedTune(item.id, newTuning)}
                     />
                   )}
                 </div>
