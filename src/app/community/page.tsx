@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { getCarImageUrl } from "@/data/cars"
+import { translateParts } from "@/lib/settings/translations"
 import {
   type CommunityTune,
   deleteCommunityTune,
@@ -253,6 +254,32 @@ function TuneCard({ item, userId, onLikeToggle, onDelete }: {
                 <TRow l="Pressão" v={`${t.brakes.pressure}%`} />
               </div>
             </div>
+
+            {/* Peças */}
+            {item.tune.parts && (
+              <div className="rounded-lg p-3 space-y-2" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
+                <p style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Peças</p>
+                {(["engine","platform","drivetrain","tires","aero"] as const).map((cat) => {
+                  const items = (item.tune.parts[cat] ?? []) as string[]
+                  if (!items.length) return null
+                  const label = cat === "engine" ? "Motor" : cat === "platform" ? "Plataforma" : cat === "drivetrain" ? "Transmissão" : cat === "tires" ? "Pneus" : "Aero"
+                  return (
+                    <div key={cat}>
+                      <p style={{ fontSize: 9, fontWeight: 700, color: "var(--text-subtle)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 3 }}>{label}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {translateParts(items, "ptbr").map((part, j) => (
+                          <span key={j} style={{
+                            fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 4,
+                            background: "var(--blue-dim)", color: "var(--blue-bright)",
+                            border: "1px solid var(--border-blue)",
+                          }}>{part}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
 
             <Link href={`/tune?car=${item.carId}`} className="r-btn r-btn-ghost w-full" style={{ fontSize: 11, justifyContent: "center" }}>
               Criar tune para este carro →
