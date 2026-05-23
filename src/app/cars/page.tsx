@@ -5,32 +5,40 @@ import Link from "next/link"
 import { CarCard } from "@/components/cars/CarCard"
 import { CARS, CARS_SYNCED_AT } from "@/data/cars"
 import type { TuneType } from "@/types"
+import { useLanguage } from "@/lib/i18n/context"
+import { useTranslations } from "@/lib/i18n/translations"
 
-const TUNE_FILTERS: { v: TuneType | "all"; l: string }[] = [
-  { v: "all", l: "Todos" },
-  { v: "street", l: "Rua" },
-  { v: "drag", l: "Drag" },
-  { v: "drift", l: "Drift" },
-  { v: "rally", l: "Rally" },
-  { v: "cross_country", l: "Off-road" },
-  { v: "top_speed", l: "Top speed" },
-  { v: "grip", l: "Grip" },
+const TUNE_TYPE_VALUES: (TuneType | "all")[] = [
+  "all", "street", "drag", "drift", "rally", "cross_country", "top_speed", "grip",
 ]
-const DT_FILTERS = ["Todos", "AWD", "RWD", "FWD"]
-const CL_FILTERS = ["Todas", "D", "C", "B", "A", "S1", "S2", "R", "X"]
-const SORT_OPTS = [
-  { v: "name", l: "Nome" },
-  { v: "power", l: "Potencia" },
-  { v: "pi", l: "PI" },
-  { v: "weight", l: "Peso" },
-]
+const DT_VALUES = ["all", "AWD", "RWD", "FWD"] as const
+const CL_VALUES = ["all", "D", "C", "B", "A", "S1", "S2", "R", "X"] as const
+const SORT_VALUES = ["name", "power", "pi", "weight"] as const
 
 export default function CarsPage() {
-  const [q, setQ] = useState("")
+  const { lang } = useLanguage()
+  const t = useTranslations(lang)
+
+  const TUNE_FILTERS = TUNE_TYPE_VALUES.map((v) => ({
+    v,
+    l: v === "all"
+      ? t.cars.allTypes
+      : t.tune.tuneLabels[v as TuneType],
+  }))
+  const DT_FILTERS = DT_VALUES.map((v) => ({ v, l: v === "all" ? t.cars.allDrivetrains : v }))
+  const CL_FILTERS = CL_VALUES.map((v) => ({ v, l: v === "all" ? t.cars.allClasses : v }))
+  const SORT_OPTS = [
+    { v: "name",   l: t.cars.sortName },
+    { v: "power",  l: t.cars.sortPower },
+    { v: "pi",     l: t.cars.sortPi },
+    { v: "weight", l: t.cars.sortWeight },
+  ] as const
+
+  const [q, setQ]       = useState("")
   const [tune, setTune] = useState<TuneType | "all">("all")
-  const [dt, setDt] = useState("Todos")
-  const [cl, setCl] = useState("Todas")
-  const [sort, setSort] = useState("name")
+  const [dt, setDt]     = useState<typeof DT_VALUES[number]>("all")
+  const [cl, setCl]     = useState<typeof CL_VALUES[number]>("all")
+  const [sort, setSort] = useState<typeof SORT_VALUES[number]>("name")
 
   const results = useMemo(() => {
     const lq = q.toLowerCase()
@@ -38,13 +46,13 @@ export default function CarsPage() {
       .filter((car) => {
         if (lq && !`${car.brand} ${car.model} ${car.year}`.toLowerCase().includes(lq)) return false
         if (tune !== "all" && !car.recommended_use.includes(tune)) return false
-        if (dt !== "Todos" && car.drivetrain !== dt) return false
-        if (cl !== "Todas" && car.base_class !== cl) return false
+        if (dt !== "all" && car.drivetrain !== dt) return false
+        if (cl !== "all" && car.base_class !== cl) return false
         return true
       })
       .sort((a, b) => {
-        if (sort === "power") return b.power_hp - a.power_hp
-        if (sort === "pi") return b.base_pi - a.base_pi
+        if (sort === "power")  return b.power_hp - a.power_hp
+        if (sort === "pi")     return b.base_pi - a.base_pi
         if (sort === "weight") return a.weight_kg - b.weight_kg
         return `${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`)
       })
@@ -53,8 +61,8 @@ export default function CarsPage() {
   function clearAll() {
     setQ("")
     setTune("all")
-    setDt("Todos")
-    setCl("Todas")
+    setDt("all")
+    setCl("all")
   }
 
   return (
@@ -62,13 +70,13 @@ export default function CarsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
         <div className="flex items-start justify-between flex-wrap gap-4 anim-up">
           <div className="space-y-1">
-            <p className="section-label">Banco de dados</p>
-            <h1 className="page-title">Carros</h1>
+            <p className="section-label">{t.cars.sectionLabel}</p>
+            <h1 className="page-title">{t.cars.pageTitle}</h1>
             <p style={{ fontSize: 13, color: "var(--text-muted)" }}>
-              {CARS.length} carros na base local - atualizado em {new Date(CARS_SYNCED_AT).toLocaleDateString("pt-BR")}
+              {t.cars.dbInfo(CARS.length, new Date(CARS_SYNCED_AT).toLocaleDateString(t.locale))}
             </p>
           </div>
-          <Link href="/tune" className="r-btn r-btn-primary">Criar tune</Link>
+          <Link href="/tune" className="r-btn r-btn-primary">{t.cars.createTune}</Link>
         </div>
 
         <div className="relative anim-up" style={{ animationDelay: "60ms", maxWidth: 420 }}>
@@ -84,7 +92,7 @@ export default function CarsPage() {
             type="text"
             className="r-input"
             style={{ paddingLeft: 36 }}
-            placeholder="Marca, modelo ou ano..."
+            placeholder={t.cars.searchPlaceholder}
             value={q}
             onChange={(event) => setQ(event.target.value)}
           />
@@ -108,13 +116,13 @@ export default function CarsPage() {
             <div className="flex gap-1.5 flex-wrap">
               {DT_FILTERS.map((item) => (
                 <button
-                  key={item}
+                  key={item.v}
                   type="button"
-                  onClick={() => setDt(item)}
-                  className={`class-chip${dt === item ? " active" : ""}`}
+                  onClick={() => setDt(item.v)}
+                  className={`class-chip${dt === item.v ? " active" : ""}`}
                   style={{ minWidth: 48 }}
                 >
-                  {item}
+                  {item.l}
                 </button>
               ))}
             </div>
@@ -122,17 +130,17 @@ export default function CarsPage() {
             <div className="flex gap-1.5 flex-wrap">
               {CL_FILTERS.map((item) => (
                 <button
-                  key={item}
+                  key={item.v}
                   type="button"
-                  onClick={() => setCl(item)}
-                  className={`class-chip${cl === item ? " active" : ""}`}
+                  onClick={() => setCl(item.v)}
+                  className={`class-chip${cl === item.v ? " active" : ""}`}
                 >
-                  {item}
+                  {item.l}
                 </button>
               ))}
             </div>
             <div className="ml-auto flex items-center gap-2 flex-wrap">
-              <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 700 }}>Ordenar</span>
+              <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 700 }}>{t.cars.sort}</span>
               {SORT_OPTS.map((item) => (
                 <button
                   key={item.v}
@@ -149,7 +157,7 @@ export default function CarsPage() {
         </div>
 
         <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
-          {results.length} {results.length === 1 ? "carro encontrado" : "carros encontrados"}
+          {t.cars.found(results.length)}
         </p>
 
         {results.length > 0 ? (
@@ -176,9 +184,9 @@ export default function CarsPage() {
                 <circle cx="19.5" cy="22" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
               </svg>
             </div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>Nenhum carro encontrado</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>{t.community.noTunesSearch}</p>
             <button type="button" onClick={clearAll} className="r-btn r-btn-outline" style={{ marginTop: 4 }}>
-              Limpar filtros
+              {t.cars.clearAll}
             </button>
           </div>
         )}

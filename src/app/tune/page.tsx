@@ -19,6 +19,8 @@ import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
 import { generateTune } from "@/lib/tune-engine/generator"
 import type { Car, CarCategory, CarClass, ControlType, Drivetrain, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType } from "@/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
+import { useLanguage } from "@/lib/i18n/context"
+import { useTranslations } from "@/lib/i18n/translations"
 
 type Difficulty = "easy" | "balanced" | "aggressive"
 type CarInputMode = "database" | "calculator"
@@ -51,71 +53,24 @@ const DEFAULT_MANUAL_CAR: ManualCarInput = {
   category: "sport",
 }
 
-const TUNE_TYPES: { v: TuneType; l: string; desc: string; cls: string }[] = [
-  { v: "street",        l: "Rua / Estrada",  desc: "Asfalto, sprints, urbano",   cls: "tag-street" },
-  { v: "drag",          l: "Arrancada",       desc: "Drag, 0-100, meia milha",    cls: "tag-drag" },
-  { v: "drift",         l: "Drift",           desc: "Zonas, tandem, pontuação",   cls: "tag-drift" },
-  { v: "rally",         l: "Rally",           desc: "Terra, estradas mistas",     cls: "tag-rally" },
-  { v: "cross_country", l: "Cross Country",   desc: "Lama, saltos, terreno pesado", cls: "tag-cross_country" },
-  { v: "top_speed",     l: "Top Speed",       desc: "Speed traps, autoestradas",  cls: "tag-top_speed" },
-  { v: "grip",          l: "Grip / Circuito", desc: "Tempo de volta, técnico",    cls: "tag-grip" },
+const TUNE_TYPE_VALUES: { v: TuneType; cls: string }[] = [
+  { v: "street",        cls: "tag-street" },
+  { v: "drag",          cls: "tag-drag" },
+  { v: "drift",         cls: "tag-drift" },
+  { v: "rally",         cls: "tag-rally" },
+  { v: "cross_country", cls: "tag-cross_country" },
+  { v: "top_speed",     cls: "tag-top_speed" },
+  { v: "grip",          cls: "tag-grip" },
 ]
-const FH6_INTENTS: { v: TuneIntent; l: string; desc: string }[] = [
-  { v: "balanced",     l: "Balanceado", desc: "Base geral para mapa aberto, sem depender de pista." },
-  { v: "control",      l: "Controle", desc: "Estavel, previsivel e facil de corrigir no limite." },
-  { v: "speed",        l: "Velocidade", desc: "Retas longas, speed traps e final maior." },
-  { v: "cornering",    l: "Bom de curva", desc: "Mais frente, grip lateral e resposta tecnica." },
-  { v: "acceleration", l: "Saida forte", desc: "Largada, retomada e tracao na saida de curva." },
-]
+const FH6_INTENT_VALUES: TuneIntent[] = ["balanced", "control", "speed", "cornering", "acceleration"]
 const CLASSES: CarClass[] = ["D","C","B","A","S1","S2","R","X"]
-const DIFFICULTY: { v: Difficulty; l: string; desc: string }[] = [
-  { v: "easy",       l: "Fácil",       desc: "Estável, perdoa erros" },
-  { v: "balanced",   l: "Equilibrado", desc: "Para a maioria" },
-  { v: "aggressive", l: "Agressivo",   desc: "Máxima performance" },
-]
-const STYLES: { v: DrivingStyle; l: string }[] = [
-  { v: "casual",      l: "Casual" },
-  { v: "competitive", l: "Competitivo" },
-  { v: "meta",        l: "Meta" },
-]
-const CONTROLS: { v: ControlType; l: string }[] = [
-  { v: "controller", l: "Controle" },
-  { v: "keyboard",   l: "Teclado" },
-  { v: "wheel",      l: "Volante" },
-]
-const DRIVETRAINS: { v: TuneRequest["preferred_drivetrain"]; l: string }[] = [
-  { v: "original", l: "Manter original" },
-  { v: "AWD",      l: "AWD" },
-  { v: "RWD",      l: "RWD" },
-  { v: "FWD",      l: "FWD" },
-]
-const MANUAL_DRIVETRAINS: { v: Drivetrain; l: string }[] = [
-  { v: "AWD", l: "AWD" },
-  { v: "RWD", l: "RWD" },
-  { v: "FWD", l: "FWD" },
-]
-const MANUAL_ASPIRATIONS: { v: Car["aspiration"]; l: string }[] = [
-  { v: "NA", l: "Aspirado" },
-  { v: "Turbo", l: "Turbo" },
-  { v: "Supercharged", l: "Supercharger" },
-  { v: "Electric", l: "Eletrico" },
-]
-const MANUAL_CATEGORIES: { v: CarCategory; l: string }[] = [
-  { v: "sport", l: "Esportivo" },
-  { v: "supercar", l: "Supercarro" },
-  { v: "hypercar", l: "Hypercar" },
-  { v: "muscle", l: "Muscle" },
-  { v: "jdm", l: "JDM" },
-  { v: "offroad", l: "Off-road" },
-  { v: "suv", l: "SUV" },
-  { v: "truck", l: "Truck" },
-  { v: "buggy", l: "Buggy" },
-  { v: "classic", l: "Classico" },
-]
-const TUNE_LABELS: Record<TuneType, string> = {
-  street: "Rua", drag: "Drag", drift: "Drift",
-  rally: "Rally", cross_country: "Cross Country", top_speed: "Top Speed", grip: "Grip",
-}
+const DIFFICULTY_VALUES: Difficulty[] = ["easy", "balanced", "aggressive"]
+const STYLE_VALUES: DrivingStyle[] = ["casual", "competitive", "meta"]
+const CONTROL_VALUES: ControlType[] = ["controller", "keyboard", "wheel"]
+const DRIVETRAIN_VALUES: TuneRequest["preferred_drivetrain"][] = ["original", "AWD", "RWD", "FWD"]
+const MANUAL_DRIVETRAIN_VALUES: Drivetrain[] = ["AWD", "RWD", "FWD"]
+const MANUAL_ASPIRATION_VALUES: Car["aspiration"][] = ["NA", "Turbo", "Supercharged", "Electric"]
+const MANUAL_CATEGORY_VALUES: CarCategory[] = ["sport", "supercar", "hypercar", "muscle", "jdm", "offroad", "suv", "truck", "buggy", "classic"]
 
 /* ── Score color ── */
 function scoreColor(s: number) {
@@ -166,9 +121,7 @@ function buildManualCar(input: ManualCarInput): Car {
   const torque = clampNum(Math.round(num(input.torqueNm)), 50, 3000)
   const year = clampNum(Math.round(num(input.year) || 2026), 1900, 2035)
   const carType = [input.category]
-  const available_conversions = MANUAL_DRIVETRAINS
-    .map((item) => item.v)
-    .filter((item) => item !== input.drivetrain)
+  const available_conversions = MANUAL_DRIVETRAIN_VALUES.filter((item) => item !== input.drivetrain)
 
   return {
     id: `manual_${slug(input.brand)}_${slug(input.model)}_${year}`,
@@ -258,22 +211,6 @@ function TR({ l, v, mono = true }: { l: string; v: string; mono?: boolean }) {
   )
 }
 
-function rideHeightLabel(v: string): string {
-  const map: Record<string, string> = {
-    "low": "Baixa", "medium-low": "Médio-baixa", "medium": "Média",
-    "medium-high": "Médio-alta", "high": "Alta", "max": "Máxima",
-  }
-  return map[v] ?? v
-}
-
-function aeroLabel(v: string): string {
-  const map: Record<string, string> = {
-    "min": "Mínimo", "low": "Baixo", "medium": "Médio",
-    "medium-high": "Médio-alto", "high": "Alto", "max": "Máximo",
-  }
-  return map[v] ?? v
-}
-
 /* ── Tune result ── */
 function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset(): void; onBack(): void }) {
   const url = getCarImageUrl(tune.car)
@@ -284,11 +221,20 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
   const [sharing, setSharing] = useState(false)
   const [shareError, setShareError] = useState<string | null>(null)
   const { settings, update } = useSettings()
-  const lang  = settings.partsLanguage
+  const partsLang  = settings.partsLanguage
   const pUnit = settings.pressureUnit
   const spUnit = settings.springUnit
   const [saveError, setSaveError] = useState<string | null>(null)
   const { user } = useAuth()
+  const { lang } = useLanguage()
+  const t = useTranslations(lang)
+
+  function rideHeight(v: string) {
+    return t.tune.rideHeight[v as keyof typeof t.tune.rideHeight] ?? v
+  }
+  function aeroLvl(v: string) {
+    return t.tune.aeroLevel[v as keyof typeof t.tune.aeroLevel] ?? v
+  }
 
   async function shareToCommunnity() {
     if (!user) return
@@ -303,7 +249,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
       await shareTune(tune, user.uid, authorName, photoBase64)
       setShared(true)
     } catch (err) {
-      setShareError(err instanceof Error ? err.message : "Erro ao compartilhar.")
+      setShareError(err instanceof Error ? err.message : t.garage.errorShare)
     } finally { setSharing(false) }
   }
 
@@ -333,7 +279,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
           const docRef = await Promise.race([savePromise, timeoutPromise])
           entryId = docRef.id
         } catch {
-          setSaveError("Não foi possível salvar no Firebase. A tune ficou salva neste navegador.")
+          setSaveError(t.tune.saveErrorFallback)
         }
       }
 
@@ -376,9 +322,9 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
               </h1>
               <div className="flex gap-2 mt-2 flex-wrap">
                 <span className={`badge-class badge-${tune.drivetrain === "AWD" ? "awd" : tune.drivetrain === "RWD" ? "rwd" : "fwd"}`}>{tune.drivetrain}</span>
-                <span className={`badge-class badge-${tune.target_class}`}>Classe {tune.target_class}</span>
+                <span className={`badge-class badge-${tune.target_class}`}>{t.tune.class} {tune.target_class}</span>
                 <span className="badge-class" style={{ color: "var(--blue-bright)", background: "var(--blue-dim)", borderColor: "var(--border-blue)" }}>
-                  {TUNE_LABELS[tune.tune_type]}
+                  {t.tune.tuneLabels[tune.tune_type]}
                 </span>
                 <span className="badge-class" style={{ color: "#34d399", background: "rgba(52,211,153,0.08)", borderColor: "rgba(52,211,153,0.22)" }}>
                   FH6 {getFH6IntentLabel(tune.fh6_intent ?? "balanced")}
@@ -390,7 +336,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
             </div>
             <div className="flex gap-2 flex-wrap">
               <button type="button" onClick={() => void saveTune()} disabled={saving} className="r-btn r-btn-outline" style={{ fontSize: 11, opacity: saving ? 0.7 : 1 }}>
-                {saved ? "Tune salva" : saving ? "Salvando..." : "Salvar tune"}
+                {saved ? t.tune.saved : saving ? t.tune.saving : t.tune.saveTune}
               </button>
               <button
                 type="button"
@@ -399,16 +345,16 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
                 className="r-btn r-btn-ghost"
                 style={{ fontSize: 11, opacity: sharing ? 0.7 : 1, color: shared ? "#34d399" : undefined }}
               >
-                {shared ? "Compartilhada!" : sharing ? "Compartilhando..." : "Compartilhar"}
+                {shared ? t.tune.shared : sharing ? t.tune.sharing : t.tune.share}
               </button>
               <Link href="/garage" className="r-btn r-btn-ghost" style={{ fontSize: 11 }}>
-                Garagem
+                {t.tune.toGarage}
               </Link>
               <button type="button" onClick={onBack} className="r-btn r-btn-ghost" style={{ fontSize: 11 }}>
-                ← Voltar
+                {t.tune.backBtn}
               </button>
               <button type="button" onClick={onReset} className="r-btn r-btn-ghost" style={{ fontSize: 11 }}>
-                Nova tune
+                {t.tune.newTune}
               </button>
             </div>
           </div>
@@ -418,8 +364,8 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
           )}
           {shared && (
             <p style={{ fontSize: 11, color: "#34d399", marginTop: 6 }}>
-              Tune compartilhada na comunidade!{" "}
-              <Link href="/community" style={{ color: "#34d399", textDecoration: "underline" }}>Ver comunidade →</Link>
+              {t.tune.sharedMsg}{" "}
+              <Link href="/community" style={{ color: "#34d399", textDecoration: "underline" }}>{t.tune.seeCommunity}</Link>
             </p>
           )}
           {shareError && (
@@ -431,10 +377,10 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
       {/* Unit & language toggles */}
       <div className="flex flex-wrap gap-x-5 gap-y-2 items-center px-4 py-3 rounded-lg"
         style={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)" }}>
-        <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Ver como</span>
+        <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{t.tune.viewAs}</span>
 
         <div className="flex items-center gap-1.5">
-          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>Peças</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>{t.tune.parts}</span>
           <div className="flex rounded" style={{ border: "1px solid var(--border-strong)", overflow: "hidden" }}>
             {(["en", "ptbr"] as const).map((v, i) => (
               <button key={v} type="button" onClick={() => update({ partsLanguage: v })}
@@ -446,7 +392,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
         </div>
 
         <div className="flex items-center gap-1.5">
-          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>Pressão</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>{t.tune.pressure}</span>
           <div className="flex rounded" style={{ border: "1px solid var(--border-strong)", overflow: "hidden" }}>
             {(["psi", "bar"] as const).map((v, i) => (
               <button key={v} type="button" onClick={() => update({ pressureUnit: v })}
@@ -458,7 +404,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
         </div>
 
         <div className="flex items-center gap-1.5">
-          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>Potência</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>{t.tune.power}</span>
           <div className="flex rounded" style={{ border: "1px solid var(--border-strong)", overflow: "hidden" }}>
             {(["hp", "cv"] as const).map((v, i) => (
               <button key={v} type="button" onClick={() => update({ powerUnit: v })}
@@ -470,7 +416,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
         </div>
 
         <div className="flex items-center gap-1.5">
-          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>Torque</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>{t.tune.torque}</span>
           <div className="flex rounded" style={{ border: "1px solid var(--border-strong)", overflow: "hidden" }}>
             {(["nm", "kgfm"] as const).map((v, i) => (
               <button key={v} type="button" onClick={() => update({ torqueUnit: v })}
@@ -482,7 +428,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
         </div>
 
         <div className="flex items-center gap-1.5">
-          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>Molas</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-muted)" }}>{t.tune.springs}</span>
           <div className="flex rounded" style={{ border: "1px solid var(--border-strong)", overflow: "hidden" }}>
             {(["kgfmm", "lbfin"] as const).map((v, i) => (
               <button key={v} type="button" onClick={() => update({ springUnit: v })}
@@ -520,17 +466,17 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
         </div>
       )}
 
-      {/* Peças */}
+      {/* Parts */}
       <div className="r-card p-5 space-y-4">
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Peças</p>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.parts}</p>
         {Object.entries(tune.parts).map(([cat, items]) =>
           (items as string[]).length > 0 ? (
             <div key={cat}>
               <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-subtle)", marginBottom: 6 }}>
-                {cat === "engine" ? "Motor" : cat === "platform" ? "Plataforma" : cat === "drivetrain" ? "Transmissão" : cat === "tires" ? "Pneus" : "Aero"}
+                {cat === "engine" ? t.tune.partEngine : cat === "platform" ? t.tune.partPlatform : cat === "drivetrain" ? t.tune.partDrivetrain : cat === "tires" ? t.tune.partTires : t.tune.partAero}
               </p>
               <ul className="space-y-1">
-                {translateParts(items as string[], lang).map((item, j) => (
+                {translateParts(items as string[], partsLang).map((item, j) => (
                   <li key={j} className="flex items-center gap-2" style={{ fontSize: 12, color: "var(--text)" }}>
                     <span className="w-1 h-1 rounded-full shrink-0" style={{ background: "var(--blue)" }} />
                     {item}
@@ -542,18 +488,18 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
         )}
       </div>
 
-      {/* 1. Pneus · 2. Câmbio */}
+      {/* 1. Tires · 2. Gearbox */}
       <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-4 items-start">
         <div className="r-card p-5" style={{ minWidth: 210 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Pneus</p>
-          <TR l="Pressão dianteira" v={formatPressure(tune.tuning.tires.front, pUnit)} />
-          <TR l="Pressão traseira"  v={formatPressure(tune.tuning.tires.rear,  pUnit)} />
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.tires}</p>
+          <TR l={t.tune.frontPressure} v={formatPressure(tune.tuning.tires.front, pUnit)} />
+          <TR l={t.tune.rearPressure}  v={formatPressure(tune.tuning.tires.rear,  pUnit)} />
         </div>
         <div className="r-card p-5">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 12 }}>Câmbio</p>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 12 }}>{t.tune.gearbox}</p>
           <div className="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-11 gap-2">
             {[
-              { l: "Final", v: tune.tuning.gearing.final_drive },
+              { l: t.tune.finalGear, v: tune.tuning.gearing.final_drive },
               ...([1,2,3,4,5,6,7,8,9,10] as const).map((g) => ({
                 l: `${g}ª`,
                 v: tune.tuning.gearing[`gear_${g}` as keyof typeof tune.tuning.gearing] as number | undefined,
@@ -569,69 +515,69 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
         </div>
       </div>
 
-      {/* 3. Alinhamento · 4. Barras Estabilizadoras */}
+      {/* 3. Alignment · 4. Anti-roll Bars */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="r-card p-5">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Alinhamento</p>
-          <TR l="Cambagem dianteira"     v={`${tune.tuning.alignment.camber_front}°`} />
-          <TR l="Cambagem traseira"      v={`${tune.tuning.alignment.camber_rear}°`} />
-          <TR l="Convergência dianteira" v={`${tune.tuning.alignment.toe_front}°`} />
-          <TR l="Convergência traseira"  v={`${tune.tuning.alignment.toe_rear}°`} />
-          <TR l="Caster"                 v={`${tune.tuning.alignment.caster}°`} />
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.alignment}</p>
+          <TR l={t.tune.camberFront} v={`${tune.tuning.alignment.camber_front}°`} />
+          <TR l={t.tune.camberRear}  v={`${tune.tuning.alignment.camber_rear}°`} />
+          <TR l={t.tune.toeFront}    v={`${tune.tuning.alignment.toe_front}°`} />
+          <TR l={t.tune.toeRear}     v={`${tune.tuning.alignment.toe_rear}°`} />
+          <TR l={t.tune.caster}      v={`${tune.tuning.alignment.caster}°`} />
         </div>
         <div className="r-card p-5">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Barras Estabilizadoras</p>
-          <TR l="Dianteira" v={String(tune.tuning.antiroll_bars.front)} />
-          <TR l="Traseira"  v={String(tune.tuning.antiroll_bars.rear)} />
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.antirollBars}</p>
+          <TR l={t.tune.front} v={String(tune.tuning.antiroll_bars.front)} />
+          <TR l={t.tune.rear}  v={String(tune.tuning.antiroll_bars.rear)} />
         </div>
       </div>
 
-      {/* 5. Molas · 6. Amortecedores */}
+      {/* 5. Springs · 6. Dampers */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="r-card p-5">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Molas</p>
-          <TR l="Rigidez dianteira" v={formatSpring(tune.tuning.springs.front, spUnit)} />
-          <TR l="Rigidez traseira"  v={formatSpring(tune.tuning.springs.rear,  spUnit)} />
-          <TR l="Altura dianteira"  v={rideHeightLabel(tune.tuning.springs.ride_height_front)} mono={false} />
-          <TR l="Altura traseira"   v={rideHeightLabel(tune.tuning.springs.ride_height_rear)} mono={false} />
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.springs}</p>
+          <TR l={t.tune.stiffFront}  v={formatSpring(tune.tuning.springs.front, spUnit)} />
+          <TR l={t.tune.stiffRear}   v={formatSpring(tune.tuning.springs.rear,  spUnit)} />
+          <TR l={t.tune.heightFront} v={rideHeight(tune.tuning.springs.ride_height_front)} mono={false} />
+          <TR l={t.tune.heightRear}  v={rideHeight(tune.tuning.springs.ride_height_rear)} mono={false} />
         </div>
         <div className="r-card p-5">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Amortecedores</p>
-          <TR l="Retorno dianteiro"    v={String(tune.tuning.damping.rebound_front)} />
-          <TR l="Retorno traseiro"     v={String(tune.tuning.damping.rebound_rear)} />
-          <TR l="Compressão dianteira" v={String(tune.tuning.damping.bump_front)} />
-          <TR l="Compressão traseira"  v={String(tune.tuning.damping.bump_rear)} />
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.dampers}</p>
+          <TR l={t.tune.reboundFront} v={String(tune.tuning.damping.rebound_front)} />
+          <TR l={t.tune.reboundRear}  v={String(tune.tuning.damping.rebound_rear)} />
+          <TR l={t.tune.bumpFront}    v={String(tune.tuning.damping.bump_front)} />
+          <TR l={t.tune.bumpRear}     v={String(tune.tuning.damping.bump_rear)} />
         </div>
       </div>
 
-      {/* 7. Aerodinâmica · 8. Freios */}
+      {/* 7. Aerodynamics · 8. Brakes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="r-card p-5">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Aerodinâmica</p>
-          <TR l="Downforce dianteiro" v={aeroLabel(tune.tuning.aero.front)} mono={false} />
-          <TR l="Downforce traseiro"  v={aeroLabel(tune.tuning.aero.rear)} mono={false} />
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.aero}</p>
+          <TR l={t.tune.downforceFront} v={aeroLvl(tune.tuning.aero.front)} mono={false} />
+          <TR l={t.tune.downforceRear}  v={aeroLvl(tune.tuning.aero.rear)} mono={false} />
         </div>
         <div className="r-card p-5">
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Freios</p>
-          <TR l="Equilíbrio de frenagem" v={`${tune.tuning.brakes.balance}%`} />
-          <TR l="Pressão de frenagem"    v={`${tune.tuning.brakes.pressure}%`} />
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.brakes}</p>
+          <TR l={t.tune.brakeBalance}  v={`${tune.tuning.brakes.balance}%`} />
+          <TR l={t.tune.brakePressure} v={`${tune.tuning.brakes.pressure}%`} />
         </div>
       </div>
 
-      {/* 9. Diferencial */}
+      {/* 9. Differential */}
       <div className="r-card p-5">
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Diferencial</p>
-        {tune.tuning.differential.front_accel !== undefined && <TR l="Dianteiro, aceleração"    v={`${tune.tuning.differential.front_accel}%`} />}
-        {tune.tuning.differential.front_decel !== undefined && <TR l="Dianteiro, desaceleração" v={`${tune.tuning.differential.front_decel}%`} />}
-        <TR l="Traseiro, aceleração"    v={`${tune.tuning.differential.rear_accel}%`} />
-        <TR l="Traseiro, desaceleração" v={`${tune.tuning.differential.rear_decel}%`} />
-        {tune.tuning.differential.center_balance !== undefined && <TR l="Centro" v={`${tune.tuning.differential.center_balance}%`} />}
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.differential}</p>
+        {tune.tuning.differential.front_accel !== undefined && <TR l={t.tune.diffFrontAccel} v={`${tune.tuning.differential.front_accel}%`} />}
+        {tune.tuning.differential.front_decel !== undefined && <TR l={t.tune.diffFrontDecel} v={`${tune.tuning.differential.front_decel}%`} />}
+        <TR l={t.tune.diffRearAccel} v={`${tune.tuning.differential.rear_accel}%`} />
+        <TR l={t.tune.diffRearDecel} v={`${tune.tuning.differential.rear_decel}%`} />
+        {tune.tuning.differential.center_balance !== undefined && <TR l={t.tune.diffCenter} v={`${tune.tuning.differential.center_balance}%`} />}
       </div>
 
       {/* Strengths / Weaknesses */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="r-card p-5" style={{ border: "1px solid rgba(52,211,153,0.15)" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#34d399", marginBottom: 10 }}>Pontos Fortes</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#34d399", marginBottom: 10 }}>{t.tune.strengths}</p>
           <ul className="space-y-2">
             {tune.strengths.map((s, i) => (
               <li key={i} className="flex items-start gap-2" style={{ fontSize: 12, color: "var(--text)" }}>
@@ -641,7 +587,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
           </ul>
         </div>
         <div className="r-card p-5" style={{ border: "1px solid rgba(251,191,36,0.15)" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#fbbf24", marginBottom: 10 }}>Pontos Fracos</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#fbbf24", marginBottom: 10 }}>{t.tune.weaknesses}</p>
           <ul className="space-y-2">
             {tune.weaknesses.map((w, i) => (
               <li key={i} className="flex items-start gap-2" style={{ fontSize: 12, color: "var(--text)" }}>
@@ -662,15 +608,15 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
           </svg>
         </div>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "var(--blue-bright)", marginBottom: 6 }}>Como Pilotar</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "var(--blue-bright)", marginBottom: 6 }}>{t.tune.howToDrive}</p>
           <p style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65 }}>{tune.how_to_drive}</p>
         </div>
       </div>
 
       <div className="text-center pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-        <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6 }}>Algo não funcionou como esperado?</p>
+        <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6 }}>{t.tune.diagLink}</p>
         <Link href="/diagnostics" style={{ fontSize: 12, color: "var(--blue-bright)" }}>
-          Diagnosticar problema na tune →
+          {t.tune.diagLinkText}
         </Link>
       </div>
     </div>
@@ -680,8 +626,36 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
 /* ── Main Wizard ── */
 function WizardInner() {
   const sp = useSearchParams()
-  const queryCar = CARS.find((c) => c.id === sp.get("car")) ?? null
-  const queryType = TUNE_TYPES.find((type) => type.v === sp.get("type"))?.v ?? null
+  const { lang } = useLanguage()
+  const t = useTranslations(lang)
+
+  const TUNE_TYPES = TUNE_TYPE_VALUES.map(({ v, cls }) => ({
+    v, cls,
+    l: t.tune.tuneTypes[v].l,
+    desc: t.tune.tuneTypes[v].desc,
+  }))
+  const FH6_INTENTS = FH6_INTENT_VALUES.map((v) => ({
+    v,
+    l: t.tune.intents[v].l,
+    desc: t.tune.intents[v].desc,
+  }))
+  const DIFFICULTY = DIFFICULTY_VALUES.map((v) => ({
+    v,
+    l: t.tune.difficulty[v].l,
+    desc: t.tune.difficulty[v].desc,
+  }))
+  const STYLES    = STYLE_VALUES.map((v) => ({ v, l: t.tune.styles[v] }))
+  const CONTROLS  = CONTROL_VALUES.map((v) => ({ v, l: t.tune.controls[v] }))
+  const DRIVETRAINS = DRIVETRAIN_VALUES.map((v) => ({
+    v,
+    l: t.tune.drivetrains[v as keyof typeof t.tune.drivetrains],
+  }))
+  const MANUAL_DRIVETRAINS = MANUAL_DRIVETRAIN_VALUES.map((v) => ({ v, l: v }))
+  const MANUAL_ASPIRATIONS = MANUAL_ASPIRATION_VALUES.map((v) => ({ v, l: t.tune.aspirations[v] }))
+  const MANUAL_CATEGORIES  = MANUAL_CATEGORY_VALUES.map((v) => ({ v, l: t.tune.categories[v] }))
+
+  const queryCar  = CARS.find((c) => c.id === sp.get("car")) ?? null
+  const queryType = TUNE_TYPE_VALUES.find((type) => type.v === sp.get("type"))?.v ?? null
   const [step, setStep]       = useState(() => queryCar ? (queryType ? 3 : 2) : 1)
   const [inputMode, setInputMode] = useState<CarInputMode>("database")
   const [search, setSearch]   = useState("")
@@ -701,7 +675,6 @@ function WizardInner() {
   const [showUpgrade, setShowUpgrade] = useState(false)
   const { canGenerate, remainingTunes, incrementTuneUsage, isPro } = useSubscription()
 
-  // Auto-corrige classe se carro selecionado tiver PI acima da classe atual
   useEffect(() => {
     if (!car) return
     const minIdx = CLASSES.indexOf(car.base_class)
@@ -714,7 +687,6 @@ function WizardInner() {
     : CARS.slice(0, 14)
   const manualValid = isManualCarValid(manual)
 
-  // Classes disponíveis para o carro selecionado (não pode tunar abaixo da classe base)
   const effectiveBaseClass: CarClass =
     inputMode === "calculator" && manualValid
       ? classFromPi(num(manual.basePi))
@@ -754,7 +726,7 @@ function WizardInner() {
       setStep(4)
       void incrementTuneUsage()
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erro ao gerar tune")
+      setError(e instanceof Error ? e.message : t.tune.generating)
     } finally { setLoading(false) }
   }
 
@@ -765,9 +737,9 @@ function WizardInner() {
   />
 
   const steps = [
-    { n: 1, l: "Carro" },
-    { n: 2, l: "Tipo" },
-    { n: 3, l: "Config." },
+    { n: 1, l: t.tune.step1 },
+    { n: 2, l: t.tune.step2 },
+    { n: 3, l: t.tune.step3 },
   ]
 
   return (
@@ -778,26 +750,26 @@ function WizardInner() {
 
         {/* Title */}
         <div className="anim-up">
-          <p className="section-label">Gerador</p>
-          <h1 className="page-title">Criar Tune</h1>
+          <p className="section-label">{t.tune.sectionLabel}</p>
+          <h1 className="page-title">{t.tune.pageTitle}</h1>
         </div>
 
-        {/* Uso diário — free */}
+        {/* Daily usage — free */}
         {!isPro && (
           <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg anim-up"
             style={{ background: "var(--bg-card)", border: `1px solid ${remainingTunes === 0 ? "rgba(239,68,68,0.3)" : "var(--border-strong)"}` }}>
             <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
               {remainingTunes === 0
-                ? "Limite diário atingido. Volte amanhã ou faça upgrade."
-                : `Tunes restantes hoje: `}
+                ? t.tune.dailyLimit
+                : t.tune.remaining}
               {remainingTunes > 0 && (
                 <span style={{ color: remainingTunes <= 1 ? "#fbbf24" : "var(--text)", fontWeight: 700 }}>
-                  {remainingTunes}/3
+                  {" "}{remainingTunes}/3
                 </span>
               )}
             </p>
             <a href="/pricing" style={{ fontSize: 11, fontWeight: 700, color: "var(--fh6-teal)", textDecoration: "none", whiteSpace: "nowrap" }}>
-              Pro →
+              {t.tune.proCta}
             </a>
           </div>
         )}
@@ -832,9 +804,9 @@ function WizardInner() {
           <div className="space-y-4 anim-up" style={{ animationDelay: "100ms" }}>
             <div className="grid grid-cols-2 gap-2">
               {([
-                { v: "database", l: "Base de carros", d: "Escolher um carro do app" },
-                { v: "calculator", l: "Calculadora manual", d: "Peso, PI, potencia e % dianteiro" },
-              ] as const).map((mode) => (
+                { v: "database"   as CarInputMode, l: t.tune.modeDatabase,   d: t.tune.modeDatabaseDesc },
+                { v: "calculator" as CarInputMode, l: t.tune.modeCalculator, d: t.tune.modeCalculatorDesc },
+              ]).map((mode) => (
                 <button
                   key={mode.v}
                   type="button"
@@ -854,7 +826,7 @@ function WizardInner() {
 
             {inputMode === "database" ? (
               <>
-                <input type="text" className="r-input" placeholder="Buscar por marca, modelo ou ano..."
+                <input type="text" className="r-input" placeholder={t.tune.searchPlaceholder}
                   value={search} onChange={(e) => setSearch(e.target.value)} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto" style={{ maxHeight: 460 }}>
                   {filtered.map((c) => (
@@ -865,26 +837,26 @@ function WizardInner() {
             ) : (
               <div className="r-card p-4 space-y-4">
                 <div>
-                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Calculadora manual</p>
+                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.calcTitle}</p>
                   <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, lineHeight: 1.55 }}>
-                    Use quando o carro nao estiver na base ou quando voce tiver peso/potencia depois dos upgrades. O peso dianteiro alimenta o calculo de molas, barras e damping.
+                    {t.tune.calcDesc}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <input className="r-input" value={manual.brand} onChange={(e) => updateManual("brand", e.target.value)} placeholder="Marca" />
-                  <input className="r-input" value={manual.model} onChange={(e) => updateManual("model", e.target.value)} placeholder="Modelo / nome da build" />
-                  <input className="r-input" value={manual.year} onChange={(e) => updateManual("year", e.target.value)} inputMode="numeric" placeholder="Ano" />
-                  <input className="r-input" value={manual.basePi} onChange={(e) => updateManual("basePi", e.target.value)} inputMode="numeric" placeholder="PI atual" />
-                  <input className="r-input" value={manual.weightKg} onChange={(e) => updateManual("weightKg", e.target.value)} inputMode="decimal" placeholder="Peso kg" />
-                  <input className="r-input" value={manual.frontWeightPercent} onChange={(e) => updateManual("frontWeightPercent", e.target.value)} inputMode="decimal" placeholder="Peso dianteiro %" />
-                  <input className="r-input" value={manual.powerHp} onChange={(e) => updateManual("powerHp", e.target.value)} inputMode="decimal" placeholder="Potencia hp" />
-                  <input className="r-input" value={manual.torqueNm} onChange={(e) => updateManual("torqueNm", e.target.value)} inputMode="decimal" placeholder="Torque Nm" />
+                  <input className="r-input" value={manual.brand} onChange={(e) => updateManual("brand", e.target.value)} placeholder={t.tune.brand} />
+                  <input className="r-input" value={manual.model} onChange={(e) => updateManual("model", e.target.value)} placeholder={t.tune.model} />
+                  <input className="r-input" value={manual.year} onChange={(e) => updateManual("year", e.target.value)} inputMode="numeric" placeholder={t.tune.year} />
+                  <input className="r-input" value={manual.basePi} onChange={(e) => updateManual("basePi", e.target.value)} inputMode="numeric" placeholder={t.tune.currentPi} />
+                  <input className="r-input" value={manual.weightKg} onChange={(e) => updateManual("weightKg", e.target.value)} inputMode="decimal" placeholder={t.tune.weightKg} />
+                  <input className="r-input" value={manual.frontWeightPercent} onChange={(e) => updateManual("frontWeightPercent", e.target.value)} inputMode="decimal" placeholder={t.tune.frontWeightPct} />
+                  <input className="r-input" value={manual.powerHp} onChange={(e) => updateManual("powerHp", e.target.value)} inputMode="decimal" placeholder={t.tune.powerHp} />
+                  <input className="r-input" value={manual.torqueNm} onChange={(e) => updateManual("torqueNm", e.target.value)} inputMode="decimal" placeholder={t.tune.torqueNm} />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-2">
-                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Tracao</p>
+                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.traction}</p>
                     <div className="flex gap-1 flex-wrap">
                       {MANUAL_DRIVETRAINS.map((item) => (
                         <button key={item.v} type="button" onClick={() => updateManual("drivetrain", item.v)} className={`filter-chip${manual.drivetrain === item.v ? " active" : ""}`}>
@@ -895,7 +867,7 @@ function WizardInner() {
                   </div>
 
                   <div className="space-y-2">
-                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Motor</p>
+                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.engine}</p>
                     <div className="flex gap-1 flex-wrap">
                       {MANUAL_ASPIRATIONS.map((item) => (
                         <button key={item.v} type="button" onClick={() => updateManual("aspiration", item.v)} className={`filter-chip${manual.aspiration === item.v ? " active" : ""}`}>
@@ -906,7 +878,7 @@ function WizardInner() {
                   </div>
 
                   <div className="space-y-2">
-                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Categoria</p>
+                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.category}</p>
                     <div className="flex gap-1 flex-wrap">
                       {MANUAL_CATEGORIES.map((item) => (
                         <button key={item.v} type="button" onClick={() => updateManual("category", item.v)} className={`filter-chip${manual.category === item.v ? " active" : ""}`}>
@@ -922,7 +894,7 @@ function WizardInner() {
             <div className="flex justify-end pt-2">
               <button type="button" disabled={inputMode === "database" ? !car : !manualValid} onClick={goToTuneType} className="r-btn r-btn-primary"
                 style={{ paddingLeft: 28, paddingRight: 28, paddingTop: 10, paddingBottom: 10, opacity: (inputMode === "database" ? car : manualValid) ? 1 : 0.4 }}>
-                Próximo — Tipo de Tune
+                {t.tune.nextTuneType}
               </button>
             </div>
           </div>
@@ -944,7 +916,7 @@ function WizardInner() {
                   <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{car.model}</p>
                 </div>
                 <button type="button" onClick={() => setStep(1)} className="r-btn r-btn-ghost" style={{ fontSize: 11, padding: "5px 10px" }}>
-                  Trocar
+                  {t.tune.swap}
                 </button>
               </div>
             )}
@@ -969,10 +941,10 @@ function WizardInner() {
               })}
             </div>
             <div className="flex justify-between pt-2">
-              <button type="button" onClick={() => setStep(1)} className="r-btn r-btn-ghost">Voltar</button>
+              <button type="button" onClick={() => setStep(1)} className="r-btn r-btn-ghost">{t.tune.back}</button>
               <button type="button" disabled={!tuneType} onClick={() => setStep(3)} className="r-btn r-btn-primary"
                 style={{ paddingLeft: 28, paddingRight: 28, opacity: tuneType ? 1 : 0.4 }}>
-                Próximo — Configurar
+                {t.tune.nextConfig}
               </button>
             </div>
           </div>
@@ -984,7 +956,7 @@ function WizardInner() {
 
             {/* FH6 intent */}
             <div className="space-y-2">
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Objetivo FH6</p>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.tuneObjective}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
                 {FH6_INTENTS.map((item) => (
                   <button
@@ -1007,7 +979,7 @@ function WizardInner() {
 
             {/* Class */}
             <div className="space-y-2">
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Classe alvo</p>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.targetClass}</p>
               <div className="flex gap-2 flex-wrap">
                 {availableClasses.map((c) => (
                   <button key={c} type="button" onClick={() => setCls(c)}
@@ -1018,14 +990,14 @@ function WizardInner() {
               </div>
               {availableClasses.length < CLASSES.length && (
                 <p style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4 }}>
-                  Classes abaixo de {effectiveBaseClass} não estão disponíveis para este carro.
+                  {t.tune.classNote.replace("{c}", effectiveBaseClass)}
                 </p>
               )}
             </div>
 
             {/* Difficulty */}
             <div className="space-y-2">
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>Comportamento</p>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.behavior}</p>
               <div className="grid grid-cols-3 gap-2">
                 {DIFFICULTY.map((d) => (
                   <button key={d.v} type="button" onClick={() => setDiff(d.v)}
@@ -1045,9 +1017,9 @@ function WizardInner() {
             {/* Style / Control / Drivetrain */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {([
-                { label: "Estilo",   opts: STYLES,      val: style, set: setStyle as (v: string) => void },
-                { label: "Controle", opts: CONTROLS,    val: ctrl,  set: setCtrl  as (v: string) => void },
-                { label: "Tração",   opts: DRIVETRAINS, val: dt,    set: setDt },
+                { label: t.tune.style,    opts: STYLES,      val: style, set: setStyle as (v: string) => void },
+                { label: t.tune.control,  opts: CONTROLS,    val: ctrl,  set: setCtrl  as (v: string) => void },
+                { label: t.tune.traction2, opts: DRIVETRAINS, val: dt,   set: setDt },
               ] as const).map(({ label, opts, val, set }) => (
                 <div key={label} className="space-y-2">
                   <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{label}</p>
@@ -1083,7 +1055,6 @@ function WizardInner() {
               }}
             >
               <div className="flex items-start gap-3">
-                {/* Checkbox visual */}
                 <div style={{
                   width: 18, height: 18, borderRadius: 4, flexShrink: 0, marginTop: 2,
                   border: `2px solid ${engineSwap ? "var(--blue)" : "var(--border-strong)"}`,
@@ -1098,14 +1069,13 @@ function WizardInner() {
                 </div>
                 <div className="flex-1">
                   <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 3 }}>
-                    Swap de motor
+                    {t.tune.engineSwapTitle}
                   </p>
                   <p style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.55 }}>
-                    Gera a tune assumindo que o motor original foi trocado por um motor de alta potência
-                    (2JZ, LS V8, Coyote, etc.). Molas, diferencial e câmbio são calculados para potência ~80% acima do stock.
+                    {t.tune.engineSwapDesc}
                     {engineSwap && car && (
                       <span style={{ color: "var(--blue-bright)", display: "block", marginTop: 4, fontWeight: 600 }}>
-                        Swap recomendado será indicado nas peças.
+                        {t.tune.engineSwapNote}
                       </span>
                     )}
                   </p>
@@ -1120,16 +1090,16 @@ function WizardInner() {
             )}
 
             <div className="flex justify-between pt-2">
-              <button type="button" onClick={() => setStep(2)} className="r-btn r-btn-ghost">Voltar</button>
+              <button type="button" onClick={() => setStep(2)} className="r-btn r-btn-ghost">{t.tune.back}</button>
               <button type="button" onClick={generate} disabled={loading} className="r-btn r-btn-primary"
                 style={{ paddingLeft: 32, paddingRight: 32, paddingTop: 10, paddingBottom: 10, opacity: loading ? 0.7 : 1 }}>
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <span className="w-3.5 h-3.5 border-2 rounded-full animate-spin"
                       style={{ borderColor: "rgba(255,255,255,0.3)", borderTopColor: "#fff" }} />
-                    Gerando...
+                    {t.tune.generating}
                   </span>
-                ) : "Gerar Tune"}
+                ) : t.tune.generate}
               </button>
             </div>
           </div>

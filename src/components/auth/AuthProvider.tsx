@@ -3,15 +3,22 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import {
   GoogleAuthProvider,
+  getRedirectResult,
   isSignInWithEmailLink,
   onAuthStateChanged,
   sendSignInLinkToEmail,
   signInWithEmailLink,
   signInWithPopup,
+  signInWithRedirect,
   signOut as firebaseSignOut,
   type User,
 } from "firebase/auth"
 import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase/client"
+
+function isMobileDevice(): boolean {
+  if (typeof navigator === "undefined") return false
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+}
 
 interface AuthContextValue {
   configured: boolean
@@ -43,6 +50,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!auth) return
+
+    // Process any pending redirect-based sign-in (used on mobile)
+    getRedirectResult(auth).catch(() => {})
 
     return onAuthStateChanged(auth, (nextUser) => {
       setUser(nextUser)
@@ -86,7 +96,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = useCallback(async () => {
     if (!auth) throw new Error("Firebase não configurado.")
-    await signInWithPopup(auth, new GoogleAuthProvider())
+    const provider = new GoogleAuthProvider()
+    if (isMobileDevice()) {
+      // Mobile browsers block popups — use redirect-based flow instead
+      await signInWithRedirect(auth, provider)
+    } else {
+      await signInWithPopup(auth, provider)
+    }
   }, [auth])
 
   const signOut = useCallback(async () => {

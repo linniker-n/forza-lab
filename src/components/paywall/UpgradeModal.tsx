@@ -1,7 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { getPlanPrices, type PlanPrices } from "@/lib/pricing/currency"
+import { useLanguage } from "@/lib/i18n/context"
+import { useTranslations } from "@/lib/i18n/translations"
 
 interface Props {
   open: boolean
@@ -9,29 +12,11 @@ interface Props {
   reason: "tune_limit" | "garage_limit" | "ranking_limit"
 }
 
-const CONTENT = {
-  tune_limit: {
-    icon: "⚡",
-    title: "Limite diário atingido",
-    body: "Você usou suas 3 tunes gratuitas de hoje. Faça upgrade para Pro e gere tunes ilimitadas todos os dias.",
-    cta: "Desbloquear Pro",
-  },
-  garage_limit: {
-    icon: "🏎",
-    title: "Garagem cheia",
-    body: "O plano gratuito suporta até 5 tunes salvas. Faça upgrade para Pro e salve tunes ilimitadas.",
-    cta: "Expandir garagem",
-  },
-  ranking_limit: {
-    icon: "🏆",
-    title: "Top 3 disponível no plano Free",
-    body: "O ranking completo está disponível no plano Pro. Veja todos os carros por categoria e contexto de prova.",
-    cta: "Ver ranking completo",
-  },
-}
-
 export function UpgradeModal({ open, onClose, reason }: Props) {
-  const c = CONTENT[reason]
+  const [prices] = useState<PlanPrices>(() => getPlanPrices())
+  const { lang } = useLanguage()
+  const t = useTranslations(lang)
+  const c = t.modal[reason]
 
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden"
@@ -81,7 +66,7 @@ export function UpgradeModal({ open, onClose, reason }: Props) {
           color: "var(--fh6-teal)", textTransform: "uppercase",
           marginBottom: 12,
         }}>
-          Forza Lab Pro
+          {t.modal.badge}
         </div>
 
         <h2 style={{ fontSize: 20, fontWeight: 900, color: "var(--text)", marginBottom: 10, letterSpacing: "-0.02em" }}>
@@ -93,13 +78,7 @@ export function UpgradeModal({ open, onClose, reason }: Props) {
 
         {/* Features */}
         <div className="space-y-2" style={{ marginBottom: 24 }}>
-          {[
-            "Tunes ilimitadas por dia",
-            "Garagem ilimitada",
-            "Ranking completo",
-            "Compartilhar na Comunidade",
-            "Badge Pro no perfil",
-          ].map((f) => (
+          {t.modal.features.map((f) => (
             <div key={f} className="flex items-center gap-2">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <circle cx="7" cy="7" r="6" fill="rgba(44,206,204,0.15)" stroke="var(--fh6-teal)" strokeWidth="1.2"/>
@@ -116,8 +95,10 @@ export function UpgradeModal({ open, onClose, reason }: Props) {
           background: "rgba(44,206,204,0.06)", border: "1px solid rgba(44,206,204,0.15)",
           display: "flex", alignItems: "baseline", gap: 4,
         }}>
-          <span style={{ fontSize: 28, fontWeight: 900, color: "var(--fh6-teal)", fontFamily: "var(--font-geist-mono)" }}>R$ 9,90</span>
-          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>/mês · cancele quando quiser</span>
+          <span style={{ fontSize: 28, fontWeight: 900, color: "var(--fh6-teal)", fontFamily: "var(--font-geist-mono)" }}>
+            {prices.monthly.display}
+          </span>
+          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{t.modal.perMonth}</span>
         </div>
 
         <div className="flex gap-2">
@@ -140,7 +121,7 @@ export function UpgradeModal({ open, onClose, reason }: Props) {
             className="r-btn r-btn-ghost"
             style={{ fontSize: 12, padding: "12px 16px" }}
           >
-            Agora não
+            {t.modal.dismiss}
           </button>
         </div>
       </div>

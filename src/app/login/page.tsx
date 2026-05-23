@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { useMemo, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { useLanguage } from "@/lib/i18n/context"
+import { useTranslations } from "@/lib/i18n/translations"
 
 /** Detecta browsers embutidos (WhatsApp, Instagram, Facebook, Snapchat, Line...) */
 function detectInAppBrowser(): { detected: boolean; name: string } {
@@ -14,7 +16,6 @@ function detectInAppBrowser(): { detected: boolean; name: string } {
   if (/Snapchat/.test(ua))      return { detected: true, name: "Snapchat" }
   if (/Line\//.test(ua))        return { detected: true, name: "Line" }
   if (/MicroMessenger|WeChat/.test(ua)) return { detected: true, name: "WeChat" }
-  // iOS WebViews sem Safari/Chrome no UA
   if (/iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua) && !/CriOS|FxiOS/.test(ua))
     return { detected: true, name: "app" }
   return { detected: false, name: "" }
@@ -31,6 +32,8 @@ const GoogleLogo = () => (
 
 export default function LoginPage() {
   const { loading, user, signInWithEmail, signInWithGoogle, signOut } = useAuth()
+  const { lang } = useLanguage()
+  const t = useTranslations(lang)
   const [email,      setEmail]      = useState("")
   const [status,     setStatus]     = useState<string | null>(null)
   const [error,      setError]      = useState<string | null>(null)
@@ -45,7 +48,7 @@ export default function LoginPage() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // clipboard não disponível, apenas mostra o URL
+      // clipboard not available
     }
   }
 
@@ -54,9 +57,9 @@ export default function LoginPage() {
     setSubmitting(true); setError(null); setStatus(null)
     try {
       await signInWithEmail(email)
-      setStatus("Link de acesso enviado. Verifique sua caixa de entrada.")
+      setStatus(t.login.linkSent)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível enviar o link.")
+      setError(err instanceof Error ? err.message : t.login.errorEmail)
     } finally { setSubmitting(false) }
   }
 
@@ -65,7 +68,10 @@ export default function LoginPage() {
     try {
       await signInWithGoogle()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível iniciar o login com Google.")
+      const msg = err instanceof Error ? err.message : ""
+      if (!msg.includes("popup-closed-by-user") && !msg.includes("cancelled-popup-request")) {
+        setError(msg || t.login.errorGoogle)
+      }
       setSubmitting(false)
     }
   }
@@ -77,21 +83,15 @@ export default function LoginPage() {
         {/* ── Left — hero copy ── */}
         <section className="anim-up space-y-6 lg:pt-4">
           <div className="space-y-3">
-            <p className="section-label">Sua conta</p>
-            <h1 className="page-title">Entre para salvar suas tunes</h1>
+            <p className="section-label">{t.login.sectionLabel}</p>
+            <h1 className="page-title">{t.login.pageTitle}</h1>
             <p style={{ fontSize: 14, color: "var(--text-muted)", maxWidth: 460, lineHeight: 1.7 }}>
-              Suas tunes ficam salvas na sua conta e sincronizadas em qualquer dispositivo.
-              Acesse garagem, comparador e ranking personalizado.
+              {t.login.pageSubtitle}
             </p>
           </div>
 
           <ul className="space-y-3">
-            {[
-              "Garagem com todas as suas tunes geradas",
-              "Comparador entre carros e configurações",
-              "Ranking técnico por classe e tipo de prova",
-              "Acesso em qualquer dispositivo",
-            ].map((item) => (
+            {t.login.benefits.map((item) => (
               <li key={item} className="flex items-center gap-3" style={{ fontSize: 13, color: "var(--text-muted)" }}>
                 <span
                   className="flex items-center justify-center rounded-full shrink-0"
@@ -110,7 +110,7 @@ export default function LoginPage() {
         {/* ── Right — form card ── */}
         <section className="r-card bracket p-6 space-y-5 anim-up" style={{ animationDelay: "80ms" }}>
 
-          {/* ── Banner: browser interno detectado ── */}
+          {/* ── In-app browser banner ── */}
           {inApp.detected && (
             <div className="rounded-lg p-4 space-y-3" style={{
               background: "rgba(245,158,11,0.08)",
@@ -120,11 +120,10 @@ export default function LoginPage() {
                 <span style={{ fontSize: 18, lineHeight: 1, marginTop: 1 }}>⚠️</span>
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 700, color: "#fbbf24" }}>
-                    Browser do {inApp.name} não suporta login
+                    {t.login.inAppTitle.replace("{name}", inApp.name)}
                   </p>
                   <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, lineHeight: 1.6 }}>
-                    Para fazer login, abra este link no <strong style={{ color: "var(--text)" }}>Safari</strong> ou <strong style={{ color: "var(--text)" }}>Chrome</strong>.
-                    Browsers de apps bloqueiam o login por segurança.
+                    {t.login.inAppDesc}
                   </p>
                 </div>
               </div>
@@ -138,7 +137,7 @@ export default function LoginPage() {
                     background: "#fbbf24", color: "#000", border: "none",
                   }}
                 >
-                  {copied ? "✓ Link copiado!" : "Copiar link"}
+                  {copied ? t.login.linkCopied : t.login.copyLink}
                 </button>
                 <a
                   href={pageUrl}
@@ -147,7 +146,7 @@ export default function LoginPage() {
                   className="r-btn r-btn-ghost"
                   style={{ fontSize: 11, fontWeight: 700, padding: "7px 14px" }}
                 >
-                  Tentar abrir no navegador
+                  {t.login.tryOpenBrowser}
                 </a>
               </div>
               <p style={{ fontSize: 10, color: "var(--text-subtle)", fontFamily: "var(--font-geist-mono)", wordBreak: "break-all" }}>
@@ -157,29 +156,29 @@ export default function LoginPage() {
           )}
 
           {user ? (
-            /* ── Sessão ativa ── */
+            /* ── Active session ── */
             <div className="space-y-5">
               <div>
-                <p className="section-label" style={{ marginBottom: 8 }}>Sessão ativa</p>
+                <p className="section-label" style={{ marginBottom: 8 }}>{t.login.activeSession}</p>
                 <p style={{ fontSize: 16, fontWeight: 800, color: "var(--text)" }}>{user.email}</p>
-                <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>Você já está autenticado.</p>
+                <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>{t.login.alreadyAuth}</p>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Link href="/tune"   className="r-btn r-btn-primary">Criar tune</Link>
-                <Link href="/garage" className="r-btn r-btn-ghost">Minha garagem</Link>
+                <Link href="/tune"   className="r-btn r-btn-primary">{t.login.createTune}</Link>
+                <Link href="/garage" className="r-btn r-btn-ghost">{t.login.myGarage}</Link>
                 <button type="button" className="r-btn r-btn-ghost" onClick={() => void signOut()}>
-                  Sair
+                  {t.login.signOut}
                 </button>
               </div>
             </div>
           ) : (
             <>
               <div>
-                <p style={{ fontSize: 15, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>Entrar na conta</p>
-                <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Use Google ou email para continuar.</p>
+                <p style={{ fontSize: 15, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>{t.login.signIn}</p>
+                <p style={{ fontSize: 12, color: "var(--text-muted)" }}>{t.login.signInSub}</p>
               </div>
 
-              {/* Google button — padrão Google Brand */}
+              {/* Google button */}
               <button
                 type="button"
                 disabled={loading || submitting}
@@ -201,13 +200,13 @@ export default function LoginPage() {
                 onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.12)" }}
               >
                 <GoogleLogo />
-                Continuar com Google
+                {t.login.continueGoogle}
               </button>
 
               {/* Divider */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px" style={{ background: "var(--border-strong)" }} />
-                <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>ou</span>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 500 }}>{t.login.or}</span>
                 <div className="flex-1 h-px" style={{ background: "var(--border-strong)" }} />
               </div>
 
@@ -215,7 +214,7 @@ export default function LoginPage() {
               <form className="space-y-3" onSubmit={submitEmail}>
                 <div className="space-y-1.5">
                   <label htmlFor="email" style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                    Email
+                    {t.login.emailLabel}
                   </label>
                   <input
                     id="email"
@@ -223,11 +222,11 @@ export default function LoginPage() {
                     className="r-input"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="voce@email.com"
+                    placeholder={t.login.emailPlaceholder}
                     required
                   />
                   <p style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                    Você receberá um link de acesso — sem precisar de senha.
+                    {t.login.emailHint}
                   </p>
                 </div>
                 <button
@@ -236,7 +235,7 @@ export default function LoginPage() {
                   disabled={loading || submitting}
                   style={{ paddingTop: 11, paddingBottom: 11, opacity: loading || submitting ? 0.6 : 1 }}
                 >
-                  {submitting ? "Enviando..." : "Enviar link de acesso"}
+                  {submitting ? t.login.sending : t.login.sendLink}
                 </button>
               </form>
 

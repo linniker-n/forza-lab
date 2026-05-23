@@ -5,23 +5,27 @@ import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { useSubscription } from "@/lib/subscription/context"
-
-const NAV_LINKS = [
-  { href: "/tune",        label: "Criar tune" },
-  { href: "/community",   label: "Comunidade" },
-  { href: "/diagnostics", label: "Diagnostico" },
-  { href: "/calculator",  label: "Calculadora" },
-  { href: "/cars",        label: "Carros" },
-  { href: "/meta",        label: "Meta" },
-  { href: "/compare",     label: "Comparar" },
-  { href: "/garage",      label: "Garagem" },
-]
+import { useLanguage } from "@/lib/i18n/context"
+import { useTranslations } from "@/lib/i18n/translations"
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false)
   const { user, signOut } = useAuth()
   const { isPro } = useSubscription()
+  const { lang, setLang } = useLanguage()
+  const t = useTranslations(lang)
   const pathname = usePathname()
+
+  const NAV_LINKS = [
+    { href: "/tune",        label: t.nav.createTune },
+    { href: "/community",   label: t.nav.community },
+    { href: "/diagnostics", label: t.nav.diagnostics },
+    { href: "/calculator",  label: t.nav.calculator },
+    { href: "/cars",        label: t.nav.cars },
+    { href: "/meta",        label: t.nav.meta },
+    { href: "/compare",     label: t.nav.compare },
+    { href: "/garage",      label: t.nav.garage },
+  ]
 
   useEffect(() => {
     const handle = window.setTimeout(() => setOpen(false), 0)
@@ -38,7 +42,7 @@ export function MobileMenu() {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        aria-label={open ? "Fechar menu" : "Abrir menu"}
+        aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
         className="xl:hidden"
         style={{
@@ -96,7 +100,7 @@ export function MobileMenu() {
       />
 
       <nav
-        aria-label="Menu mobile"
+        aria-label="Mobile menu"
         className="xl:hidden"
         style={{
           position: "fixed",
@@ -128,7 +132,7 @@ export function MobileMenu() {
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label="Fechar menu"
+            aria-label="Close menu"
             style={{
               display: "flex", alignItems: "center", justifyContent: "center",
               width: 32, height: 32, borderRadius: 6,
@@ -174,6 +178,26 @@ export function MobileMenu() {
           flexDirection: "column",
           gap: 10,
         }}>
+          {/* Language toggle */}
+          <div className="flex rounded overflow-hidden mb-2" style={{ border: "1px solid var(--border-strong)", alignSelf: "flex-start" }}>
+            {(["pt", "en"] as const).map((l, i) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                style={{
+                  fontSize: 11, fontWeight: 800, padding: "6px 16px",
+                  background: lang === l ? "var(--blue)" : "transparent",
+                  color: lang === l ? "#fff" : "var(--text-muted)",
+                  border: "none", cursor: "pointer", letterSpacing: "0.06em",
+                  borderLeft: i > 0 ? "1px solid var(--border-strong)" : "none",
+                }}
+              >
+                {l === "pt" ? "PT" : "EN"}
+              </button>
+            ))}
+          </div>
+
           {user ? (
             <>
               <div className="flex items-center justify-between">
@@ -187,18 +211,18 @@ export function MobileMenu() {
                 )}
               </div>
               <Link href="/profile" className="r-btn r-btn-ghost w-full" style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center" }}>
-                Editar perfil
+                {t.nav.editProfile}
               </Link>
               {!isPro && (
                 <Link href="/pricing" className="r-btn w-full" style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center", background: "rgba(44,206,204,0.1)", border: "1px solid rgba(44,206,204,0.3)", color: "var(--fh6-teal)", fontWeight: 700 }}>
-                  Upgrade para Pro ↗
+                  {t.nav.upgradePro}
                 </Link>
               )}
               <Link href="/settings" className="r-btn r-btn-ghost w-full" style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center" }}>
-                Configuracoes
+                {t.nav.settings}
               </Link>
               <Link href="/support" className="r-btn r-btn-ghost w-full" style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center" }}>
-                Suporte
+                {t.nav.support}
               </Link>
               <button
                 type="button"
@@ -206,12 +230,12 @@ export function MobileMenu() {
                 style={{ fontSize: 12, padding: "9px 14px", justifyContent: "center" }}
                 onClick={() => void signOut()}
               >
-                Sair da conta
+                {t.nav.signOut}
               </button>
             </>
           ) : (
             <Link href="/login" className="r-btn r-btn-primary" style={{ fontSize: 13, padding: "11px", justifyContent: "center" }}>
-              Entrar
+              {t.nav.signIn}
             </Link>
           )}
         </div>

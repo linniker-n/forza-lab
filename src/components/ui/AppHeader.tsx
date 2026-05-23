@@ -7,17 +7,8 @@ import { useAuth } from "@/components/auth/AuthProvider"
 import { useSubscription } from "@/lib/subscription/context"
 import { ThemeToggle } from "@/components/ui/ThemeToggle"
 import { MobileMenu } from "@/components/ui/MobileMenu"
-
-const NAV_LINKS = [
-  { href: "/tune",       label: "Criar tune" },
-  { href: "/community",  label: "Comunidade" },
-  { href: "/diagnostics",label: "Diagnostico" },
-  { href: "/calculator", label: "Calculadora" },
-  { href: "/cars",       label: "Carros" },
-  { href: "/meta",       label: "Meta" },
-  { href: "/compare",    label: "Comparar" },
-  { href: "/garage",     label: "Garagem" },
-]
+import { useLanguage } from "@/lib/i18n/context"
+import { useTranslations } from "@/lib/i18n/translations"
 
 function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`)
@@ -27,8 +18,21 @@ export function AppHeader() {
   const pathname = usePathname()
   const { loading, user, signOut } = useAuth()
   const { isPro } = useSubscription()
+  const { lang, setLang } = useLanguage()
+  const t = useTranslations(lang)
   const [profileOpen, setProfileOpen] = useState(false)
   const profileRef = useRef<HTMLDivElement | null>(null)
+
+  const NAV_LINKS = [
+    { href: "/tune",        label: t.nav.createTune },
+    { href: "/community",   label: t.nav.community },
+    { href: "/diagnostics", label: t.nav.diagnostics },
+    { href: "/calculator",  label: t.nav.calculator },
+    { href: "/cars",        label: t.nav.cars },
+    { href: "/meta",        label: t.nav.meta },
+    { href: "/compare",     label: t.nav.compare },
+    { href: "/garage",      label: t.nav.garage },
+  ]
 
   useEffect(() => {
     function onPointerDown(event: PointerEvent) {
@@ -59,7 +63,7 @@ export function AppHeader() {
           </span>
         </Link>
 
-        <nav className="hidden xl:flex items-center gap-3" aria-label="Navegacao principal">
+        <nav className="hidden xl:flex items-center gap-3" aria-label="Main navigation">
           {NAV_LINKS.map((item) => (
             <Link
               key={item.href}
@@ -72,16 +76,35 @@ export function AppHeader() {
         </nav>
 
         <div className="hidden xl:flex items-center gap-2">
+          {/* Language toggle */}
+          <div className="flex rounded overflow-hidden" style={{ border: "1px solid var(--border-strong)" }}>
+            {(["pt", "en"] as const).map((l, i) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                style={{
+                  fontSize: 10, fontWeight: 800, padding: "4px 9px", lineHeight: 1.4,
+                  background: lang === l ? "var(--blue)" : "transparent",
+                  color: lang === l ? "#fff" : "var(--text-muted)",
+                  border: "none", cursor: "pointer", letterSpacing: "0.06em",
+                  borderLeft: i > 0 ? "1px solid var(--border-strong)" : "none",
+                }}
+              >
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
           <ThemeToggle />
           <div className="profile-menu" ref={profileRef}>
             {!loading && !user ? (
               <Link href="/login" className="profile-trigger">
-                Entrar
+                {t.nav.signIn}
               </Link>
             ) : loading ? (
               <button type="button" className="profile-trigger" disabled>
                 <span className="profile-avatar">P</span>
-                <span className="profile-label">Perfil</span>
+                <span className="profile-label">{t.nav.profile}</span>
               </button>
             ) : (
               <>
@@ -103,7 +126,7 @@ export function AppHeader() {
                     )}
                   </span>
                   <span className="profile-label">
-                    {user?.displayName || "Perfil"}
+                    {user?.displayName || t.nav.profile}
                     {isPro && <span style={{ marginLeft: 5, fontSize: 8, fontWeight: 800, color: "var(--fh6-teal)", letterSpacing: "0.08em" }}>PRO</span>}
                   </span>
                 </button>
@@ -111,18 +134,18 @@ export function AppHeader() {
                   <div className="profile-popover" role="menu">
                     <p className="profile-email">{user?.displayName ? `${user.displayName} · ${user.email}` : user?.email}</p>
                     <Link href="/profile" className="profile-item" role="menuitem">
-                      Editar perfil
+                      {t.nav.editProfile}
                     </Link>
                     {!isPro && (
                       <Link href="/pricing" className="profile-item" role="menuitem" style={{ color: "var(--fh6-teal)", fontWeight: 700 }}>
-                        Upgrade para Pro ↗
+                        {t.nav.upgradePro}
                       </Link>
                     )}
                     <Link href="/settings" className="profile-item" role="menuitem">
-                      Configuracoes
+                      {t.nav.settings}
                     </Link>
                     <Link href="/support" className="profile-item" role="menuitem">
-                      Suporte
+                      {t.nav.support}
                     </Link>
                     <button
                       type="button"
@@ -130,7 +153,7 @@ export function AppHeader() {
                       role="menuitem"
                       onClick={() => void signOut()}
                     >
-                      Sair da conta
+                      {t.nav.signOut}
                     </button>
                   </div>
                 )}

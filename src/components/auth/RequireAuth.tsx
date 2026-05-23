@@ -2,9 +2,13 @@
 
 import Link from "next/link"
 import { useAuth } from "./AuthProvider"
+import { useLanguage } from "@/lib/i18n/context"
+import { useTranslations } from "@/lib/i18n/translations"
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { loading, user } = useAuth()
+  const { lang } = useLanguage()
+  const t = useTranslations(lang)
 
   if (loading) {
     return (
@@ -24,13 +28,13 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
       <div className="dot-grid" style={{ minHeight: "100dvh" }}>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-14">
           <div className="r-card bracket p-8 space-y-4">
-            <p className="section-label">Área restrita</p>
-            <h1 className="page-title">Entre para continuar</h1>
+            <p className="section-label">{t.auth.restricted}</p>
+            <h1 className="page-title">{t.auth.signInTitle}</h1>
             <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.65 }}>
-              Faça login para acessar esta área. Suas tunes e garagem ficam salvas na sua conta.
+              {t.auth.signInDesc}
             </p>
             <Link href="/login" className="r-btn r-btn-primary">
-              Entrar ou criar conta
+              {t.auth.signInCta}
             </Link>
           </div>
         </div>

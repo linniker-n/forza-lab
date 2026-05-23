@@ -19,6 +19,8 @@ import type { AppSettings } from "@/lib/settings/context"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
 import type { DiagnosticProblem, DiagnosticResult, GeneratedTune } from "@/types"
 import { collection, deleteDoc, doc, getDocs, orderBy, query, updateDoc } from "firebase/firestore"
+import { useLanguage } from "@/lib/i18n/context"
+import { useTranslations } from "@/lib/i18n/translations"
 
 interface SavedTune {
   id: string
@@ -549,6 +551,8 @@ export default function GaragePage() {
   const [showUpgrade,  setShowUpgrade] = useState(false)
   const { user } = useAuth()
   const { isPro } = useSubscription()
+  const { lang } = useLanguage()
+  const t = useTranslations(lang)
   const garageLimit = isPro ? Infinity : FREE_LIMITS.garageSlots
   const isGarageFull = !isPro && saved.length >= FREE_LIMITS.garageSlots
   const userId = user?.uid
@@ -589,7 +593,7 @@ export default function GaragePage() {
       })
       .catch(() => {
         if (!active) return
-        setSyncNote("Garagem Firebase indisponível. Exibindo tunes salvas neste navegador.")
+        setSyncNote(t.garage.fbUnavail)
       })
 
     return () => {
@@ -604,7 +608,7 @@ export default function GaragePage() {
       try {
         await deleteDoc(doc(db, "users", user.uid, "savedTunes", id))
       } catch {
-        setSyncNote("Não foi possível remover no Firebase agora.")
+        setSyncNote(t.garage.cantRemove)
       }
     }
     const next = saved.filter((item) => item.id !== id)
@@ -624,7 +628,7 @@ export default function GaragePage() {
       } catch { /* best-effort */ }
     }
     setEditOpenId(null)
-    setSyncNote("Tunagem atualizada com suas alterações.")
+    setSyncNote(t.garage.tuneUpdated)
     setTimeout(() => setSyncNote(null), 3000)
   }
 
@@ -641,7 +645,7 @@ export default function GaragePage() {
       await shareTune(tuneToshare, user.uid, authorName, photoBase64)
       setSharedId(id)
       setEditOpenId(null)
-    } catch { setSyncNote("Erro ao compartilhar.") }
+    } catch { setSyncNote(t.garage.errorShare) }
     finally { setSharingId(null) }
   }
 
@@ -652,7 +656,7 @@ export default function GaragePage() {
         const snapshot = await getDocs(collection(db, "users", user.uid, "savedTunes"))
         await Promise.all(snapshot.docs.map((item) => deleteDoc(item.ref)))
       } catch {
-        setSyncNote("Não foi possível limpar no Firebase agora.")
+        setSyncNote(t.garage.cantClear)
       }
     }
     window.localStorage.removeItem(storageKey(user?.uid))
@@ -660,10 +664,7 @@ export default function GaragePage() {
     setDiagOpenId(null)
   }
 
-  const TUNE_LABELS: Record<string, string> = {
-    street: "Rua", drag: "Drag", drift: "Drift",
-    rally: "Rally", cross_country: "Cross Country", top_speed: "Top Speed", grip: "Grip",
-  }
+  const TUNE_LABELS: Record<string, string> = t.tune.tuneLabels
 
   return (
     <RequireAuth>
@@ -674,19 +675,19 @@ export default function GaragePage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap anim-up">
           <div>
-            <p className="section-label">Garagem</p>
-            <h1 className="page-title">Tunes salvas</h1>
+            <p className="section-label">{t.garage.sectionLabel}</p>
+            <h1 className="page-title">{t.garage.pageTitle}</h1>
             <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>
-              As tunes sincronizam no Firebase e mantêm cópia local neste navegador.
+              {t.garage.pageSubtitle}
             </p>
           </div>
           <div className="flex gap-2">
             {saved.length > 0 && (
               <button type="button" className="r-btn r-btn-ghost" onClick={() => void clearGarage()}>
-                Limpar garagem
+                {t.garage.clearGarage}
               </button>
             )}
-            <Link href="/tune" className="r-btn r-btn-primary">Criar tune</Link>
+            <Link href="/tune" className="r-btn r-btn-primary">{t.garage.createTune}</Link>
           </div>
         </div>
 
@@ -697,10 +698,10 @@ export default function GaragePage() {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1.5">
                 <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>
-                  Slots da garagem: <span style={{ color: isGarageFull ? "#f87171" : "var(--text)", fontWeight: 700 }}>{Math.min(saved.length, FREE_LIMITS.garageSlots)}/{FREE_LIMITS.garageSlots}</span>
+                  {t.garage.slotsLabel} <span style={{ color: isGarageFull ? "#f87171" : "var(--text)", fontWeight: 700 }}>{Math.min(saved.length, FREE_LIMITS.garageSlots)}/{FREE_LIMITS.garageSlots}</span>
                 </p>
                 <button type="button" onClick={() => setShowUpgrade(true)} style={{ fontSize: 10, fontWeight: 700, color: "var(--fh6-teal)", background: "none", border: "none", cursor: "pointer" }}>
-                  Pro ilimitado →
+                  {t.garage.proUnlimited}
                 </button>
               </div>
               <div style={{ height: 4, borderRadius: 2, background: "var(--border-strong)", overflow: "hidden" }}>
@@ -722,11 +723,11 @@ export default function GaragePage() {
 
         {saved.length === 0 ? (
           <div className="r-card bracket p-8 text-center space-y-4 anim-up" style={{ animationDelay: "80ms" }}>
-            <p style={{ fontSize: 16, fontWeight: 800, color: "var(--text)" }}>Nenhuma tune salva ainda</p>
+            <p style={{ fontSize: 16, fontWeight: 800, color: "var(--text)" }}>{t.garage.noTunes}</p>
             <p style={{ fontSize: 13, color: "var(--text-muted)", maxWidth: 460, margin: "0 auto", lineHeight: 1.6 }}>
-              Gere uma tune e use o botão de salvar no resultado. A garagem vai guardar as configurações para consulta rápida.
+              {t.garage.noTunesDesc}
             </p>
-            <Link href="/tune" className="r-btn r-btn-primary">Gerar primeira tune</Link>
+            <Link href="/tune" className="r-btn r-btn-primary">{t.garage.firstTune}</Link>
           </div>
         ) : (
           <div className="space-y-4">
@@ -769,7 +770,7 @@ export default function GaragePage() {
                           {tune.car.brand} {tune.car.model}
                         </h2>
                         <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
-                          Salva em {new Date(item.saved_at).toLocaleString("pt-BR")} · PI estimado {tune.pi_estimate}
+                          {t.garage.savedAt} {new Date(item.saved_at).toLocaleString(t.locale)} · {t.garage.piEst} {tune.pi_estimate}
                         </p>
                       </div>
 
@@ -786,7 +787,7 @@ export default function GaragePage() {
                             border: `1px solid ${diagOpen ? "var(--border-blue)" : "var(--border-strong)"}`,
                           }}
                         >
-                          🔧 Diagnosticar
+                          {t.garage.diagnose}
                         </button>
                         <button
                           type="button"
@@ -799,7 +800,7 @@ export default function GaragePage() {
                             border: `1px solid ${editOpenId === item.id ? "rgba(44,206,204,0.4)" : "var(--border-strong)"}`,
                           }}
                         >
-                          ✏️ Editar
+                          {t.garage.edit}
                         </button>
                         <button
                           type="button"
@@ -808,14 +809,14 @@ export default function GaragePage() {
                           className="r-btn r-btn-ghost"
                           style={{ fontSize: 11, color: sharedId === item.id ? "#34d399" : undefined, opacity: sharingId === item.id ? 0.6 : 1 }}
                         >
-                          {sharedId === item.id ? "✓ Compartilhado" : sharingId === item.id ? "..." : "Compartilhar"}
+                          {sharedId === item.id ? t.garage.shared : sharingId === item.id ? "..." : t.garage.share}
                         </button>
                         <Link
                           href={`/tune?car=${tune.car.id}&type=${tune.tune_type}`}
                           className="r-btn r-btn-outline"
                           style={{ fontSize: 11 }}
                         >
-                          Regerar
+                          {t.garage.regenerate}
                         </Link>
                         <button
                           type="button"
@@ -823,7 +824,7 @@ export default function GaragePage() {
                           style={{ fontSize: 11 }}
                           onClick={() => void removeTune(item.id)}
                         >
-                          Remover
+                          {t.garage.remove}
                         </button>
                       </div>
                     </div>
