@@ -16,43 +16,70 @@ function getStripe(): Stripe {
 // Price IDs lidos em runtime via process.env (definidos em functions/.env)
 
 // ─────────────────────────────────────────────────────────────────────────────
-// createCheckoutSession — chamado pelo frontend via Firebase SDK
-// Input: { priceId: string, successUrl: string, cancelUrl: string }
+// createCheckoutSession — HTTPS function com CORS explícito
+// Autenticação via Bearer token (Firebase ID Token) no header Authorization
 // ─────────────────────────────────────────────────────────────────────────────
-export const createCheckoutSession = functions.https.onCall(async (data, context) => {
-  if (!context.auth) throw new functions.https.HttpsError("unauthenticated", "Login necessário.")
+export const checkout = functions.https.onRequest(async (req, res) => {
+  // CORS — permite qualquer origem (necessário para Cloudflare Pages)
+  res.set("Access-Control-Allow-Origin", "*")
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS")
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-  const uid   = context.auth.uid
-  const email = context.auth.token.email ?? ""
-  const stripe = getStripe()
+  if (req.method === "OPTIONS") { res.status(204).send(""); return }
+  if (req.method !== "POST")    { res.status(405).send("Method Not Allowed"); return }
 
-  const priceId = data.priceId as string
-  if (!priceId) throw new functions.https.HttpsError("invalid-argument", "priceId ausente.")
-
-  // Busca ou cria customer Stripe
-  const profileRef = db.collection("userProfiles").doc(uid)
-  const profile    = await profileRef.get()
-  let customerId: string | undefined = profile.data()?.stripe_customer_id
-
-  if (!customerId) {
-    const customer = await stripe.customers.create({ email, metadata: { firebase_uid: uid } })
-    customerId = customer.id
-    await profileRef.set({ stripe_customer_id: customerId }, { merge: true })
+  // Verifica Firebase ID Token
+  const authHeader = req.headers.authorization ?? ""
+  if (!authHeader.startsWith("Bearer ")) {
+    res.status(401).json({ error: "Unauthorized: token ausente" }); return
   }
 
-  const session = await stripe.checkout.sessions.create({
-    customer:             customerId,
-    mode:                 "subscription",
-    payment_method_types: ["card"],
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: data.successUrl ?? "https://forzalab.app/pricing?success=1",
-    cancel_url:  data.cancelUrl  ?? "https://forzalab.app/pricing?canceled=1",
-    client_reference_id: uid,
-    metadata: { firebase_uid: uid },
-    subscription_data: { metadata: { firebase_uid: uid } },
-  })
+  let uid: string
+  let email: string
+  try {
+    const decoded = await admin.auth().verifyIdToken(authHeader.split("Bearer ")[1])
+    uid   = decoded.uid
+    email = decoded.email ?? ""
+  } catch {
+    res.status(401).json({ error: "Unauthorized: token inválido" }); return
+  }
 
-  return { sessionId: session.id, url: session.url }
+  const { priceId, successUrl, cancelUrl } = req.body as {
+    priceId: string; successUrl: string; cancelUrl: string
+  }
+  if (!priceId) { res.status(400).json({ error: "priceId ausente" }); return }
+
+  try {
+    const stripe = getStripe()
+
+    // Busca ou cria customer Stripe
+    const profileRef = db.collection("userProfiles").doc(uid)
+    const profile    = await profileRef.get()
+    let customerId: string | undefined = profile.data()?.stripe_customer_id
+
+    if (!customerId) {
+      const customer = await stripe.customers.create({ email, metadata: { firebase_uid: uid } })
+      customerId = customer.id
+      await profileRef.set({ stripe_customer_id: customerId }, { merge: true })
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer:             customerId,
+      mode:                 "subscription",
+      payment_method_types: ["card"],
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: successUrl,
+      cancel_url:  cancelUrl,
+      client_reference_id: uid,
+      metadata: { firebase_uid: uid },
+      subscription_data: { metadata: { firebase_uid: uid } },
+    })
+
+    res.json({ sessionId: session.id, url: session.url })
+  } catch (err) {
+    console.error("Checkout error:", err)
+    res.status(500).json({ error: err instanceof Error ? err.message : "Erro interno" })
+  }
 })
 
 // ─────────────────────────────────────────────────────────────────────────────

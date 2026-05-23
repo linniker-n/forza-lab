@@ -2,10 +2,11 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { getFunctions, httpsCallable } from "firebase/functions"
-import { getFirebaseApp } from "@/lib/firebase/client"
+import { getFirebaseAuth } from "@/lib/firebase/client"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { useSubscription } from "@/lib/subscription/context"
+
+const CHECKOUT_URL = "https://us-central1-forza-tune-lab.cloudfunctions.net/checkout"
 
 const STRIPE_PK = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ""
 const PRICE_MONTHLY = process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY ?? ""
@@ -49,27 +50,27 @@ export default function PricingPage() {
     if (!user) { window.location.href = "/login?redirect=/pricing"; return }
     setLoading(plan)
     try {
-      const app = getFirebaseApp()
-      if (!app) throw new Error("Firebase não inicializado")
-      const functions = getFunctions(app, "us-central1")
-      const createSession = httpsCallable<
-        { priceId: string; successUrl: string; cancelUrl: string },
-        { url: string }
-      >(functions, "createCheckoutSession")
+      const auth  = getFirebaseAuth()
+      const token = await auth?.currentUser?.getIdToken(true)
+      if (!token) throw new Error("Sessão expirada. Faça login novamente.")
 
       const priceId = plan === "monthly" ? PRICE_MONTHLY : PRICE_YEARLY
-      const result  = await createSession({
-        priceId,
-        successUrl: `${window.location.origin}/pricing?success=1`,
-        cancelUrl:  `${window.location.origin}/pricing?canceled=1`,
+      const res = await fetch(CHECKOUT_URL, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body:    JSON.stringify({
+          priceId,
+          successUrl: `${window.location.origin}/pricing?success=1`,
+          cancelUrl:  `${window.location.origin}/pricing?canceled=1`,
+        }),
       })
 
-      if (result.data.url) window.location.href = result.data.url
+      const data = await res.json() as { url?: string; error?: string }
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`)
+      if (data.url) window.location.href = data.url
     } catch (err: unknown) {
       console.error("Checkout error:", err)
-      const code = (err as { code?: string })?.code ?? ""
-      const msg  = err instanceof Error ? err.message : String(err)
-      alert(`Erro ${code}: ${msg}`)
+      alert(`Erro: ${err instanceof Error ? err.message : String(err)}`)
     } finally { setLoading(null) }
   }
 
