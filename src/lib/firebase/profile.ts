@@ -21,9 +21,22 @@ export async function saveUserProfile(userId: string, profile: UserProfile): Pro
   const auth = getFirebaseAuth()
   if (!db) throw new Error("Firebase não configurado")
 
+  // Validação de tamanho da foto (base64 ~133% do original — limite 150KB base64 ≈ 112KB imagem)
+  if (profile.photoBase64 && profile.photoBase64.length > 150_000) {
+    throw new Error("Foto muito grande. Máximo 112 KB.")
+  }
+
+  // Valida formato base64 de imagem
+  if (profile.photoBase64 && !/^data:image\/(jpeg|png|webp);base64,/.test(profile.photoBase64)) {
+    throw new Error("Formato de imagem inválido.")
+  }
+
+  // Sanitiza nickname
+  const nickname = profile.nickname.replace(/[<>"'&]/g, "").slice(0, 64)
+
   await setDoc(
     doc(db, "userProfiles", userId),
-    { nickname: profile.nickname, photoBase64: profile.photoBase64 ?? null, updatedAt: serverTimestamp() },
+    { nickname, photoBase64: profile.photoBase64 ?? null, updatedAt: serverTimestamp() },
     { merge: true },
   )
 

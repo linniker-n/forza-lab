@@ -39,6 +39,15 @@ export default function SupportPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!message.trim()) return
+
+    // Validação client-side (espelhada nas Firestore rules)
+    const VALID_CATEGORIES = ["bug", "sugestao", "pergunta", "outro"]
+    if (!VALID_CATEGORIES.includes(category)) { setError("Categoria inválida."); return }
+    if (message.trim().length > 2000) { setError("Mensagem muito longa (máx 2000 caracteres)."); return }
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Formato de email inválido."); return
+    }
+
     setSending(true); setError(null)
 
     try {

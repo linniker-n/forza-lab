@@ -31,11 +31,6 @@ const Ctx = createContext<SubscriptionCtx | null>(null)
 
 const today = () => new Date().toISOString().split("T")[0]
 
-// Emails com acesso total irrestrito — modo admin/deus
-const ADMIN_EMAILS = new Set([
-  "design.linniker@gmail.com",
-])
-
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -52,18 +47,28 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       return
     }
 
-    // Modo admin — acesso total irrestrito
-    if (user.email && ADMIN_EMAILS.has(user.email)) {
-      setData({ tier: "pro", status: "active", stripeCustomerId: null, tuneUsageDate: null, tuneUsageCount: 0 })
-      setLoading(false)
-      return
-    }
+    let active = true
 
-    const db = getFirebaseDb()
-    if (!db) { setLoading(false); return }
+    async function load() {
+      // Verifica custom claim 'admin: true' no JWT (server-controlled, não falsificável)
+      // Para conceder: chamar a function setAdminClaim (ou Firebase Admin SDK)
+      try {
+        const tokenResult = await user!.getIdTokenResult()
+        if (!active) return
+        if (tokenResult.claims["admin"] === true) {
+          setData({ tier: "pro", status: "active", stripeCustomerId: null, tuneUsageDate: null, tuneUsageCount: 0 })
+          setLoading(false)
+          return
+        }
+      } catch { /* se falhar lê do Firestore normalmente */ }
 
-    getDoc(doc(db, "userProfiles", user.uid))
-      .then((snap) => {
+      if (!active) return
+      const db = getFirebaseDb()
+      if (!db) { setLoading(false); return }
+
+      try {
+        const snap = await getDoc(doc(db, "userProfiles", user!.uid))
+        if (!active) return
         if (!snap.exists()) { setLoading(false); return }
         const d = snap.data()
         setData({
@@ -73,9 +78,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           tuneUsageDate:    d.tune_usage?.date ?? null,
           tuneUsageCount:   d.tune_usage?.count ?? 0,
         })
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      } catch { /* ignora */ }
+      finally {
+        if (active) setLoading(false)
+      }
+    }
+
+    void load()
+    return () => { active = false }
   }, [user, authLoading])
 
   const tuneUsageToday = useMemo(() => {

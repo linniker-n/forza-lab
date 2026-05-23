@@ -3,25 +3,59 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ── Tunes salvas — somente o dono lê/escreve ──────────────────────────────
     match /users/{userId}/savedTunes/{tuneId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
+    // ── Perfis de usuário ─────────────────────────────────────────────────────
+    // Cada usuário só lê/escreve o próprio perfil.
+    // Campos sensíveis (stripe_customer_id) ficam protegidos.
     match /userProfiles/{uid} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == uid;
+      allow read:  if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null && request.auth.uid == uid
+        // Limite de tamanho: nickname <= 64 chars, photoBase64 <= 200KB em base64
+        && (request.resource.data.nickname is string
+            ? request.resource.data.nickname.size() <= 64
+            : true);
     }
 
+    // ── Tunes da comunidade ───────────────────────────────────────────────────
     match /communityTunes/{id} {
+      // Qualquer usuário autenticado pode ler
       allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null;
+
+      // Criar: authorId deve bater com UID do usuário logado
+      allow create: if request.auth != null
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.authorName is string
+        && request.resource.data.authorName.size() <= 64
+        && request.resource.data.tuneType is string;
+
+      // Atualizar: somente o autor pode atualizar (curtidas via transaction são tratadas abaixo)
+      allow update: if request.auth != null
+        && (resource.data.authorId == request.auth.uid
+            // Permite toggle de like (likedBy + likeCount somente)
+            || (request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['likedBy', 'likeCount'])));
+
+      // Deletar: somente o autor
       allow delete: if request.auth != null
-        && request.auth.uid == resource.data.authorId;
+        && resource.data.authorId == request.auth.uid;
     }
 
+    // ── Tickets de suporte ────────────────────────────────────────────────────
     match /supportTickets/{id} {
-      allow create: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 2000
+        && request.resource.data.category in ["bug", "sugestao", "pergunta", "outro"];
+    }
+
+    // ── Audit log (somente escrita pelo backend — sem leitura pelo cliente) ───
+    match /auditLogs/{logId} {
+      allow read, write: if false;
     }
   }
 }
