@@ -78,7 +78,6 @@ function TuneCard({ item, userId, onLikeToggle, onDelete }: {
   onDelete(id: string): void
 }) {
   const [err, setErr] = useState(false)
-  const [expanded, setExpanded] = useState(false)
   const [liking, setLiking] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const url = getCarImageUrl(item.tune.car)
@@ -173,14 +172,15 @@ function TuneCard({ item, userId, onLikeToggle, onDelete }: {
             {item.likeCount}
           </button>
 
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
+          <a
+            href={`/community/tune?id=${item.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="r-btn r-btn-ghost flex-1"
-            style={{ fontSize: 11, padding: "5px 10px" }}
+            style={{ fontSize: 11, padding: "5px 10px", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}
           >
-            {expanded ? "Fechar ↑" : "Ver tune ↓"}
-          </button>
+            Ver tune ↗
+          </a>
 
           {userId === item.authorId && (
             <button
@@ -198,8 +198,8 @@ function TuneCard({ item, userId, onLikeToggle, onDelete }: {
           )}
         </div>
 
-        {/* Expanded tune details */}
-        {expanded && (
+        {/* Expanded tune details — removed, now opens in new tab */}
+        {false && (
           <div className="space-y-3 pt-3" style={{ borderTop: "1px solid var(--border)" }}>
             {item.tune.summary && (
               <p style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.55 }}>{item.tune.summary}</p>
