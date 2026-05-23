@@ -275,7 +275,7 @@ function aeroLabel(v: string): string {
 }
 
 /* ── Tune result ── */
-function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void }) {
+function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset(): void; onBack(): void }) {
   const url = getCarImageUrl(tune.car)
   const [err, setErr] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -404,6 +404,9 @@ function TuneResult({ tune, onReset }: { tune: GeneratedTune; onReset(): void })
               <Link href="/garage" className="r-btn r-btn-ghost" style={{ fontSize: 11 }}>
                 Garagem
               </Link>
+              <button type="button" onClick={onBack} className="r-btn r-btn-ghost" style={{ fontSize: 11 }}>
+                ← Voltar
+              </button>
               <button type="button" onClick={onReset} className="r-btn r-btn-ghost" style={{ fontSize: 11 }}>
                 Nova tune
               </button>
@@ -755,7 +758,11 @@ function WizardInner() {
     } finally { setLoading(false) }
   }
 
-  if (step === 4 && result) return <TuneResult tune={result} onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false); setIntent("balanced"); setInputMode("database"); setCls("A") }} />
+  if (step === 4 && result) return <TuneResult
+    tune={result}
+    onBack={() => { setStep(3); setResult(null) }}
+    onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false); setIntent("balanced"); setInputMode("database"); setCls("A") }}
+  />
 
   const steps = [
     { n: 1, l: "Carro" },

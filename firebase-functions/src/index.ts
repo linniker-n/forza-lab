@@ -2,7 +2,7 @@ import * as admin from "firebase-admin"
 import * as functions from "firebase-functions"
 import Stripe from "stripe"
 
-admin.initializeApp()
+admin.initializeApp({ projectId: "forza-tune-lab" })
 const db = admin.firestore()
 
 // ─────────────────────────────────────────────────────────────────────────────
