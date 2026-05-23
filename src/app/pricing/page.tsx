@@ -67,7 +67,7 @@ export default function PricingPage() {
 
       const data = await res.json() as { url?: string; error?: string }
       if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`)
-      if (data.url) window.location.href = data.url
+      if (data.url) window.open(data.url, "_blank", "noopener,noreferrer")
     } catch (err: unknown) {
       console.error("Checkout error:", err)
       alert(`Erro: ${err instanceof Error ? err.message : String(err)}`)
@@ -158,7 +158,7 @@ export default function PricingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 anim-up">
 
           {/* Free */}
-          <div className="r-card p-7 space-y-6">
+          <div className="r-card p-7 flex flex-col" style={{ gap: 24 }}>
             <div>
               <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 6 }}>Gratuito</p>
               <div className="flex items-baseline gap-2">
@@ -177,13 +177,14 @@ export default function PricingPage() {
               ))}
             </div>
 
-            <Link href="/tune" className="r-btn r-btn-ghost w-full" style={{ justifyContent: "center", paddingTop: 11, paddingBottom: 11, fontSize: 12 }}>
+            <Link href="/tune" className="r-btn r-btn-ghost w-full" style={{ justifyContent: "center", paddingTop: 11, paddingBottom: 11, fontSize: 12, marginTop: "auto" }}>
               {isPro ? "Plano atual: Pro" : "Continuar grátis"}
             </Link>
           </div>
 
           {/* Pro */}
-          <div className="r-card p-7 space-y-6" style={{
+          <div className="r-card p-7 flex flex-col" style={{
+            gap: 24,
             border: "1px solid rgba(44,206,204,0.4)",
             background: "linear-gradient(135deg, var(--bg-card) 0%, rgba(44,206,204,0.04) 100%)",
             boxShadow: "0 0 40px rgba(44,206,204,0.08)",
@@ -226,7 +227,7 @@ export default function PricingPage() {
 
             {isPro ? (
               <div className="r-btn w-full" style={{
-                justifyContent: "center", paddingTop: 12, paddingBottom: 12,
+                justifyContent: "center", paddingTop: 12, paddingBottom: 12, marginTop: "auto",
                 background: "rgba(52,211,153,0.12)", border: "1px solid rgba(52,211,153,0.3)",
                 color: "#34d399", fontWeight: 700, fontSize: 13, cursor: "default",
               }}>
@@ -239,7 +240,7 @@ export default function PricingPage() {
                 onClick={() => void checkout(billing)}
                 className="r-btn w-full"
                 style={{
-                  justifyContent: "center", paddingTop: 12, paddingBottom: 12,
+                  justifyContent: "center", paddingTop: 12, paddingBottom: 12, marginTop: "auto",
                   background: "var(--fh6-teal)", color: "#000", border: "none",
                   fontWeight: 800, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.06em",
                   boxShadow: "0 4px 24px rgba(44,206,204,0.35)",
