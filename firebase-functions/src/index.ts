@@ -74,6 +74,8 @@ export const checkout = functions.https.onRequest(async (req, res) => {
   const validPrices = new Set([
     process.env.STRIPE_PRICE_MONTHLY,
     process.env.STRIPE_PRICE_YEARLY,
+    process.env.STRIPE_PRICE_MONTHLY_USD,
+    process.env.STRIPE_PRICE_YEARLY_USD,
   ])
   if (!validPrices.has(priceId)) {
     res.status(400).json({ error: "Plano não reconhecido." }); return
