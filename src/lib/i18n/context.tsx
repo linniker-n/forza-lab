@@ -28,7 +28,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Language>("pt")
 
   useEffect(() => {
-    setLangState(detectLanguage())
+    const handle = window.setTimeout(() => setLangState(detectLanguage()), 0)
+    return () => window.clearTimeout(handle)
   }, [])
 
   function setLang(l: Language) {

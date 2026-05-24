@@ -1,11 +1,7 @@
-import type { Car, CarClass, Drivetrain, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType, TuneWarning } from "@/types"
+import type { Car, Drivetrain, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType, TuneWarning } from "@/types"
 
-// Tipos que usam os padrões fixos da comunidade pro — devem ser re-aplicados
-// depois de applyFH6Intent e applyPrecisionModel para garantir valores exatos.
-const PRO_TYPES = new Set<TuneType>(["street", "grip", "drag", "cross_country", "top_speed"])
-const PRO_TIRE_PSI     = 21.8   // 1.5 BAR
-const PRO_SPRING_LBFIN = 457    // ≈ 80 kgf/mm
 import { analyzeCar } from "./analyze"
+import { getClassPiLimit } from "./classes"
 import {
   applyFH6Intent,
   getFH6IntentCarStrengths,
@@ -16,12 +12,23 @@ import {
   getFH6IntentWarnings,
 } from "./fh6-intents"
 import { calculateAdvancedGearing } from "./gearing-calculator"
-import { selectParts } from "./parts"
+import { selectPartsPlan, type PartsSelectionPlan } from "./parts"
 import { applyPrecisionModel } from "./precision-model"
 import { buildTune } from "./presets"
 
-const CLASS_PI_MAP: Record<CarClass, number> = {
-  D: 500, C: 600, B: 700, A: 800, S1: 900, S2: 950, R: 975, X: 999,
+// These pro patterns are re-applied after intent and precision layers so the
+// final tune keeps the competitive FH6 baseline from the technical spec.
+const PRO_TYPES = new Set<TuneType>(["street", "grip", "drag", "cross_country", "top_speed"])
+const PRO_TIRE_PSI = 21.8
+const PRO_SPRING_LBFIN = 457
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
+
+function calculateMetaSpringRate(car: Car): number {
+  const scale = clamp(1 + (car.weight_kg - 1300) * 0.00044, 0.68, 1.72)
+  return Math.round(PRO_SPRING_LBFIN * scale)
 }
 
 function canUseDrivetrain(car: Car, drivetrain: Drivetrain): boolean {
@@ -140,9 +147,28 @@ function getWeaknesses(car: Car, tuneType: TuneType): string[] {
   return weaknesses
 }
 
-// PI is estimated as the class ceiling (a real calculation would need game data)
-function estimatePI(targetClass: CarClass): number {
-  return CLASS_PI_MAP[targetClass]
+function generatePartsWarnings(plan: PartsSelectionPlan, requestedEngineSwap: boolean): TuneWarning[] {
+  const warnings: TuneWarning[] = []
+
+  if (requestedEngineSwap && !plan.engineSwapApplied) {
+    warnings.push({
+      type: "warning",
+      message: "Swap de motor removido da lista para manter o carro dentro do limite de PI da classe.",
+    })
+  }
+
+  if (plan.skipped.length > 0) {
+    warnings.push({
+      type: "tip",
+      message: `Pecas puladas por limite de PI: ${plan.skipped.slice(0, 5).join(", ")}.`,
+    })
+  }
+
+  for (const note of plan.notes) {
+    warnings.push({ type: "tip", message: note })
+  }
+
+  return warnings
 }
 
 export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
@@ -151,15 +177,16 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
   const fh6Intent  = request.fh6_intent ?? "balanced"
 
   // Parts selection — passes engine_swap flag
-  const parts = selectParts(car, profile, request.tune_type, drivetrain, request.target_class, request.engine_swap, fh6Intent)
+  const partsPlan = selectPartsPlan(car, profile, request.tune_type, drivetrain, request.target_class, request.engine_swap, fh6Intent)
+  const parts = partsPlan.parts
 
   // When engine swap is active, simulate a car with ~80% more power for tune calculations.
   // This makes the physics formulas generate stiffer springs, more conservative differential,
   // and shorter gearing — appropriate for a high-power swap build.
-  const carForTune = request.engine_swap
+  const carForTune = partsPlan.engineSwapApplied
     ? { ...car, power_hp: Math.round(car.power_hp * 1.8) }
     : car
-  const profileForTune = request.engine_swap
+  const profileForTune = partsPlan.engineSwapApplied
     ? { ...profile, isPowerful: true, isLowPower: false }
     : profile
 
@@ -216,13 +243,14 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
   // applyFH6Intent e applyPrecisionModel podem sobrescrever os valores — isso garante
   // que o resultado final sempre bata com os padrões informados.
   if (PRO_TYPES.has(request.tune_type)) {
+    const metaSpringRate = calculateMetaSpringRate(carForTune)
     tuning.tires    = { front: PRO_TIRE_PSI, rear: PRO_TIRE_PSI }
     tuning.alignment = { camber_front: 0, camber_rear: 0, toe_front: 0, toe_rear: 0, caster: 7 }
     tuning.antiroll_bars = { front: 1, rear: 65 }
     tuning.springs = {
       ...tuning.springs,
-      front: PRO_SPRING_LBFIN,
-      rear:  PRO_SPRING_LBFIN,
+      front: metaSpringRate,
+      rear:  metaSpringRate,
       ride_height_front: "max",
       ride_height_rear:  "high",
     }
@@ -258,7 +286,8 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
     strengths:  [...getStrengths(car, request.tune_type), ...getFH6IntentStrengths(fh6Intent), ...getFH6IntentCarStrengths(car, fh6Intent)],
     weaknesses,
     warnings:   [
-      ...generateWarnings(car, request.tune_type, drivetrain, request.preferred_drivetrain, request.engine_swap),
+      ...generateWarnings(car, request.tune_type, drivetrain, request.preferred_drivetrain, partsPlan.engineSwapApplied),
+      ...generatePartsWarnings(partsPlan, request.engine_swap),
       ...getFH6IntentWarnings({
         car: carForTune,
         profile: profileForTune,
@@ -270,6 +299,6 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
         difficulty: request.difficulty,
       }),
     ],
-    pi_estimate: estimatePI(request.target_class),
+    pi_estimate: Math.min(partsPlan.estimatedPi, getClassPiLimit(request.target_class)),
   }
 }

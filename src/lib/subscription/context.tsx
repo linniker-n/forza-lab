@@ -42,9 +42,11 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (authLoading) return
     if (!user) {
-      setData({ tier: "free", status: null, stripeCustomerId: null, tuneUsageDate: null, tuneUsageCount: 0 })
-      setLoading(false)
-      return
+      const handle = window.setTimeout(() => {
+        setData({ tier: "free", status: null, stripeCustomerId: null, tuneUsageDate: null, tuneUsageCount: 0 })
+        setLoading(false)
+      }, 0)
+      return () => window.clearTimeout(handle)
     }
 
     let active = true

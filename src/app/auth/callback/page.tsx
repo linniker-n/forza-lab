@@ -17,9 +17,11 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     if (!configured) {
-      setState("error")
-      setErrorMsg("Firebase não está configurado nesta instalação.")
-      return
+      const handle = window.setTimeout(() => {
+        setState("error")
+        setErrorMsg("Firebase não está configurado nesta instalação.")
+      }, 0)
+      return () => window.clearTimeout(handle)
     }
 
     let active = true

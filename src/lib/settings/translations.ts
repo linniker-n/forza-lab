@@ -50,6 +50,7 @@ export const PARTS_PTBR: Record<string, string> = {
   "Sport weight reduction":   "Redução de peso esportiva",
   "Street weight reduction":  "Redução de peso de rua",
   "Race rollcage":            "Gaiola de corrida",
+  "Race Roll Cage":           "Gaiola de corrida",
   "Sport rollcage":           "Gaiola esportiva",
   "Race springs":             "Molas de corrida",
   "Sport springs":            "Molas esportivas",
@@ -72,6 +73,7 @@ export const PARTS_PTBR: Record<string, string> = {
 
   // ── Pneus ─────────────────────────────────────────────
   "Sport tires":              "Pneus esportivos",
+  "Street Tires":             "Pneus de rua",
   "Semi-slick tires":         "Pneus semi-slick",
   "Race tires":               "Pneus de corrida",
   "Drag tires":               "Pneus de arrancada",
@@ -84,6 +86,12 @@ export const PARTS_PTBR: Record<string, string> = {
   "Front tire width +2":      "Largura dianteira +2",
   "Rear tire width +1":       "Largura traseira +1",
   "Rear tire width +2":       "Largura traseira +2",
+  "Front Track Width +1":     "Bitola dianteira +1",
+  "Rear Track Width +1":      "Bitola traseira +1",
+  "Max Front Track Width":    "Bitola dianteira maxima",
+  "Max Rear Track Width":     "Bitola traseira maxima",
+  "Heavier Rims":             "Rodas mais pesadas",
+  "Rim Size +1":              "Aro +1",
 
   // ── Aero / Visual ─────────────────────────────────────
   "Adjustable rear wing":     "Asa traseira ajustável",

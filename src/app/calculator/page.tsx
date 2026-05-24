@@ -175,11 +175,11 @@ function GearingTutorial() {
             style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)" }}>
             <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>💡</span>
             <div className="space-y-1">
-              <p style={{ fontSize: 12, fontWeight: 700, color: "#fbbf24" }}>Dica: formato "escadinha"</p>
+              <p style={{ fontSize: 12, fontWeight: 700, color: "#fbbf24" }}>Dica: formato &quot;escadinha&quot;</p>
               <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6 }}>
                 Relações de marcha bem ajustadas formam uma progressão uniforme — cada marcha tem um espaço
                 parecido com a anterior. Se você visualizar os números em ordem, devem parecer uma escada.
-                Se houver um "degrau" muito grande entre duas marchas, o carro vai perder aceleração naquele ponto.
+                Se houver um &quot;degrau&quot; muito grande entre duas marchas, o carro vai perder aceleração naquele ponto.
                 Use os resultados da calculadora como ponto de partida e ajuste a marcha problemática ±0.10.
               </p>
             </div>

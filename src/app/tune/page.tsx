@@ -15,6 +15,7 @@ import { UpgradeModal } from "@/components/paywall/UpgradeModal"
 import { useSettings } from "@/lib/settings/context"
 import { translateParts } from "@/lib/settings/translations"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
+import { classFromPi } from "@/lib/tune-engine/classes"
 import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
 import { generateTune } from "@/lib/tune-engine/generator"
 import type { Car, CarCategory, CarClass, ControlType, Drivetrain, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType } from "@/types"
@@ -85,16 +86,6 @@ function num(value: string): number {
 
 function clampNum(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
-}
-
-function classFromPi(pi: number): CarClass {
-  if (pi >= 999) return "X"
-  if (pi >= 901) return "S2"
-  if (pi >= 801) return "S1"
-  if (pi >= 701) return "A"
-  if (pi >= 601) return "B"
-  if (pi >= 501) return "C"
-  return "D"
 }
 
 function slug(value: string): string {
@@ -679,7 +670,9 @@ function WizardInner() {
     if (!car) return
     const minIdx = CLASSES.indexOf(car.base_class)
     const curIdx = CLASSES.indexOf(cls)
-    if (curIdx < minIdx) setCls(car.base_class)
+    if (curIdx >= minIdx) return
+    const id = window.setTimeout(() => setCls(car.base_class), 0)
+    return () => window.clearTimeout(id)
   }, [car]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = search.length >= 2

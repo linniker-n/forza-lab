@@ -18,7 +18,10 @@ export function MobileMenu() {
   const t = useTranslations(lang)
   const pathname = usePathname()
 
-  useEffect(() => setMounted(true), [])
+  useEffect(() => {
+    const handle = window.setTimeout(() => setMounted(true), 0)
+    return () => window.clearTimeout(handle)
+  }, [])
 
   const NAV_LINKS = [
     { href: "/tune",        label: t.nav.createTune },

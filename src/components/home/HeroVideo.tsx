@@ -7,8 +7,11 @@ export function HeroVideo() {
   const [isDesktop, setIsDesktop] = useState(false)
 
   useEffect(() => {
-    const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768
-    setIsDesktop(!mobile)
+    const handle = window.setTimeout(() => {
+      const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768
+      setIsDesktop(!mobile)
+    }, 0)
+    return () => window.clearTimeout(handle)
   }, [])
 
   if (!isDesktop) return null

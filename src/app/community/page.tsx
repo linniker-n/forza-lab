@@ -5,7 +5,6 @@ import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { getCarImageUrl } from "@/data/cars"
-import { translateParts } from "@/lib/settings/translations"
 import {
   type CommunityTune,
   deleteCommunityTune,
@@ -40,10 +39,10 @@ function Avatar({ name, photo, size = 28 }: { name: string; photo?: string; size
     <div style={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0, overflow: "hidden",
       background: "var(--blue-dim)", border: "1px solid var(--border-blue)",
-      display: "flex", alignItems: "center", justifyContent: "center",
+      display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
     }}>
       {photo ? (
-        <img src={photo} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <Image src={photo} alt={name} fill sizes={`${size}px`} unoptimized style={{ objectFit: "cover" }} />
       ) : (
         <span style={{ fontSize: size * 0.45, fontWeight: 800, color: "var(--blue-bright)" }}>{initial}</span>
       )}

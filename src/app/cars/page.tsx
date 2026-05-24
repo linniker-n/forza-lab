@@ -13,7 +13,7 @@ const TUNE_TYPE_VALUES: (TuneType | "all")[] = [
 ]
 const DT_VALUES = ["all", "AWD", "RWD", "FWD"] as const
 const CL_VALUES = ["all", "D", "C", "B", "A", "S1", "S2", "R", "X"] as const
-const SORT_VALUES = ["name", "power", "pi", "weight"] as const
+type SortValue = "name" | "power" | "pi" | "weight"
 
 export default function CarsPage() {
   const { lang } = useLanguage()
@@ -38,7 +38,7 @@ export default function CarsPage() {
   const [tune, setTune] = useState<TuneType | "all">("all")
   const [dt, setDt]     = useState<typeof DT_VALUES[number]>("all")
   const [cl, setCl]     = useState<typeof CL_VALUES[number]>("all")
-  const [sort, setSort] = useState<typeof SORT_VALUES[number]>("name")
+  const [sort, setSort] = useState<SortValue>("name")
 
   const results = useMemo(() => {
     const lq = q.toLowerCase()

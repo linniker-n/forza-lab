@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { getFirebaseAuth } from "@/lib/firebase/client"
@@ -20,24 +20,25 @@ function ProfileInner() {
   const [portalError, setPortalError] = useState<string | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoBase64, setPhotoBase64] = useState<string | undefined>(undefined)
-  const [loaded, setLoaded] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load profile from Firestore once
-  const [initialized, setInitialized] = useState(false)
-  if (!initialized && user) {
-    setInitialized(true)
+  useEffect(() => {
+    if (!user) return
+    let active = true
+
     loadUserProfile(user.uid).then((p) => {
+      if (!active) return
       if (p) {
         if (!nickname) setNickname(p.nickname)
         if (p.photoBase64) setPhotoPreview(p.photoBase64)
         setPhotoBase64(p.photoBase64)
       }
-      setLoaded(true)
-    }).catch(() => setLoaded(true))
-  }
+    }).catch(() => {})
+
+    return () => { active = false }
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const initials = (nickname || user?.email || "?")[0]?.toUpperCase() ?? "?"
 
@@ -113,7 +114,7 @@ function ProfileInner() {
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 {photoPreview ? (
-                  <img src={photoPreview} alt="Foto de perfil" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <Image src={photoPreview} alt="Foto de perfil" width={96} height={96} unoptimized style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
                   <span style={{ fontSize: 36, fontWeight: 800, color: "var(--blue-bright)" }}>{initials}</span>
                 )}

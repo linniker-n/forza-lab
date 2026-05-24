@@ -557,9 +557,9 @@ export default function GaragePage() {
   const { isPro } = useSubscription()
   const { lang } = useLanguage()
   const t = useTranslations(lang)
-  const garageLimit = isPro ? Infinity : FREE_LIMITS.garageSlots
   const isGarageFull = !isPro && saved.length >= FREE_LIMITS.garageSlots
   const userId = user?.uid
+  const fbUnavailableMessage = t.garage.fbUnavail
 
   useEffect(() => {
     let active = true
@@ -597,14 +597,14 @@ export default function GaragePage() {
       })
       .catch(() => {
         if (!active) return
-        setSyncNote(t.garage.fbUnavail)
+        setSyncNote(fbUnavailableMessage)
       })
 
     return () => {
       active = false
       window.clearTimeout(localHandle)
     }
-  }, [userId])
+  }, [userId, fbUnavailableMessage])
 
   async function removeTune(id: string) {
     const db = getFirebaseDb()

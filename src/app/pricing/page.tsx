@@ -43,9 +43,12 @@ export default function PricingPage() {
   const [canceledParam, setCanceledParam] = useState(false)
 
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search)
-    if (p.get("success") === "1") setSuccessParam(true)
-    if (p.get("canceled") === "1") setCanceledParam(true)
+    const handle = window.setTimeout(() => {
+      const p = new URLSearchParams(window.location.search)
+      if (p.get("success") === "1") setSuccessParam(true)
+      if (p.get("canceled") === "1") setCanceledParam(true)
+    }, 0)
+    return () => window.clearTimeout(handle)
   }, [])
 
   async function checkout(plan: Billing) {

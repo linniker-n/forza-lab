@@ -36,10 +36,10 @@ function Avatar({ name, photo, size = 36 }: { name: string; photo?: string; size
     <div style={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0, overflow: "hidden",
       background: "var(--blue-dim)", border: "1px solid var(--border-blue)",
-      display: "flex", alignItems: "center", justifyContent: "center",
+      display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
     }}>
       {photo
-        ? <img src={photo} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ? <Image src={photo} alt={name} fill sizes={`${size}px`} unoptimized style={{ objectFit: "cover" }} />
         : <span style={{ fontSize: size * 0.4, fontWeight: 800, color: "var(--blue-bright)" }}>{(name || "?")[0].toUpperCase()}</span>
       }
     </div>
@@ -67,12 +67,16 @@ function TuneDetailInner() {
   const [imgErr, setImgErr] = useState(false)
 
   useEffect(() => {
-    if (!tuneId) { setLoading(false); return }
-    const db = getFirebaseDb()
-    if (!db) { setLoading(false); return }
-    getDoc(doc(db, "communityTunes", tuneId))
-      .then((snap) => {
-        if (!snap.exists()) { setLoading(false); return }
+    let active = true
+
+    async function loadTune() {
+      if (!tuneId) { setLoading(false); return }
+      const db = getFirebaseDb()
+      if (!db) { setLoading(false); return }
+
+      try {
+        const snap = await getDoc(doc(db, "communityTunes", tuneId))
+        if (!active || !snap.exists()) return
         const d = snap.data()
         setTune({
           id: snap.id,
@@ -91,9 +95,14 @@ function TuneDetailInner() {
           likedBy: d.likedBy ?? [],
           createdAt: toIso(d.createdAt),
         })
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      } catch {
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+
+    void loadTune()
+    return () => { active = false }
   }, [tuneId])
 
   async function handleLike() {
