@@ -179,22 +179,26 @@ const PROB_ICONS: Record<DiagnosticProblem, string> = {
   understeer:        "↙",
   oversteer:         "↗",
   wheelspin:         "◎",
+  slow_launch:       "⚡",
   slow_cornering:    "↻",
   slow_straight:     "▶",
   bouncing:          "↕",
   drift_loss:        "≈",
   brake_instability: "⊗",
+  gear_issues:       "⚙",
 }
 
 const PROB_COLORS: Record<DiagnosticProblem, string> = {
   understeer:        "#60a5fa",
   oversteer:         "#fb923c",
   wheelspin:         "#fbbf24",
+  slow_launch:       "#34d399",
   slow_cornering:    "#a78bfa",
   slow_straight:     "#34d399",
   bouncing:          "#f472b6",
   drift_loss:        "#fb923c",
   brake_instability: "#f87171",
+  gear_issues:       "#94a3b8",
 }
 
 function DiagnosticPanel({ tune, onClose }: { tune: GeneratedTune; onClose(): void }) {

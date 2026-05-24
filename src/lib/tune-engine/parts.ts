@@ -140,34 +140,79 @@ function aeroParts(tuneType: TuneType, intent: TuneIntent): string[] {
 
 const JDM_BRANDS  = new Set(["Toyota","Nissan","Honda","Mazda","Subaru","Mitsubishi","Lexus","Infiniti","Acura","Datsun","Scion","Isuzu"])
 const US_BRANDS   = new Set(["Ford","Chevrolet","Dodge","GMC","Pontiac","Shelby","Jeep","Buick","Cadillac","Lincoln","Plymouth","Mercury","RAM","Chrysler"])
+const EURO_BRANDS = new Set(["BMW","Mercedes-Benz","Audi","Porsche","Ferrari","Lamborghini","Alfa Romeo","Fiat","Lancia","Lotus","McLaren","Bentley","Bugatti","Koenigsegg","Pagani","Renault","Peugeot","Citroën","Volkswagen","SEAT","Cupra","Volvo"])
+
 function recommendSwap(car: Car, tuneType: TuneType): string {
-  const isJDM = JDM_BRANDS.has(car.brand)  || car.car_type.includes("jdm")
-  const isUS  = US_BRANDS.has(car.brand)
+  const isJDM  = JDM_BRANDS.has(car.brand) || car.car_type.includes("jdm")
+  const isUS   = US_BRANDS.has(car.brand)
+  const isEuro = EURO_BRANDS.has(car.brand)
+  const isAWD  = car.drivetrain === "AWD"
+  const isHeavy = car.weight_kg > 1600
+  const isHighPower = car.power_hp > 500
+
   const isDrift  = tuneType === "drift"
   const isDrag   = tuneType === "drag"
   const isRally  = tuneType === "rally" || tuneType === "cross_country"
   const isSprint = tuneType === "top_speed" || tuneType === "grip"
 
   if (isDrift) {
-    if (isJDM) return "2JZ-GTE Engine Swap"
-    if (isUS)  return "7.0L Chevrolet LS7 Engine Swap"
-    return "RB26DETT Engine Swap"
+    // RWD JDM: 2JZ é o swap clássico
+    if (isJDM && car.drivetrain !== "AWD") return "2JZ-GTE Turbocharged Inline-6"
+    // AWD JDM: RB26 mantém AWD e entrega potência
+    if (isJDM && isAWD) return "RB26DETT Turbocharged Inline-6"
+    // Carros americanos: LS7 é o swap de drift padrão
+    if (isUS) return "7.0L Chevrolet LS7 V8"
+    // Europeus leves: BMW S54 ou S65 dependendo do peso
+    if (isEuro && !isHeavy) return "BMW S54B32 Inline-6"
+    if (isEuro) return "BMW S65B40 V8"
+    // Outros: 2JZ é universalmente bem suportado no jogo
+    return "2JZ-GTE Turbocharged Inline-6"
   }
+
   if (isDrag) {
-    if (isUS) return "Supercharged 6.2L LS9 Engine Swap"
-    return "5.0L Ford Coyote Engine Swap"
+    // Drag quer potência bruta — V8/V10 americanos dominam
+    if (isHighPower && (isUS || !isJDM)) return "Dodge 8.3L V10 (SRT Viper)"
+    if (isUS) return "5.0L Ford Coyote V8"
+    // JDM drag: 2JZ ainda é referência com muito potencial de boost
+    if (isJDM) return "2JZ-GTE Turbocharged Inline-6"
+    // Europeus: LS swap é popular no drag até em carros europeus
+    return "6.2L Chevrolet LS3 V8"
   }
+
   if (isRally) {
-    if (isJDM) return "Subaru EJ25 Turbo Engine Swap"
-    return "Mitsubishi 4B11T Engine Swap"
+    // AWD JDM (Subaru, Mitsubishi): EJ25 ou 4B11 dependendo do carro
+    if (isJDM && isAWD && (car.brand === "Subaru" || car.brand === "Mitsubishi")) {
+      return car.brand === "Subaru"
+        ? "EJ25 Flat-4 Turbocharged (WRX STI)"
+        : "4B11T Turbocharged Inline-4 (Lancer Evo)"
+    }
+    // Outros JDM AWD
+    if (isJDM && isAWD) return "EJ25 Flat-4 Turbocharged (WRX STI)"
+    // JDM RWD: SR20DET para rally leve
+    if (isJDM) return "SR20DET Turbocharged Inline-4"
+    // Americanos: Coyote aguenta off-road sem perder torque
+    if (isUS) return "5.0L Ford Coyote V8"
+    // Europeus: LS3 é resistente e tem torque na base
+    return "6.2L Chevrolet LS3 V8"
   }
+
   if (isSprint) {
-    return isJDM ? "2JZ-GTE Engine Swap" : "4.5L Ferrari V8 Engine Swap"
+    // Top speed / circuito — potência + peso
+    if (isHeavy) return "5.2L Lamborghini V10"
+    if (isJDM && !isHighPower) return "2JZ-GTE Turbocharged Inline-6"
+    if (isJDM && isHighPower) return "RB26DETT Turbocharged Inline-6"
+    if (isUS) return "7.0L Chevrolet LS7 V8"
+    if (isEuro) return "BMW S65B40 V8"
+    return "5.0L Ford Coyote V8"
   }
-  // Street / generic
-  if (isJDM) return "2JZ-GTE Engine Swap"
-  if (isUS)  return "5.0L Ford Coyote Engine Swap"
-  return "6.2L LS3 Engine Swap"
+
+  // Street / rua — escolha pelo perfil do carro
+  if (isJDM && car.power_hp < 300) return "SR20DET Turbocharged Inline-4"
+  if (isJDM) return "2JZ-GTE Turbocharged Inline-6"
+  if (isUS && isHighPower) return "Dodge 8.3L V10 (SRT Viper)"
+  if (isUS) return "5.0L Ford Coyote V8"
+  if (isEuro && !isHeavy) return "BMW S54B32 Inline-6"
+  return "6.2L Chevrolet LS3 V8"
 }
 
 export function selectParts(
@@ -187,7 +232,12 @@ export function selectParts(
   const depth: Depth = engineSwap ? Math.max(baseDepth, 3) as Depth : baseDepth
 
   const swapParts: string[] = engineSwap
-    ? [recommendSwap(car, tuneType), "Race Intercooler", "Race Fuel System"]
+    ? [
+        recommendSwap(car, tuneType),
+        "Race Intercooler",
+        "Race Fuel System",
+        "⚠ Confirme a disponibilidade do swap no menu Upgrades do jogo — opções variam por carro",
+      ]
     : []
 
   const engine = engineSwap

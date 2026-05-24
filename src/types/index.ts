@@ -205,11 +205,13 @@ export type DiagnosticProblem =
   | "understeer"
   | "oversteer"
   | "wheelspin"
+  | "slow_launch"
   | "slow_cornering"
   | "slow_straight"
   | "bouncing"
   | "drift_loss"
   | "brake_instability"
+  | "gear_issues"
 
 export type DiagnosticPhase = "entry" | "mid" | "exit" | "high_speed" | "low_speed" | "bumps"
 export type DiagnosticBehavior = "progressive" | "sudden" | "on_throttle" | "off_throttle" | "braking"

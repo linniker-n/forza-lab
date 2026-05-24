@@ -301,6 +301,99 @@ const FIXES: Record<DiagnosticProblem, { diagnosis: string; fixes: DiagnosticFix
       },
     ],
   },
+
+  slow_launch: {
+    diagnosis:
+      "O carro está saindo devagar — a aceleração inicial é fraca e outros carros abrem vantagem " +
+      "nos primeiros metros. Isso geralmente indica câmbio com relações muito longas, diferencial " +
+      "aberto demais ou falta de upgrades de motor. É diferente de velocidade em reta (problema de top speed).",
+    fixes: [
+      {
+        parameter: "Final Drive (transmissão final)",
+        adjustment: "Aumentar (puxar para cima)",
+        reason: "Relação final mais curta entrega torque máximo mais cedo. " +
+                "Aumente o final drive até a 1ª marcha bater no corte de giro antes de 80 km/h. " +
+                "Ensinamento: câmbio em 'escadinha' — cada marcha deve usar 100% do giro disponível.",
+      },
+      {
+        parameter: "1ª e 2ª marcha",
+        adjustment: "Encurtar (aumentar ratio)",
+        reason: "Marchas mais curtas no trecho inicial criam impulso mais forte. " +
+                "Ajuste individualmente: 1ª corta giro antes de 60 km/h, 2ª antes de 110 km/h.",
+      },
+      {
+        parameter: "Diferencial traseiro (aceleração)",
+        adjustment: "+15% a +25%",
+        reason: "Diferencial mais travado na aceleração transfere torque de forma mais eficiente " +
+                "às rodas traseiras. Ideal para carros RWD e AWD com tendência a girar livre na largada.",
+      },
+      {
+        parameter: "Diferencial central — AWD (aceleração)",
+        adjustment: "Mover 10% para traseira",
+        reason: "AWD com mais torque traseiro acelera melhor em linha reta. " +
+                "Base: 70% traseira é bom ponto de partida para tunes de aceleração.",
+      },
+      {
+        parameter: "Redução de peso",
+        adjustment: "Maximizar — Race Weight Reduction",
+        reason: "Cada kilo a menos melhora a relação peso/potência diretamente. " +
+                "Um carro com 1700 kg que passa para 1450 kg tem ganho de aceleração imediato e mensurável.",
+      },
+      {
+        parameter: "Molas traseiras",
+        adjustment: "Amaciar −15 a −20 kgf/mm",
+        reason: "Traseira mais mole na largada permite que o peso faça transferência para trás, " +
+                "aumentando carga sobre os pneus traseiros e melhorando tração inicial.",
+      },
+      {
+        parameter: "Upgrade de motor",
+        adjustment: "Race Pistons + Race Flywheel",
+        reason: "Se o motor está limitado por PI, volante de corrida (Race Flywheel) melhora " +
+                "resposta de giro sem consumir PI excessivo. Pistons aumentam potência de pico.",
+      },
+    ],
+  },
+
+  gear_issues: {
+    diagnosis:
+      "O câmbio está cortando giro cedo demais, pulando marcha de forma estranha, " +
+      "ou a última marcha não está sendo utilizada completamente na pista. " +
+      "Um câmbio mal calibrado desperdiça potência em cada troca e em todas as retas.",
+    fixes: [
+      {
+        parameter: "Final Drive",
+        adjustment: "Ajustar para a maior reta da pista",
+        reason: "Ensinamento: configure o final drive para que a última marcha bata no corte " +
+                "de giro exatamente no fim da maior reta que você usa. Se chega ao final ainda " +
+                "subindo de giro, aumente. Se corta o giro antes, reduza.",
+      },
+      {
+        parameter: "Marchas individuais — distribuição em escadinha",
+        adjustment: "Espaçamento uniforme entre todas as marchas",
+        reason: "A proporção ideal é cada marcha usar o intervalo completo de giro do motor " +
+                "(ex: 3000 a 8000 rpm). Se uma marcha é muito curta, corta giro rápido e " +
+                "perde velocidade. Se muito longa, fica na zona de baixo torque.",
+      },
+      {
+        parameter: "1ª marcha — muito curta (corta giro na saída)",
+        adjustment: "Aumentar ratio da 1ª marcha",
+        reason: "Se a 1ª marcha corta o giro antes de 60 km/h, ela está curta demais. " +
+                "Aumente o ratio da 1ª para que ela aguente até ~70-80 km/h antes de trocar.",
+      },
+      {
+        parameter: "Última marcha — não usa giro completo",
+        adjustment: "Reduzir ratio da última marcha",
+        reason: "Se você chega ao fim da reta ainda subindo de giro sem cortar, a última " +
+                "marcha está comprida demais. Encolha ela até ela quase bater no corte.",
+      },
+      {
+        parameter: "Race Transmission",
+        adjustment: "Fazer upgrade se usando Sport",
+        reason: "Sport Transmission tem número menor de marchas e ratios fixos. " +
+                "Race Transmission permite ajuste fino de cada marcha individualmente.",
+      },
+    ],
+  },
 }
 
 function addWizardBranches(
@@ -405,6 +498,30 @@ function addWizardBranches(
       reason: "Sintoma ao acelerar pode ser torque chegando rapido demais. Uma marcha menos curta deixa o carro mais limpo.",
     })
   }
+
+  if (problem === "slow_launch" && context.phase === "exit") {
+    fixes.unshift({
+      parameter: "Diferencial traseiro (aceleração) + câmbio",
+      adjustment: "Diff accel +10% e 2ª marcha mais curta",
+      reason: "Saída de curva lenta é quase sempre diferencial aberto demais ou 2ª marcha longa. Corrija o diff primeiro — é o ajuste mais rápido.",
+    })
+  }
+
+  if (problem === "slow_launch" && context.behavior === "on_throttle") {
+    fixes.unshift({
+      parameter: "Final drive + 1ª e 2ª marcha",
+      adjustment: "Aumentar final drive; encurtar 1ª e 2ª",
+      reason: "Lentidão ao acelerar indica câmbio com relações longas. Ensinamento: câmbio em escadinha — cada marcha usa 100% do giro.",
+    })
+  }
+
+  if (problem === "gear_issues" && context.phase === "high_speed") {
+    fixes.unshift({
+      parameter: "Final drive — ajuste para reta longa",
+      adjustment: "Reduzir final drive até última marcha usar giro completo",
+      reason: "Em alta velocidade com câmbio errado, o motor fica fora da faixa de torque. Final drive correto garante potência máxima no fim da reta.",
+    })
+  }
 }
 
 export function diagnose(problem: DiagnosticProblem, context: DiagnosticContext = {}): DiagnosticResult {
@@ -470,6 +587,45 @@ export function diagnose(problem: DiagnosticProblem, context: DiagnosticContext 
         "reduz grip e facilita manter o ângulo."
       )
     }
+
+    // Carro leve + saída lenta → problema é câmbio, não motor
+    if (context.car.weight_kg < 1100 && problem === "slow_launch") {
+      contextNotes.push(
+        `⚠️ Carro leve (${context.car.weight_kg} kg): com este peso, a saída lenta é quase certamente câmbio. ` +
+        "Verifique primeiro o final drive e as relações de 1ª/2ª antes de qualquer upgrade de motor."
+      )
+    }
+
+    // Carro pesado + saída lenta → peso é o vilão
+    if (context.car.weight_kg > 1600 && problem === "slow_launch") {
+      contextNotes.push(
+        `⚠️ Carro pesado (${context.car.weight_kg} kg): Race Weight Reduction deve ser a primeira peça instalada. ` +
+        "Ensinamento: a redução de peso melhora aceleração mais que qualquer upgrade de motor no mesmo PI."
+      )
+      fixes.push({
+        parameter: "Race Weight Reduction",
+        adjustment: "Prioridade máxima — instalar antes de qualquer outro upgrade",
+        reason: `Com ${context.car.weight_kg} kg, cada 100 kg a menos tem impacto direto de 0-1s nos primeiros 100 metros. ` +
+                "Diferença de 200-300 kg equivale a um upgrade completo de motor em termos de aceleração.",
+      })
+    }
+
+    // Alta potência + saída lenta → problema de câmbio/tração, não de potência
+    if (context.car.power_hp > 600 && problem === "slow_launch") {
+      contextNotes.push(
+        `⚠️ Alta potência (${context.car.power_hp} hp): com esse nível de potência, saída lenta indica que o câmbio ` +
+        "não está aproveitando a faixa de torque. Verifique se o câmbio está em escadinha e se a 1ª marcha cobre até ~80 km/h."
+      )
+    }
+
+    // FWD + slow_launch → torque vetoring issue
+    if (context.car.drivetrain === "FWD" && problem === "slow_launch") {
+      contextNotes.push(
+        "FWD: tração dianteira limita saída por natureza. " +
+        "Diferencial dianteiro com aceleração +30-40% ajuda a manter as rodas puxando. " +
+        "Evite largar com 100% do acelerador — aplique progressivamente."
+      )
+    }
   }
 
   // Ajustes específicos por tipo de tune
@@ -531,11 +687,13 @@ export const PROBLEM_LABELS: Record<DiagnosticProblem, string> = {
   understeer:        "Carro sai muito de frente (understeer)",
   oversteer:         "Carro escapa de traseira (oversteer)",
   wheelspin:         "Carro patina muito na saída",
+  slow_launch:       "Saída muito lenta / Aceleração fraca",
   slow_cornering:    "Carro não faz curva / lento em curva",
-  slow_straight:     "Carro está lento em reta",
+  slow_straight:     "Carro está lento em reta (top speed)",
   bouncing:          "Carro pula / rebota demais",
   drift_loss:        "Carro não segura o drift",
   brake_instability: "Carro instável na frenagem",
+  gear_issues:       "Câmbio cortando giro / marcha mal calibrada",
 }
 export const DIAGNOSTIC_PHASE_LABELS: Record<DiagnosticPhase, string> = {
   entry: "Entrada de curva",

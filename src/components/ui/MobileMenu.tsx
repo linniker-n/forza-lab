@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { useSubscription } from "@/lib/subscription/context"
 import { useLanguage } from "@/lib/i18n/context"
@@ -10,11 +11,14 @@ import { useTranslations } from "@/lib/i18n/translations"
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const { user, signOut } = useAuth()
   const { isPro } = useSubscription()
   const { lang, setLang } = useLanguage()
   const t = useTranslations(lang)
   const pathname = usePathname()
+
+  useEffect(() => setMounted(true), [])
 
   const NAV_LINKS = [
     { href: "/tune",        label: t.nav.createTune },
@@ -84,13 +88,14 @@ export function MobileMenu() {
         }} />
       </button>
 
+      {mounted && createPortal(
+      <>
       <div
         onClick={() => setOpen(false)}
-        className="xl:hidden"
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: 40,
+          zIndex: 9998,
           background: "rgba(0,0,0,0.55)",
           backdropFilter: "blur(3px)",
           opacity: open ? 1 : 0,
@@ -101,13 +106,12 @@ export function MobileMenu() {
 
       <nav
         aria-label="Mobile menu"
-        className="xl:hidden"
         style={{
           position: "fixed",
           top: 0,
           right: 0,
           bottom: 0,
-          zIndex: 50,
+          zIndex: 9999,
           width: "min(86vw, 340px)",
           background: "var(--bg-card)",
           borderLeft: "1px solid var(--border-strong)",
@@ -240,6 +244,9 @@ export function MobileMenu() {
           )}
         </div>
       </nav>
+      </>,
+      document.body
+      )}
     </>
   )
 }
