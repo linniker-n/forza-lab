@@ -258,14 +258,17 @@ function tireCompoundCandidates(tuneType: TuneType, targetClass: CarClass): Part
   }
 
   const street = candidate("tires", "Street Tires", 3, 6.4, "high")
-  const sport = candidate("tires", "Sport Tires", 7, 7.5, "high")
+  const rally = candidate("tires", "Rally Tires", 8, 8.6, "high")
   const semi = candidate("tires", "Semi-Slick Tires", 14, 8.8, "high")
   const race = candidate("tires", "Race Tires", 20, 9.1, "high")
 
+  // Sport Tires omitido: vídeo 1 aponta Sport como "armadilha" — custo alto, grip médio.
+  // Rally e Drift são "estrelas escondidas" em B/A/S1: grip comparável a semi-slick por PI menor.
   if (targetClass === "D") return [street]
-  if (targetClass === "C" || targetClass === "B") return [sport, street]
-  if (targetClass === "A") return [semi, sport, street]
-  return [race, semi, sport]
+  if (targetClass === "C") return [rally, street]
+  if (targetClass === "B") return [rally, street]
+  if (targetClass === "A") return [semi, rally, street]
+  return [race, semi, rally]
 }
 
 function tireWidthCandidates(tuneType: TuneType, depth: Depth): PartCandidate[] {

@@ -12,23 +12,13 @@ import {
   getFH6IntentWarnings,
 } from "./fh6-intents"
 import { calculateAdvancedGearing } from "./gearing-calculator"
+import { applyFH6VideoRules } from "./fh6-video-rules"
 import { selectPartsPlan, type PartsSelectionPlan } from "./parts"
 import { applyPrecisionModel } from "./precision-model"
 import { buildTune } from "./presets"
 
-// These pro patterns are re-applied after intent and precision layers so the
-// final tune keeps the competitive FH6 baseline from the technical spec.
-const PRO_TYPES = new Set<TuneType>(["street", "grip", "drag", "cross_country", "top_speed"])
-const PRO_TIRE_PSI = 21.8
-const PRO_SPRING_LBFIN = 457
-
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
-}
-
-function calculateMetaSpringRate(car: Car): number {
-  const scale = clamp(1 + (car.weight_kg - 1300) * 0.00044, 0.68, 1.72)
-  return Math.round(PRO_SPRING_LBFIN * scale)
 }
 
 function canUseDrivetrain(car: Car, drivetrain: Drivetrain): boolean {
@@ -239,33 +229,16 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
     })
   }
 
-  // Re-aplica padrões fixos da comunidade pro após todas as camadas de ajuste.
-  // applyFH6Intent e applyPrecisionModel podem sobrescrever os valores — isso garante
-  // que o resultado final sempre bata com os padrões informados.
-  if (PRO_TYPES.has(request.tune_type)) {
-    const metaSpringRate = calculateMetaSpringRate(carForTune)
-    tuning.tires    = { front: PRO_TIRE_PSI, rear: PRO_TIRE_PSI }
-    tuning.alignment = { camber_front: 0, camber_rear: 0, toe_front: 0, toe_rear: 0, caster: 7 }
-    tuning.antiroll_bars = { front: 1, rear: 65 }
-    tuning.springs = {
-      ...tuning.springs,
-      front: metaSpringRate,
-      rear:  metaSpringRate,
-      ride_height_front: "max",
-      ride_height_rear:  "high",
-    }
-    tuning.damping  = { rebound_front: 8, rebound_rear: 8, bump_front: 3, bump_rear: 3 }
-    tuning.aero     = { front: "max", rear: "medium-high" }
-    if (drivetrain === "RWD") {
-      tuning.differential.rear_accel = 100
-      tuning.differential.rear_decel = 0
-    } else if (drivetrain === "AWD") {
-      tuning.differential = { front_accel: 100, front_decel: 0, rear_accel: 100, rear_decel: 0, center_balance: 70 }
-    } else if (drivetrain === "FWD") {
-      tuning.differential.front_accel = tuning.differential.front_accel ?? 35
-      tuning.differential.front_decel = tuning.differential.front_decel ?? 10
-    }
-  }
+  tuning = applyFH6VideoRules(tuning, {
+    car: carForTune,
+    profile: profileForTune,
+    tuneType: request.tune_type,
+    drivetrain,
+    targetClass: request.target_class,
+    intent: fh6Intent,
+    style: request.style,
+    control: request.control,
+  })
 
   const intentWeaknesses = getFH6IntentCarWeaknesses(car, fh6Intent)
   const baseWeaknesses = getWeaknesses(car, request.tune_type)
