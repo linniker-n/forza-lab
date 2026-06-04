@@ -29,10 +29,9 @@ export function AppHeader() {
     { href: "/diagnostics", label: t.nav.diagnostics },
     { href: "/calculator",  label: t.nav.calculator },
     { href: "/cars",        label: t.nav.cars },
-    { href: "/meta",        label: t.nav.meta },
     { href: "/compare",     label: t.nav.compare },
     { href: "/garage",      label: t.nav.garage },
-    { href: "/tunes",       label: t.nav.tunes },
+    { href: "/tunes",       label: t.nav.tunes, highlight: true },
   ]
 
   useEffect(() => {
@@ -66,13 +65,32 @@ export function AppHeader() {
 
         <nav className="hidden xl:flex items-center gap-3" aria-label="Main navigation">
           {NAV_LINKS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`nav-item${isActive(pathname, item.href) ? " active" : ""}`}
-            >
-              {item.label}
-            </Link>
+            item.highlight ? (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`nav-item${isActive(pathname, item.href) ? " active" : ""}`}
+                style={{
+                  color: isActive(pathname, item.href) ? "#fff" : "var(--fh6-teal)",
+                  fontWeight: 800,
+                  letterSpacing: "0.03em",
+                  border: "1px solid var(--fh6-teal)",
+                  borderRadius: 6,
+                  padding: "3px 10px",
+                  background: isActive(pathname, item.href) ? "var(--fh6-teal)" : "color-mix(in srgb, var(--fh6-teal) 8%, transparent)",
+                }}
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`nav-item${isActive(pathname, item.href) ? " active" : ""}`}
+              >
+                {item.label}
+              </Link>
+            )
           ))}
         </nav>
 

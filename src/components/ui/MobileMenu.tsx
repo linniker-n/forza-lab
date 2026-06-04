@@ -29,10 +29,9 @@ export function MobileMenu() {
     { href: "/diagnostics", label: t.nav.diagnostics },
     { href: "/calculator",  label: t.nav.calculator },
     { href: "/cars",        label: t.nav.cars },
-    { href: "/meta",        label: t.nav.meta },
     { href: "/compare",     label: t.nav.compare },
     { href: "/garage",      label: t.nav.garage },
-    { href: "/tunes",       label: t.nav.tunes },
+    { href: "/tunes",       label: t.nav.tunes, highlight: true },
   ]
 
   useEffect(() => {
@@ -155,7 +154,7 @@ export function MobileMenu() {
         </div>
 
         <div style={{ padding: "12px 0", flex: 1 }}>
-          {NAV_LINKS.map(({ href, label }) => {
+          {NAV_LINKS.map(({ href, label, highlight }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`)
             return (
               <Link
@@ -166,11 +165,11 @@ export function MobileMenu() {
                   alignItems: "center",
                   padding: "14px 20px",
                   fontSize: 14,
-                  fontWeight: active ? 800 : 600,
-                  color: active ? "var(--blue)" : "var(--text)",
+                  fontWeight: active || highlight ? 800 : 600,
+                  color: active ? (highlight ? "#fff" : "var(--blue)") : highlight ? "var(--fh6-teal)" : "var(--text)",
                   textDecoration: "none",
-                  background: active ? "var(--blue-dim)" : "transparent",
-                  borderLeft: `3px solid ${active ? "var(--blue)" : "transparent"}`,
+                  background: active ? (highlight ? "var(--fh6-teal)" : "var(--blue-dim)") : "transparent",
+                  borderLeft: `3px solid ${active ? (highlight ? "var(--fh6-teal)" : "var(--blue)") : highlight ? "var(--fh6-teal)" : "transparent"}`,
                 }}
               >
                 {label}
