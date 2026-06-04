@@ -475,8 +475,8 @@ export default function TunesPage() {
               </div>
             </div>
 
-            {/* ── Results count + active filters ───────────────────────── */}
-            <div className="anim-up" style={{ animationDelay: "140ms", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+            {/* ── Results count ────────────────────────────────────────── */}
+            <div className="anim-up" style={{ animationDelay: "140ms", display: "flex", alignItems: "center", gap: 8 }}>
               <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
                 <span style={{ color: "var(--blue-bright)", fontWeight: 700 }}>{filtered.length}</span>
                 {" "}tunagem{filtered.length !== 1 ? "s" : ""} encontrada{filtered.length !== 1 ? "s" : ""}
@@ -493,17 +493,72 @@ export default function TunesPage() {
                   </button>
                 )}
               </p>
+            </div>
 
-              {/* Legend */}
-              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                  <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 5px", borderRadius: 3, background: "rgba(212,39,138,0.85)", color: "#fff" }}>PB</span>
-                  <span style={{ fontSize: 10, color: "var(--text-muted)" }}>Potência bruta — tração recomendada</span>
+            {/* ── Legend ───────────────────────────────────────────────── */}
+            <div className="anim-up" style={{
+              animationDelay: "160ms",
+              padding: "14px 18px",
+              borderRadius: 10,
+              background: "var(--bg-card)",
+              border: "1px solid var(--border-strong)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+            }}>
+              <p style={{ fontSize: 10, fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
+                Legenda
+              </p>
+
+              {/* Badges row */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 6px", borderRadius: 4, background: "rgba(212,39,138,0.85)", color: "#fff", letterSpacing: "0.05em" }}>PB</span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Potência bruta — melhor da classe</span>
                 </div>
-                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                  <span style={{ color: "var(--fh6-pink)", fontWeight: 700, fontSize: 13 }}>Ω</span>
-                  <span style={{ fontSize: 10, color: "var(--text-muted)" }}>Não está na concessionária</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: "var(--fh6-pink)", fontWeight: 900, fontSize: 15, lineHeight: 1 }}>Ω</span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Carro indisponível na concessionária</span>
                 </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 8, fontWeight: 800, padding: "2px 5px", borderRadius: 3, background: "rgba(200,255,0,0.12)", color: "var(--volt)", border: "1px solid rgba(200,255,0,0.30)", letterSpacing: "0.05em" }}>NOVO</span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Adicionado recentemente</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: "rgba(239,68,68,0.15)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)" }}>Indisponível</span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Tune sem código ativo no jogo</span>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: "var(--border-strong)" }} />
+
+              {/* Tags row */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                {ALL_TAGS.map((tag) => {
+                  const m = TAG_META[tag]
+                  const descriptions: Record<TuneTag, string> = {
+                    pista:    "Pista / Autodromo",
+                    sprint:   "Sprint / Retas longas",
+                    circuito: "Circuito / Volta completa",
+                    rally:    "Rally / Off-road",
+                    cross:    "Cross-country",
+                    allround: "Versátil / Geral",
+                  }
+                  return (
+                    <div key={tag} style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <span style={{
+                        display: "inline-flex", alignItems: "center",
+                        fontSize: 10, fontWeight: 600, padding: "2px 8px",
+                        borderRadius: 20, border: `1px solid ${m.color}`,
+                        background: m.bg, color: m.color, whiteSpace: "nowrap",
+                      }}>
+                        {m.label}
+                      </span>
+                      <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{descriptions[tag]}</span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
