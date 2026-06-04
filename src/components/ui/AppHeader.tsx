@@ -32,6 +32,7 @@ export function AppHeader() {
     { href: "/meta",        label: t.nav.meta },
     { href: "/compare",     label: t.nav.compare },
     { href: "/garage",      label: t.nav.garage },
+    { href: "/tunes",       label: t.nav.tunes },
   ]
 
   useEffect(() => {

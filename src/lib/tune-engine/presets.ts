@@ -134,13 +134,14 @@ const ALIGNMENT_PRESETS: Record<TuneType, {
   caster: number
 }> = {
   //                              Câmbio diant.  Câmbio tras.  Toe D    Toe T   Caster
-  street:        { camber_front: -2.0, camber_rear: -1.0, toe_front:  0.0, toe_rear:  0.1, caster: 6.5 },
-  grip:          { camber_front: -2.5, camber_rear: -1.2, toe_front: -0.1, toe_rear:  0.1, caster: 6.5 },
+  street:        { camber_front: -2.0, camber_rear: -1.0, toe_front:  0.0, toe_rear:  0.1, caster: 7.0 },
+  grip:          { camber_front: -2.5, camber_rear: -1.2, toe_front: -0.1, toe_rear:  0.1, caster: 7.0 },
   drift:         { camber_front: -4.2, camber_rear: -1.0, toe_front:  0.5, toe_rear:  0.1, caster: 7.0 },
   drag:          { camber_front: -0.5, camber_rear: -0.2, toe_front:  0.0, toe_rear:  0.0, caster: 5.0 },
   rally:         { camber_front: -1.5, camber_rear: -0.7, toe_front:  0.1, toe_rear:  0.0, caster: 5.8 },
   cross_country: { camber_front: -1.0, camber_rear: -0.5, toe_front:  0.0, toe_rear:  0.0, caster: 5.5 },
-  top_speed:     { camber_front: -1.0, camber_rear: -0.5, toe_front:  0.0, toe_rear:  0.0, caster: 5.5 },
+  // Top speed: cambagem próxima de 0° para maximizar área de contato em reta (guia)
+  top_speed:     { camber_front: -0.3, camber_rear: -0.2, toe_front:  0.0, toe_rear:  0.0, caster: 7.0 },
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
