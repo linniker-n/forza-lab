@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { RequireAuth } from "@/components/auth/RequireAuth"
 import { CarCard } from "@/components/cars/CarCard"
 import { CARS } from "@/data/cars"
 import { useSubscription } from "@/lib/subscription/context"
@@ -52,7 +51,7 @@ export default function MetaPage() {
   }, [carClass, tuneType])
 
   return (
-    <RequireAuth>
+    <>
       <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} reason="ranking_limit" />
       <div className="dot-grid" style={{ minHeight: "100dvh" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
@@ -163,6 +162,6 @@ export default function MetaPage() {
           </div>
         </div>
       </div>
-    </RequireAuth>
+    </>
   )
 }
