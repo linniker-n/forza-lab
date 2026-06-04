@@ -69,7 +69,7 @@ export function AppHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`nav-item${isActive(pathname, item.href) ? " active" : ""}`}
+                className={`nav-item nav-highlight${isActive(pathname, item.href) ? " active" : ""}`}
                 style={{
                   color: isActive(pathname, item.href) ? "#fff" : "var(--fh6-teal)",
                   fontWeight: 800,
@@ -78,6 +78,7 @@ export function AppHeader() {
                   borderRadius: 6,
                   padding: "3px 10px",
                   background: isActive(pathname, item.href) ? "var(--fh6-teal)" : "color-mix(in srgb, var(--fh6-teal) 8%, transparent)",
+                  textDecoration: "none",
                 }}
               >
                 {item.label}

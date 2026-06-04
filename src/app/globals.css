@@ -444,6 +444,9 @@
   transform: scaleX(1);
   transform-origin: left;
 }
+.nav-item.nav-highlight::after,
+.nav-item.nav-highlight:hover::after,
+.nav-item.nav-highlight.active::after { display: none; }
 
 /* ────────────────────────────────────────────────────────────
    HERO ACCENT STRIPE

@@ -530,36 +530,6 @@ export default function TunesPage() {
                 </div>
               </div>
 
-              {/* Divider */}
-              <div style={{ height: 1, background: "var(--border-strong)" }} />
-
-              {/* Tags row */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                {ALL_TAGS.map((tag) => {
-                  const m = TAG_META[tag]
-                  const descriptions: Record<TuneTag, string> = {
-                    pista:    "Pista / Autodromo",
-                    sprint:   "Sprint / Retas longas",
-                    circuito: "Circuito / Volta completa",
-                    rally:    "Rally / Off-road",
-                    cross:    "Cross-country",
-                    allround: "Versátil / Geral",
-                  }
-                  return (
-                    <div key={tag} style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                      <span style={{
-                        display: "inline-flex", alignItems: "center",
-                        fontSize: 10, fontWeight: 600, padding: "2px 8px",
-                        borderRadius: 20, border: `1px solid ${m.color}`,
-                        background: m.bg, color: m.color, whiteSpace: "nowrap",
-                      }}>
-                        {m.label}
-                      </span>
-                      <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{descriptions[tag]}</span>
-                    </div>
-                  )
-                })}
-              </div>
             </div>
 
             {/* ── Grid ─────────────────────────────────────────────────── */}
