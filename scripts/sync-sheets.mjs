@@ -18,7 +18,7 @@ const OUT     = path.resolve(ROOT, "src/data/community-tunes.ts")
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const SHEET_ID  = "1DeT8nn8UMrI4ZeAHMcfZH4TzzL9E-fM6_ath5z2v9F8"
-const TUNES_GID = "0"   // "Tunagens V2" (first sheet)
+const TUNES_GID = ""    // "Tunagens V2" (primeira aba — sem GID exporta a padrão)
 
 const VALID_CLASSES = new Set(["C", "B", "A", "S1", "S2", "R"])
 
@@ -54,7 +54,8 @@ function cell(row, i) { return row?.[i]?.trim() || null }
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
 async function fetchCsv(gid) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`
+  const params = gid ? `format=csv&gid=${gid}` : `format=csv`
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?${params}`
   const res = await fetch(url, { redirect: "follow" })
   if (!res.ok) throw new Error(`Sheets export failed: HTTP ${res.status}\nURL: ${url}\n\nVerifique se a planilha está compartilhada como "Qualquer pessoa com o link pode ver".`)
   return res.text()
