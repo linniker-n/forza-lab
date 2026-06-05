@@ -176,7 +176,7 @@ function TuneCard({ tune, delay }: { tune: SpreadsheetTune; delay: number }) {
           {tune.class}
         </span>
 
-        {/* PB badge — top left */}
+        {/* FP badge — top left */}
         {tune.isPB && (
           <span style={{
             position: "absolute", top: 8, left: 8,
@@ -184,7 +184,7 @@ function TuneCard({ tune, delay }: { tune: SpreadsheetTune; delay: number }) {
             borderRadius: 4, background: "rgba(212,39,138,0.85)",
             color: "#fff", letterSpacing: "0.05em",
           }}>
-            PB
+            FP
           </span>
         )}
 
@@ -240,6 +240,21 @@ function TuneCard({ tune, delay }: { tune: SpreadsheetTune; delay: number }) {
             WebkitBoxOrient: "vertical", overflow: "hidden",
           }}>
             {tune.description}
+          </p>
+        )}
+
+        {/* FP traction control note */}
+        {tune.isPB && (
+          <p style={{
+            fontSize: 10, color: "rgba(212,39,138,0.75)", lineHeight: 1.4,
+            display: "flex", alignItems: "center", gap: 4,
+          }}>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
+              <circle cx="5" cy="5" r="4" stroke="rgba(212,39,138,0.75)" strokeWidth="1.2"/>
+              <path d="M5 3v2.5" stroke="rgba(212,39,138,0.75)" strokeWidth="1.2" strokeLinecap="round"/>
+              <circle cx="5" cy="7" r="0.6" fill="rgba(212,39,138,0.75)"/>
+            </svg>
+            Recomenda-se usar controle de tração
           </p>
         )}
 
@@ -513,8 +528,8 @@ export default function TunesPage() {
               {/* Badges row */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 6px", borderRadius: 4, background: "rgba(212,39,138,0.85)", color: "#fff", letterSpacing: "0.05em" }}>PB</span>
-                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Potência bruta — melhor da classe</span>
+                  <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 6px", borderRadius: 4, background: "rgba(212,39,138,0.85)", color: "#fff", letterSpacing: "0.05em" }}>FP</span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Full Power — recomenda-se controle de tração</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ color: "var(--fh6-pink)", fontWeight: 900, fontSize: 15, lineHeight: 1 }}>Ω</span>
