@@ -292,6 +292,67 @@ export const TOP_RALLY_BENCHMARKS: RallyBenchmark[] = [
 `
 }
 
+// ── Supplemental tunes ────────────────────────────────────────────────────────
+// Curated from a second community spreadsheet. Persists across syncs.
+// Main spreadsheet wins on share-code conflicts.
+const SUPPLEMENTAL_TUNES = [
+  // ── "Best B Cars" section ───────────────────────────────────────────────────
+  { car: "Acura Integra Type R 2001",   class: "B", raceType: "Pista",    shareCode: "522769491",  tuner: "Papa Josh1591" },
+  { car: "Dodge Dart 1968",             class: "B", raceType: "Pista",    shareCode: "127326115",  tuner: "VNX Codcaos" },
+  { car: "Holden Torana A9X",           class: "B", raceType: "Pista",    shareCode: "249407066",  tuner: "ThankfulBard261" },
+  { car: "Honda Civic RS 1974",         class: "B", raceType: "Allround", shareCode: "112404508",  tuner: "ESV Mars" },
+  { car: "Honda Civic RS 1974",         class: "B", raceType: "Allround", shareCode: "100056885",  tuner: "Rexazr" },
+  { car: "Honda Civic Type R 1997",     class: "B", raceType: "Pista",    shareCode: "136399449",  tuner: "EMW Dave" },
+  { car: "Shelby Daytona",              class: "B", raceType: "Allround", shareCode: "151488877",  tuner: "Inayamei" },
+  { car: "International Scout 800A 1970", class: "B", raceType: "Rally",  shareCode: "840347205",  tuner: "Cast Haste" },
+  { car: "RAM 2500 Power Wagon",        class: "B", raceType: "Rally",    shareCode: "181630398",  tuner: "GhostMan2117" },
+  { car: "Toyota FJ40",                 class: "B", raceType: "Rally",    shareCode: "154652753",  tuner: "Korrrupt EU" },
+  { car: "International Scout 800A 1970", class: "B", raceType: "Cross",  shareCode: "178406104",  tuner: "Rocklxd" },
+  { car: "RAM 2500 Power Wagon",        class: "B", raceType: "Cross",    shareCode: "744406104",  tuner: "Nep0sha" },
+  { car: "Honda Civic Type R 1997",     class: "B", raceType: "Allround", shareCode: "112489433",  tuner: "Grandma Driving" },
+  { car: "Honda S2000",                 class: "B", raceType: "Allround", shareCode: "798920769",  tuner: "ThankfulBard261" },
+  { car: "Subaru Impreza 22B STI",      class: "B", raceType: "Allround", shareCode: "255323448",  tuner: "ThankfulBard261" },
+  { car: "Jeep CJ5",                    class: "B", raceType: "Rally",    shareCode: "133421194",  tuner: "GhostMan2117" },
+  { car: "Nissan Pulsar GTI-R 1990",    class: "B", raceType: "Rally",    shareCode: "126773170",  tuner: "Korrrupt EU" },
+  // ── SepiSP4 / community collection ─────────────────────────────────────────
+  { car: "Dodge Dart 1968",             class: "B", raceType: "Pista",    shareCode: "350387335",  tuner: "SepiSP4" },
+  { car: "Ford De Luxe Coupe 1932",     class: "B", raceType: "Pista",    shareCode: "181192570",  tuner: "Egao no hana" },
+  { car: "Holden Torana A9X",           class: "B", raceType: "Pista",    shareCode: "126495330",  tuner: "SepiSP4" },
+  { car: "Holden Torana A9X",           class: "B", raceType: "Pista",    shareCode: "758142846",  tuner: "Egao no hana" },
+  { car: "Honda Civic RS 1974",         class: "B", raceType: "Pista",    shareCode: "363966198",  tuner: "SepiSP4" },
+  { car: "Honda Civic RS 1974",         class: "B", raceType: "Pista",    shareCode: "171916434",  tuner: "Akumanozero" },
+  { car: "International Scout 800A 1970", class: "B", raceType: "Pista",  shareCode: "131879247",  tuner: "Akumanozero" },
+  { car: "Nissan Pulsar GTI-R 1990",    class: "B", raceType: "Allround", shareCode: "182428587",  tuner: "SepiSP4" },
+  { car: "Shelby Daytona",              class: "B", raceType: "Pista",    shareCode: "180472249",  tuner: "SepiSP4" },
+  { car: "Shelby Daytona",              class: "B", raceType: "Pista",    shareCode: "660779402",  tuner: "SepiSP4" },
+  { car: "International Scout 800A 1970", class: "B", raceType: "Rally",  shareCode: "971039236",  tuner: "SepiSP4" },
+  { car: "International Scout 800A 1970", class: "B", raceType: "Rally",  shareCode: "678698218",  tuner: "SepiSP4" },
+  { car: "International Scout 800A 1970", class: "B", raceType: "Cross",  shareCode: "422114880",  tuner: "SepiSP4" },
+  { car: "RAM 2500 Power Wagon",        class: "B", raceType: "Cross",    shareCode: "142545394",  tuner: "SepiSP4" },
+  { car: "Acura Integra Type R 2001",   class: "B", raceType: "Pista",    shareCode: "109616165",  tuner: "SepiSP4" },
+  { car: "Chevrolet Chevelle SS 1970",  class: "B", raceType: "Pista",    shareCode: "131114657",  tuner: "SepiSP4" },
+  { car: "Lamborghini Miura 1967",      class: "B", raceType: "Pista",    shareCode: "464578200",  tuner: "Akumanozero" },
+  { car: "Mini Cooper S 1965",          class: "B", raceType: "Pista",    shareCode: "142211005",  tuner: "SepiSP4" },
+  { car: "Mitsubishi Eclipse 1995",     class: "B", raceType: "Allround", shareCode: "837846590",  tuner: "SepiSP4" },
+  { car: "Nissan Skyline GT-R 1993",    class: "B", raceType: "Allround", shareCode: "129233198",  tuner: "Mustuff124" },
+  { car: "Plymouth Barracuda Hemi 1971", class: "B", raceType: "Pista",   shareCode: "944053942",  tuner: "VNX Codcaos" },
+  { car: "Renault Clio Williams 1993",  class: "B", raceType: "Allround", shareCode: "130092829",  tuner: "SepiSP4" },
+  { car: "Shelby Daytona",              class: "B", raceType: "Pista",    shareCode: "401358590",  tuner: "Egao no hana" },
+  { car: "Datsun 510 1970",             class: "B", raceType: "Rally",    shareCode: "142696843",  tuner: "SepiSP4" },
+  { car: "Ford Bronco 1975",            class: "B", raceType: "Rally",    shareCode: "621070704",  tuner: "yeetlur" },
+  { car: "Ford Bronco 1975",            class: "B", raceType: "Rally",    shareCode: "512135056",  tuner: "SepiSP4" },
+  { car: "Ford F-100 1956",             class: "B", raceType: "Rally",    shareCode: "543873563",  tuner: "Mustuff124" },
+  { car: "Ford F-100 1956",             class: "B", raceType: "Rally",    shareCode: "150426978",  tuner: "Egao no hana" },
+  { car: "Honda Civic RS 1974",         class: "B", raceType: "Rally",    shareCode: "395944030",  tuner: "SepiSP4" },
+  { car: "Lamborghini Miura 1967",      class: "B", raceType: "Rally",    shareCode: "252174621",  tuner: "Korrrupt EU" },
+  { car: "Mini Cooper S 1965",          class: "B", raceType: "Rally",    shareCode: "126741880",  tuner: "Ausax" },
+  { car: "Nissan Pulsar GTI-R 1990",    class: "B", raceType: "Rally",    shareCode: "842451514",  tuner: "Korrrupt EU" },
+  { car: "Toyota FJ40",                 class: "B", raceType: "Rally",    shareCode: "175276920",  tuner: "yeetlur" },
+  { car: "Ford Super Duty F-450",       class: "B", raceType: "Cross",    shareCode: "682007551",  tuner: "SepiSP4" },
+  { car: "Toyota FJ40",                 class: "B", raceType: "Cross",    shareCode: "157141010",  tuner: "SepiSP4" },
+  { car: "Ford Bronco 1975",            class: "B", raceType: "Cross",    shareCode: "177322128",  tuner: "SepiSP4" },
+]
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
   console.log("⏳ Fetching Tunagens V2 from Google Sheets...")
@@ -304,9 +365,16 @@ async function main() {
   console.log(`⚡ Adicionados ${addDate}: ${newSet.size} car(s) → [${[...newSet].join(", ")}]`)
 
   const tunes = parseTunes(rows, newSet)
-  console.log(`🎮 ${tunes.length} tunes found`)
+  console.log(`🎮 ${tunes.length} tunes from main sheet`)
 
-  const ts = generateTs(tunes, addDate)
+  const existingCodes = new Set(tunes.map(t => t.shareCode))
+  const extras = SUPPLEMENTAL_TUNES
+    .filter(t => !existingCodes.has(t.shareCode))
+    .map(t => ({ ...t, isNew: t.isNew ?? false, isUnavailable: t.isUnavailable ?? false, description: t.description ?? null }))
+  console.log(`➕ ${extras.length} supplemental tunes added (${SUPPLEMENTAL_TUNES.length - extras.length} skipped as duplicates)`)
+  const allTunes = [...tunes, ...extras]
+
+  const ts = generateTs(allTunes, addDate)
   await fs.writeFile(OUT, ts, "utf-8")
   console.log(`✅ Written: ${OUT}`)
 }
