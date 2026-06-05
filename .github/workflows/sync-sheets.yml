@@ -1,0 +1,41 @@
+name: Sync Tunes from Google Sheets
+
+on:
+  # Triggered via webhook from Apps Script (real-time)
+  workflow_dispatch:
+
+  # Fallback: roda a cada 4 horas caso o webhook não dispare
+  schedule:
+    - cron: "0 */4 * * *"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sync from Google Sheets
+        run: node scripts/sync-sheets.mjs
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/community-tunes.ts
+          if git diff --cached --quiet; then
+            echo "✅ No changes — planilha sem atualizações."
+          else
+            SYNC_DATE=$(date -u +"%d/%m %H:%M UTC")
+            git commit -m "chore: sync tunes from Google Sheets (${SYNC_DATE})"
+            git push
+            echo "🚀 Pushed updated community-tunes.ts"
+          fi
