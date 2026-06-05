@@ -4,9 +4,9 @@ on:
   # Triggered via webhook from Apps Script (real-time)
   workflow_dispatch:
 
-  # Fallback: roda a cada 4 horas caso o webhook não dispare
+  # Fallback: roda a cada hora caso o webhook não dispare
   schedule:
-    - cron: "0 */4 * * *"
+    - cron: "0 * * * *"
 
 jobs:
   sync:
