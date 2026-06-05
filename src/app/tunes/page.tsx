@@ -600,7 +600,7 @@ export default function TunesPage() {
         {/* ── Footer note ───────────────────────────────────────────────── */}
         <div style={{ paddingTop: 8, paddingBottom: 24, textAlign: "center" }}>
           <p style={{ fontSize: 11, color: "var(--text-subtle)" }}>
-            Última atualização: 02/06 · Dados curados pela comunidade FH6 · Para sugerir tunagens, acesse o Discord
+            Última atualização: 04/06 · Dados curados pela comunidade FH6 · Para sugerir tunagens, acesse o Discord
           </p>
         </div>
       </div>
