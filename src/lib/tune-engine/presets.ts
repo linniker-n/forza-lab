@@ -268,7 +268,7 @@ const RIDE_HEIGHT: Record<TuneType, { front: TuningSetup["springs"]["ride_height
 // amortecedores 8/8/3/3, cambagem e convergência zerados, caster 7.
 // ─────────────────────────────────────────────────────────────────────────────
 const PRO_TYPES = new Set<TuneType>(["street", "grip", "drag", "cross_country", "top_speed"])
-const PRO_TIRE_PSI    = 21.8  // 1.5 BAR
+const PRO_TIRE_PSI    = 29.0  // 2.0 BAR
 const PRO_SPRING_LBFIN = 457  // ≈ 80 kgf/mm (80 / 0.175127)
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -354,7 +354,7 @@ export function buildTune(
       differential.front_decel   = 0
       differential.rear_accel    = 100
       differential.rear_decel    = 0
-      differential.center_balance = 70
+      differential.center_balance = 80
     }
   } else {
     if (profile.isPowerful && differential.rear_accel !== undefined) {
