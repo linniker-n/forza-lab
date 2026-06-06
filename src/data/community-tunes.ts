@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-06-05T23:56:08.835Z | Adicionados: 05/06
+// Last sync: 2026-06-06T02:03:22.045Z | Adicionados: 05/06
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -277,21 +277,22 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_146", "Mercedez 190 E EF Ω", "S1", "Pista/Circuito", "153897841", "pyrtti", "Só pra circuito de time attack"),
   tune("s_147", "Mercedez AMG CLK Ω", "S1", "Rally", "148068541", "Rocklxd", "O Carro de rally com mais grip tanto na terra quanto asfalto da S1"),
   tune("s_148", "Mercedez AMG CLK Ω", "S1", "Pista", "788116937", "Noa Miyako"),
-  tune("s_149", "Nissan Silhouette Ω", "S1", "Rally", "334863208", "ATK Mang0"),
-  tune("s_150", "Noble M600", "S1", "Pista/Allround", "179507105", "jeneies", "Forte em sprint de velocidade"),
-  tune("s_151", "Porsche 917 LH", "S1", "Rally", "765834758", "Iphanhan"),
-  tune("s_152", "Porshe Carrera GT Ω", "S1", "Pista/Allround", "851099248", "GRT Nicck"),
-  tune("s_153", "Porshe Cayman GT3 WTAC", "S1", "Pista/Circuito", "152707701", "sepdasviech"),
-  tune("s_154", "Porshe GT2 RS 2018", "S1", "Pista/Allround", "476448179", "Mustuff124"),
-  tune("s_155", "Porshe GT3 2021", "S1", "Pista/Allround", "884430110", "ESV Rapture"),
-  tune("s_156", "Porshe GT3 RS 2023", "S1", "Pista/Allround", "140234042", "Nalak28"),
-  tune("s_157", "RJ Anderson Polaris", "S1", "Cross", "110744130", "Jeppe JSV"),
-  tune("s_158", "Shelby Cobra", "S1", "Rally", "504978380", "KapienPL"),
-  tune("s_159", "Subaru BRZ EF Ω", "S1", "Cross", "381012195", "Noa Miyako"),
-  tune("s_160", "Toyota Supra WTAC Ω", "S1", "Pista/Circuito", "134394781", "GRT Nicck", "Só é viável em circuitos"),
-  tune("s_161", "Toyota Tacoma EF Ω", "S1", "Pista/Allround", "182339831", "ZVTCJAU", "Não recomendado para pista molhada"),
-  tune("s_162", "Toyota Trueno EF Ω", "S1", "Rally", "334051072", "KapienPL"),
-  tune("s_163", "Toyota Trueno EF Ω", "S1", "Pista/Sprint", "929950902", "invrtebrate", "PB Ta certo mesmo ele é 795 mesmo"),
+  tune("s_149", "Nissan GT-R Nismo 2024", "S1", "Pista/Allround", "466892617", "ZVTCJAU"),
+  tune("s_150", "Nissan Silhouette Ω", "S1", "Rally", "334863208", "ATK Mang0"),
+  tune("s_151", "Noble M600", "S1", "Pista/Allround", "179507105", "jeneies", "Forte em sprint de velocidade"),
+  tune("s_152", "Porsche 917 LH", "S1", "Rally", "765834758", "Iphanhan"),
+  tune("s_153", "Porshe Carrera GT Ω", "S1", "Pista/Allround", "851099248", "GRT Nicck"),
+  tune("s_154", "Porshe Cayman GT3 WTAC", "S1", "Pista/Circuito", "152707701", "sepdasviech"),
+  tune("s_155", "Porshe GT2 RS 2018", "S1", "Pista/Allround", "476448179", "Mustuff124"),
+  tune("s_156", "Porshe GT3 2021", "S1", "Pista/Allround", "884430110", "ESV Rapture"),
+  tune("s_157", "Porshe GT3 RS 2023", "S1", "Pista/Allround", "140234042", "Nalak28"),
+  tune("s_158", "RJ Anderson Polaris", "S1", "Cross", "110744130", "Jeppe JSV"),
+  tune("s_159", "Shelby Cobra", "S1", "Rally", "504978380", "KapienPL"),
+  tune("s_160", "Subaru BRZ EF Ω", "S1", "Cross", "381012195", "Noa Miyako"),
+  tune("s_161", "Toyota Supra WTAC Ω", "S1", "Pista/Circuito", "134394781", "GRT Nicck", "Só é viável em circuitos"),
+  tune("s_162", "Toyota Tacoma EF Ω", "S1", "Pista/Allround", "182339831", "ZVTCJAU", "Não recomendado para pista molhada"),
+  tune("s_163", "Toyota Trueno EF Ω", "S1", "Rally", "334051072", "KapienPL"),
+  tune("s_164", "Toyota Trueno EF Ω", "S1", "Pista/Sprint", "929950902", "invrtebrate", "PB Ta certo mesmo ele é 795 mesmo"),
 
   // ── CLASSE S2 ──────────────────────────────────────────────────────────────────────
   tune("s_201", "Ferrari F40 C", "S2", "Pista/Allround", "587973766", "TonyTKS"),
@@ -306,12 +307,13 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_210", "Mazda Furai Ω", "S2", "Pista/Allround", "903797630", "TheDannny"),
   tune("s_211", "Mazda Miata EF Ω", "S2", "Pista/Sprint", "131635218", "Noa Miyako", "PB"),
   tune("s_212", "Mclaren F1 GT", "S2", "Pista/Sprint", "678642145", "Noa Miyako", "PB"),
-  tune("s_213", "Nissan Silhouette Ω", "S2", "Pista/Circuito", "892812852", "LetzeLU"),
-  tune("s_214", "Porsche 918", "S2", "Pista/Allround", "128801038", "SZUI3I"),
-  tune("s_215", "Porsche Cayman GT3 WTAC", "S2", "Pista/Circuito", "957680747", "RcR StriKer"),
-  tune("s_216", "Porsche GT2 RS 2018", "S2", "Pista/Allround", "935693477", "LetzeLU"),
-  tune("s_217", "Porsche GT3 RS 2023", "S2", "Pista/Allround", "625597283", "KillerBee6236"),
-  tune("s_218", "Ultima Coupe", "S2", "Pista/Sprint", "179652488", "KilianFirebold", "PB Requer câmbio manual, não deixar reduzir de 3 marcha"),
+  tune("s_213", "Nissan GT-R Nismo 2024", "S2", "Pista/Allround", "141773439", "LetzeLU"),
+  tune("s_214", "Nissan Silhouette Ω", "S2", "Pista/Circuito", "892812852", "LetzeLU"),
+  tune("s_215", "Porsche 918", "S2", "Pista/Allround", "128801038", "SZUI3I"),
+  tune("s_216", "Porsche Cayman GT3 WTAC", "S2", "Pista/Circuito", "957680747", "RcR StriKer"),
+  tune("s_217", "Porsche GT2 RS 2018", "S2", "Pista/Allround", "935693477", "LetzeLU"),
+  tune("s_218", "Porsche GT3 RS 2023", "S2", "Pista/Allround", "625597283", "KillerBee6236"),
+  tune("s_219", "Ultima Coupe", "S2", "Pista/Sprint", "179652488", "KilianFirebold", "PB Requer câmbio manual, não deixar reduzir de 3 marcha"),
 
   // ── CLASSE R ───────────────────────────────────────────────────────────────────────
   tune("r01", "Aston Martin Valhalla Ω", "R", "Pista/Allround", "158077963", "K1Z Jumpy"),
