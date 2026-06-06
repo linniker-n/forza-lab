@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-06-06T21:52:24.089Z | Adicionados: 06/06
+// Last sync: 2026-06-06T22:51:10.333Z | Adicionados: 06/06
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -211,24 +211,25 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("a39", "Lotus Elise GT1", "A", "Pista/Allround", "493463909", "RealOwenH", "Excelente para pistas com muitas curvas"),
   tune("a40", "Lotus Emira", "A", "Pista/Allround", "641459657", "RcR StriKer"),
   tune("a41", "Mclaren P1", "A", "Pista/Allround", "162905622", "ZVTCJAU"),
-  tune("a42", "Mercedes-Benz X-Class", "A", "Cross", "225166360", "ZVTCJAU", "É o melhor cross da classe A"),
-  tune("a43", "Mitsubishi Minicab Time Attack Ω", "A", "Pista/Circuito", "135447903", "ESV Mars"),
-  tune("a44", "Nissan 370Z Nismo", "A", "Pista/Allround", "223642031", "LetzeLU"),
-  tune("a45", "Nissan Skyline GT-R  1997", "A", "Pista/Allround", "161529727", "xDV1m"),
-  tune("a46", "Plymouth Cuda 426 HEMI", "A", "Cross", "110813885", "ZVTCJAU", "Muito forte porém instável quando aterrissa dos pulos"),
-  tune("a47", "Porsche 911 GT3 2012", "A", "Pista/Allround", "676646176", "PS4player8461"),
-  tune("a48", "Ram 1500 TRX", "A", "Cross", "178231366", "SlowBakedPanda"),
-  tune("a49", "Rivian R1T", "A", "Cross", "142401702", "Noa Miyako"),
-  tune("a50", "Shelby Cobra", "A", "Pista/Sprint", "104671695", "CYbrexzzZ", "PB"),
-  tune("a51", "Shelby Daytona", "A", "Rally", "140786966", "MSR Mian"),
-  tune("a52", "SRT Viper  2013", "A", "Pista/Sprint", "823265729", "ZVTCJAU", "Não recomendado para pista molhada"),
-  tune("a53", "Subaru STI 2019", "A", "Pista/Allround", "115358635", "SlowBakedPanda"),
-  tune("a54", "Toyota 86 2013", "A", "Pista/Sprint", "147767459", "Noa Miyako", "PB Não recomendado para pista molhada"),
-  tune("a55", "Toyota Sports 800", "A", "Pista/Sprint", "381108485", "Noa Miyako", "PB Não recomendado para pista molhada"),
-  tune("a56", "Toyota T100 Baja", "A", "Cross", "157422404", "NEPOSHA"),
-  tune("a57", "Toyota Tacoma", "A", "Cross", "589310413", "Jman Elda"),
-  tune("a58", "Toyota Trueno EF Ω", "A", "Pista/Sprint", "127080468", "AzuGenerator", "PB Carro suicida"),
-  tune("a59", "Toyota Trueno EF Ω", "A", "Rally", "842516241", "MSR Mian", "Muito fácil de dirigir"),
+  tune("a42", "Mercedez-Benz 300 SLR", "A", "Rally", "362534392", "Noa Miyako", undefined, { isNew: true }),
+  tune("a43", "Mercedes-Benz X-Class", "A", "Cross", "225166360", "ZVTCJAU", "É o melhor cross da classe A"),
+  tune("a44", "Mitsubishi Minicab Time Attack Ω", "A", "Pista/Circuito", "135447903", "ESV Mars"),
+  tune("a45", "Nissan 370Z Nismo", "A", "Pista/Allround", "223642031", "LetzeLU"),
+  tune("a46", "Nissan Skyline GT-R  1997", "A", "Pista/Allround", "161529727", "xDV1m"),
+  tune("a47", "Plymouth Cuda 426 HEMI", "A", "Cross", "110813885", "ZVTCJAU", "Muito forte porém instável quando aterrissa dos pulos"),
+  tune("a48", "Porsche 911 GT3 2012", "A", "Pista/Allround", "676646176", "PS4player8461"),
+  tune("a49", "Ram 1500 TRX", "A", "Cross", "178231366", "SlowBakedPanda"),
+  tune("a50", "Rivian R1T", "A", "Cross", "142401702", "Noa Miyako"),
+  tune("a51", "Shelby Cobra", "A", "Pista/Sprint", "104671695", "CYbrexzzZ", "PB"),
+  tune("a52", "Shelby Daytona", "A", "Rally", "140786966", "MSR Mian"),
+  tune("a53", "SRT Viper  2013", "A", "Pista/Sprint", "823265729", "ZVTCJAU", "Não recomendado para pista molhada"),
+  tune("a54", "Subaru STI 2019", "A", "Pista/Allround", "115358635", "SlowBakedPanda"),
+  tune("a55", "Toyota 86 2013", "A", "Pista/Sprint", "147767459", "Noa Miyako", "PB Não recomendado para pista molhada"),
+  tune("a56", "Toyota Sports 800", "A", "Pista/Sprint", "381108485", "Noa Miyako", "PB Não recomendado para pista molhada"),
+  tune("a57", "Toyota T100 Baja", "A", "Cross", "157422404", "NEPOSHA"),
+  tune("a58", "Toyota Tacoma", "A", "Cross", "589310413", "Jman Elda"),
+  tune("a59", "Toyota Trueno EF Ω", "A", "Pista/Sprint", "127080468", "AzuGenerator", "PB Carro suicida"),
+  tune("a60", "Toyota Trueno EF Ω", "A", "Rally", "842516241", "MSR Mian", "Muito fácil de dirigir"),
 
   // ── CLASSE S1 ──────────────────────────────────────────────────────────────────────
   tune("s_101", "Acura NSX Type S", "S1", "Pista/Allround", "321575270", "Nalak28"),
