@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-06-12T20:58:17.563Z | Adicionados: Recentemente
+// Last sync: 2026-06-12T22:21:48.127Z | Adicionados: Recentemente
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -291,7 +291,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_144", "Lamborghini Diablo GTR Ω", "S1", "Rally", "183038814", "ZVTCJAU"),
   tune("s_145", "Lamborghini Huracan Evo Ω", "S1", "Pista/Allround", "848111494", "LetzeLU"),
   tune("s_146", "Lamborghini Huracan LP", "S1", "Pista/Allround", "934255698", "ZVTCJAU"),
-  tune("s_147", "Lamborghini Huracan STO", "S1", "Pista/Allround", "174155902", "skyinfin"),
+  tune("s_147", "Lamborghini Huracan STO", "S1", "Pista/Allround", "149816641", "CybrexzzZ"),
   tune("s_148", "Lamborghini Huracan Tecnica", "S1", "Pista/Allround", "168320096", "ESV Rapture"),
   tune("s_149", "Lamborghini Sián", "S1", "Pista/Allround", "137498609", "LetzeLU"),
   tune("s_150", "Lamborghini Sterrato", "S1", "Rally", "167731877", "ShaggyScroll660", "Bastante instável em pistas com muitas elevações"),
