@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-06-12T16:01:44.771Z | Adicionados: 11/06
+// Last sync: 2026-06-12T18:55:16.635Z | Adicionados: 11/06
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -323,7 +323,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_176", "Porsche Turbo S", "S1", "Pista/Allround", "846845332", "LetzeLU", undefined, { isNew: true }),
   tune("s_177", "Porshe Carrera GT Ω", "S1", "Pista/Allround", "851099248", "GRT Nicck"),
   tune("s_178", "RJ Anderson Polaris", "S1", "Cross", "110744130", "Jeppe JSV"),
-  tune("s_179", "Saleen S7 LM Ω", "S1", "Pista/Allround", "301309937", "ESV Lawrence", undefined, { isNew: true }),
+  tune("s_179", "Saleen S7 LM Ω", "S1", "Pista/Allround", "671971146", "CybrexzzZ", "Só náo é muito forte pq a retomada dele é lenta em compração aos outros"),
   tune("s_180", "Shelby Cobra", "S1", "Rally", "504978380", "KapienPL"),
   tune("s_181", "Subaru BRZ EF Ω", "S1", "Cross", "381012195", "Noa Miyako"),
   tune("s_182", "Toyota Supra WTAC Ω", "S1", "Pista/Circuito", "134394781", "GRT Nicck", "Só é viável em circuitos"),
