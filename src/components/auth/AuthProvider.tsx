@@ -34,10 +34,29 @@ interface AuthContextValue {
 const EMAIL_STORAGE_KEY     = "forza-tune-lab:email-for-sign-in"
 const EMAIL_STORAGE_KEY_NEW = "forza-lab:email-for-sign-in"
 const AuthContext = createContext<AuthContextValue | null>(null)
+const FALLBACK_AUTH_CALLBACK_URL = "https://forza-tune-lab.pages.dev/auth/callback"
+
+function trimTrailingSlash(value: string) {
+  return value.replace(/\/+$/, "")
+}
+
+function configuredAuthCallbackUrl() {
+  const explicitCallbackUrl = process.env.NEXT_PUBLIC_AUTH_CALLBACK_URL?.trim()
+  if (explicitCallbackUrl) return explicitCallbackUrl
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+  if (siteUrl) return `${trimTrailingSlash(siteUrl)}/auth/callback`
+
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return `${window.location.origin}/auth/callback`
+  }
+
+  return FALLBACK_AUTH_CALLBACK_URL
+}
 
 function actionCodeSettings() {
   return {
-    url: `${window.location.origin}/auth/callback`,
+    url: configuredAuthCallbackUrl(),
     handleCodeInApp: true,
   }
 }

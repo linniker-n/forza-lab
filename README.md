@@ -61,6 +61,8 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_SITE_URL=https://forza-tune-lab.pages.dev
+NEXT_PUBLIC_AUTH_CALLBACK_URL=https://forza-tune-lab.pages.dev/auth/callback
 ```
 
 Em Authentication, ative:
@@ -75,6 +77,12 @@ localhost
 SEU-PROJETO.pages.dev
 SEU-DOMINIO.com
 ```
+
+Para o login por link de email, o Firebase usa a URL configurada em
+`NEXT_PUBLIC_AUTH_CALLBACK_URL`. Esse dominio tambem precisa estar em
+Authentication > Settings > Authorized domains. Enquanto `forzalab.app` nao
+estiver com DNS e Firebase autorizados, mantenha a URL de callback em
+`https://forza-tune-lab.pages.dev/auth/callback`.
 
 As tunes salvas ficam em `users/{uid}/savedTunes/{tuneId}` no Cloud Firestore. Publique as regras em `firebase/firestore.rules` para restringir leitura e escrita ao dono da conta.
 
