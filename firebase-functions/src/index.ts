@@ -191,7 +191,12 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
     await db.collection("userProfiles").doc(uid).set(update, { merge: true })
   }
 
-  async function uidFromCustomer(customerId: string): Promise<string | null> {
+  function customerIdFrom(customer: string | Stripe.Customer | Stripe.DeletedCustomer | null | undefined): string | null {
+    if (!customer) return null
+    return typeof customer === "string" ? customer : customer.id
+  }
+
+  async function uidFromProfileCustomer(customerId: string): Promise<string | null> {
     const snap = await db.collection("userProfiles")
       .where("stripe_customer_id", "==", customerId)
       .limit(1)
@@ -199,11 +204,64 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
     return snap.empty ? null : snap.docs[0].id
   }
 
+  async function uidFromEmail(email: string | null | undefined): Promise<string | null> {
+    if (!email) return null
+    try {
+      const user = await admin.auth().getUserByEmail(email)
+      return user.uid
+    } catch {
+      return null
+    }
+  }
+
+  async function resolveUidFromCustomer(
+    customer: string | Stripe.Customer | Stripe.DeletedCustomer | null | undefined,
+  ): Promise<string | null> {
+    const customerId = customerIdFrom(customer)
+    if (!customerId) return null
+
+    const uidFromProfile = await uidFromProfileCustomer(customerId)
+    if (uidFromProfile) return uidFromProfile
+
+    let customerData: Stripe.Customer | Stripe.DeletedCustomer
+    if (!customer || typeof customer === "string") {
+      customerData = await stripe.customers.retrieve(customerId)
+    } else {
+      customerData = customer
+    }
+
+    if ("deleted" in customerData && customerData.deleted) return null
+
+    const metadataUid = customerData.metadata?.firebase_uid
+    if (metadataUid) return metadataUid
+
+    return uidFromEmail(customerData.email)
+  }
+
+  async function resolveUidFromSubscription(sub: Stripe.Subscription): Promise<string | null> {
+    if (sub.metadata?.firebase_uid) return sub.metadata.firebase_uid
+    return resolveUidFromCustomer(sub.customer)
+  }
+
+  async function resolveUidFromCheckoutSession(session: Stripe.Checkout.Session): Promise<string | null> {
+    const metadataUid = (session.metadata?.firebase_uid ?? session.client_reference_id) as string | null
+    if (metadataUid) return metadataUid
+
+    const uidFromCustomer = await resolveUidFromCustomer(session.customer as string | Stripe.Customer | null)
+    if (uidFromCustomer) return uidFromCustomer
+
+    return uidFromEmail(session.customer_details?.email)
+  }
+
+  function proTierForStatus(status: Stripe.Subscription.Status): "pro" | "free" {
+    return ["active", "trialing"].includes(status) ? "pro" : "free"
+  }
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session
-        const uid = (session.metadata?.firebase_uid ?? session.client_reference_id) as string | null
+        const uid = await resolveUidFromCheckoutSession(session)
         if (!uid) { console.warn("checkout.session.completed sem firebase_uid"); break }
         await updateProfile(uid, {
           subscription_tier:   "pro",
@@ -215,19 +273,23 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
       }
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice
-        const uid = await uidFromCustomer(invoice.customer as string)
-        if (uid) await updateProfile(uid, { subscription_status: "active" })
+        const uid = await resolveUidFromCustomer(invoice.customer as string | Stripe.Customer | null)
+        if (uid) await updateProfile(uid, {
+          subscription_tier:   "pro",
+          subscription_status: "active",
+          stripe_customer_id:  customerIdFrom(invoice.customer as string | Stripe.Customer | null),
+        })
         break
       }
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice
-        const uid = await uidFromCustomer(invoice.customer as string)
+        const uid = await resolveUidFromCustomer(invoice.customer as string | Stripe.Customer | null)
         if (uid) await updateProfile(uid, { subscription_status: "past_due" })
         break
       }
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription
-        const uid = await uidFromCustomer(sub.customer as string)
+        const uid = await resolveUidFromSubscription(sub)
         if (!uid) { console.warn("subscription.deleted sem uid mapeado"); break }
         await updateProfile(uid, { subscription_tier: "free", subscription_status: "canceled" })
         console.log(`✓ Revertido para free uid=${uid}`)
@@ -235,10 +297,11 @@ export const stripeWebhook = functions.https.onRequest(async (req, res) => {
       }
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription
-        const uid = await uidFromCustomer(sub.customer as string)
+        const uid = await resolveUidFromSubscription(sub)
         if (uid) await updateProfile(uid, {
           subscription_status: sub.status,
-          subscription_tier:   ["active", "trialing"].includes(sub.status) ? "pro" : "free",
+          subscription_tier:   proTierForStatus(sub.status),
+          stripe_customer_id:  customerIdFrom(sub.customer),
         })
         break
       }
