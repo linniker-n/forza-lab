@@ -15,44 +15,14 @@ import { UpgradeModal } from "@/components/paywall/UpgradeModal"
 import { useSettings } from "@/lib/settings/context"
 import { translateParts } from "@/lib/settings/translations"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
-import { classFromPi } from "@/lib/tune-engine/classes"
 import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
 import { generateTune } from "@/lib/tune-engine/generator"
-import type { Car, CarCategory, CarClass, ControlType, Drivetrain, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType } from "@/types"
+import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType } from "@/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { useLanguage } from "@/lib/i18n/context"
 import { useTranslations } from "@/lib/i18n/translations"
 
 type Difficulty = "easy" | "balanced" | "aggressive"
-type CarInputMode = "database" | "calculator"
-
-interface ManualCarInput {
-  brand: string
-  model: string
-  year: string
-  weightKg: string
-  frontWeightPercent: string
-  basePi: string
-  powerHp: string
-  torqueNm: string
-  drivetrain: Drivetrain
-  aspiration: Car["aspiration"]
-  category: CarCategory
-}
-
-const DEFAULT_MANUAL_CAR: ManualCarInput = {
-  brand: "Custom",
-  model: "FH6 Build",
-  year: "2026",
-  weightKg: "1500",
-  frontWeightPercent: "52",
-  basePi: "700",
-  powerHp: "450",
-  torqueNm: "550",
-  drivetrain: "AWD",
-  aspiration: "Turbo",
-  category: "sport",
-}
 
 const TUNE_TYPE_VALUES: { v: TuneType; cls: string }[] = [
   { v: "street",        cls: "tag-street" },
@@ -69,78 +39,12 @@ const DIFFICULTY_VALUES: Difficulty[] = ["easy", "balanced", "aggressive"]
 const STYLE_VALUES: DrivingStyle[] = ["casual", "competitive", "meta"]
 const CONTROL_VALUES: ControlType[] = ["controller", "keyboard", "wheel"]
 const DRIVETRAIN_VALUES: TuneRequest["preferred_drivetrain"][] = ["original", "AWD", "RWD", "FWD"]
-const MANUAL_DRIVETRAIN_VALUES: Drivetrain[] = ["AWD", "RWD", "FWD"]
-const MANUAL_ASPIRATION_VALUES: Car["aspiration"][] = ["NA", "Turbo", "Supercharged", "Electric"]
-const MANUAL_CATEGORY_VALUES: CarCategory[] = ["sport", "supercar", "hypercar", "muscle", "jdm", "offroad", "suv", "truck", "buggy", "classic"]
 
 /* ── Score color ── */
 function scoreColor(s: number) {
   if (s >= 8) return "#34d399"
   if (s >= 6) return "#fbbf24"
   return "#64748b"
-}
-
-function num(value: string): number {
-  return Number(value.replace(",", "."))
-}
-
-function clampNum(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max)
-}
-
-function slug(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "custom"
-}
-
-function isManualCarValid(input: ManualCarInput): boolean {
-  return (
-    input.brand.trim().length > 0 &&
-    input.model.trim().length > 0 &&
-    Number.isFinite(num(input.weightKg)) &&
-    Number.isFinite(num(input.frontWeightPercent)) &&
-    Number.isFinite(num(input.basePi)) &&
-    Number.isFinite(num(input.powerHp)) &&
-    Number.isFinite(num(input.torqueNm))
-  )
-}
-
-function buildManualCar(input: ManualCarInput): Car {
-  const weight = clampNum(Math.round(num(input.weightKg)), 400, 4000)
-  const frontWeight = clampNum(num(input.frontWeightPercent), 35, 70)
-  const pi = clampNum(Math.round(num(input.basePi)), 100, 999)
-  const power = clampNum(Math.round(num(input.powerHp)), 50, 2500)
-  const torque = clampNum(Math.round(num(input.torqueNm)), 50, 3000)
-  const year = clampNum(Math.round(num(input.year) || 2026), 1900, 2035)
-  const carType = [input.category]
-  const available_conversions = MANUAL_DRIVETRAIN_VALUES.filter((item) => item !== input.drivetrain)
-
-  return {
-    id: `manual_${slug(input.brand)}_${slug(input.model)}_${year}`,
-    game: "Forza Horizon 6",
-    brand: input.brand.trim(),
-    model: input.model.trim(),
-    year,
-    base_class: classFromPi(pi),
-    base_pi: pi,
-    drivetrain: input.drivetrain,
-    front_weight_percent: frontWeight,
-    weight_kg: weight,
-    power_hp: power,
-    torque_nm: torque,
-    aspiration: input.aspiration,
-    car_type: carType,
-    recommended_use: ["street", "drag", "drift", "rally", "cross_country", "top_speed", "grip"],
-    available_conversions,
-    meta_score: {
-      street: 6,
-      drag: power > 600 ? 8 : 6,
-      drift: input.drivetrain === "RWD" ? 8 : 5,
-      rally: input.drivetrain === "AWD" || input.category === "offroad" ? 8 : 5,
-      cross_country: ["offroad", "truck", "suv", "buggy"].includes(input.category) ? 8 : 4,
-      top_speed: power > 650 ? 8 : 6,
-    },
-    notes: `Criado na calculadora manual. Peso dianteiro: ${frontWeight}%.`,
-  }
 }
 
 /* ── Small car thumbnail in picker ── */
@@ -658,17 +562,12 @@ function WizardInner() {
     v,
     l: t.tune.drivetrains[v as keyof typeof t.tune.drivetrains],
   }))
-  const MANUAL_DRIVETRAINS = MANUAL_DRIVETRAIN_VALUES.map((v) => ({ v, l: v }))
-  const MANUAL_ASPIRATIONS = MANUAL_ASPIRATION_VALUES.map((v) => ({ v, l: t.tune.aspirations[v] }))
-  const MANUAL_CATEGORIES  = MANUAL_CATEGORY_VALUES.map((v) => ({ v, l: t.tune.categories[v] }))
 
   const queryCar  = CARS.find((c) => c.id === sp.get("car")) ?? null
   const queryType = TUNE_TYPE_VALUES.find((type) => type.v === sp.get("type"))?.v ?? null
   const [step, setStep]       = useState(() => queryCar ? (queryType ? 3 : 2) : 1)
-  const [inputMode, setInputMode] = useState<CarInputMode>("database")
   const [search, setSearch]   = useState("")
   const [car, setCar]         = useState<Car | null>(() => queryCar)
-  const [manual, setManual]   = useState<ManualCarInput>(DEFAULT_MANUAL_CAR)
   const [tuneType, setTT]     = useState<TuneType | null>(() => queryType)
   const [cls, setCls]         = useState<CarClass>(() => queryCar?.base_class ?? "A")
   const [diff, setDiff]       = useState<Difficulty>("balanced")
@@ -695,24 +594,12 @@ function WizardInner() {
   const filtered = search.length >= 2
     ? CARS.filter((c) => `${c.brand} ${c.model} ${c.year}`.toLowerCase().includes(search.toLowerCase())).slice(0, 14)
     : CARS.slice(0, 14)
-  const manualValid = isManualCarValid(manual)
 
-  const effectiveBaseClass: CarClass =
-    inputMode === "calculator" && manualValid
-      ? classFromPi(num(manual.basePi))
-      : car?.base_class ?? "D"
+  const effectiveBaseClass: CarClass = car?.base_class ?? "D"
   const availableClasses = CLASSES.filter((_, i) => i >= CLASSES.indexOf(effectiveBaseClass))
 
-  function updateManual<K extends keyof ManualCarInput>(key: K, value: ManualCarInput[K]) {
-    setManual((current) => ({ ...current, [key]: value }))
-  }
-
   function goToTuneType() {
-    if (inputMode === "calculator") {
-      if (!manualValid) return
-      setCar(buildManualCar(manual))
-    }
-    if (inputMode === "database" && !car) return
+    if (!car) return
     setStep(2)
   }
 
@@ -743,7 +630,7 @@ function WizardInner() {
   if (step === 4 && result) return <TuneResult
     tune={result}
     onBack={() => { setStep(3); setResult(null) }}
-    onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false); setIntent("balanced"); setInputMode("database"); setCls("A") }}
+    onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false); setIntent("balanced"); setCls("A") }}
   />
 
   const steps = [
@@ -812,98 +699,17 @@ function WizardInner() {
         {/* ── STEP 1 ── */}
         {step === 1 && (
           <div className="space-y-4 anim-up" style={{ animationDelay: "100ms" }}>
-            <div className="grid grid-cols-2 gap-2">
-              {([
-                { v: "database"   as CarInputMode, l: t.tune.modeDatabase,   d: t.tune.modeDatabaseDesc },
-                { v: "calculator" as CarInputMode, l: t.tune.modeCalculator, d: t.tune.modeCalculatorDesc },
-              ]).map((mode) => (
-                <button
-                  key={mode.v}
-                  type="button"
-                  onClick={() => { setInputMode(mode.v); if (mode.v === "calculator") setCar(null) }}
-                  className="r-card text-left p-4 transition-all"
-                  style={{
-                    border: inputMode === mode.v ? "1px solid var(--border-blue)" : undefined,
-                    background: inputMode === mode.v ? "var(--blue-dim)" : undefined,
-                    cursor: "pointer",
-                  }}
-                >
-                  <p style={{ fontSize: 13, fontWeight: 800, color: "var(--text)" }}>{mode.l}</p>
-                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>{mode.d}</p>
-                </button>
+            <input type="text" className="r-input" placeholder={t.tune.searchPlaceholder}
+              value={search} onChange={(e) => setSearch(e.target.value)} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto" style={{ maxHeight: 460 }}>
+              {filtered.map((c) => (
+                <CarThumb key={c.id} car={c} selected={car?.id === c.id} onSelect={() => setCar(c)} />
               ))}
             </div>
 
-            {inputMode === "database" ? (
-              <>
-                <input type="text" className="r-input" placeholder={t.tune.searchPlaceholder}
-                  value={search} onChange={(e) => setSearch(e.target.value)} />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto" style={{ maxHeight: 460 }}>
-                  {filtered.map((c) => (
-                    <CarThumb key={c.id} car={c} selected={car?.id === c.id} onSelect={() => setCar(c)} />
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="r-card p-4 space-y-4">
-                <div>
-                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.calcTitle}</p>
-                  <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, lineHeight: 1.55 }}>
-                    {t.tune.calcDesc}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <input className="r-input" value={manual.brand} onChange={(e) => updateManual("brand", e.target.value)} placeholder={t.tune.brand} />
-                  <input className="r-input" value={manual.model} onChange={(e) => updateManual("model", e.target.value)} placeholder={t.tune.model} />
-                  <input className="r-input" value={manual.year} onChange={(e) => updateManual("year", e.target.value)} inputMode="numeric" placeholder={t.tune.year} />
-                  <input className="r-input" value={manual.basePi} onChange={(e) => updateManual("basePi", e.target.value)} inputMode="numeric" placeholder={t.tune.currentPi} />
-                  <input className="r-input" value={manual.weightKg} onChange={(e) => updateManual("weightKg", e.target.value)} inputMode="decimal" placeholder={t.tune.weightKg} />
-                  <input className="r-input" value={manual.frontWeightPercent} onChange={(e) => updateManual("frontWeightPercent", e.target.value)} inputMode="decimal" placeholder={t.tune.frontWeightPct} />
-                  <input className="r-input" value={manual.powerHp} onChange={(e) => updateManual("powerHp", e.target.value)} inputMode="decimal" placeholder={t.tune.powerHp} />
-                  <input className="r-input" value={manual.torqueNm} onChange={(e) => updateManual("torqueNm", e.target.value)} inputMode="decimal" placeholder={t.tune.torqueNm} />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-2">
-                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.traction}</p>
-                    <div className="flex gap-1 flex-wrap">
-                      {MANUAL_DRIVETRAINS.map((item) => (
-                        <button key={item.v} type="button" onClick={() => updateManual("drivetrain", item.v)} className={`filter-chip${manual.drivetrain === item.v ? " active" : ""}`}>
-                          {item.l}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.engine}</p>
-                    <div className="flex gap-1 flex-wrap">
-                      {MANUAL_ASPIRATIONS.map((item) => (
-                        <button key={item.v} type="button" onClick={() => updateManual("aspiration", item.v)} className={`filter-chip${manual.aspiration === item.v ? " active" : ""}`}>
-                          {item.l}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.category}</p>
-                    <div className="flex gap-1 flex-wrap">
-                      {MANUAL_CATEGORIES.map((item) => (
-                        <button key={item.v} type="button" onClick={() => updateManual("category", item.v)} className={`filter-chip${manual.category === item.v ? " active" : ""}`}>
-                          {item.l}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             <div className="flex justify-end pt-2">
-              <button type="button" disabled={inputMode === "database" ? !car : !manualValid} onClick={goToTuneType} className="r-btn r-btn-primary"
-                style={{ paddingLeft: 28, paddingRight: 28, paddingTop: 10, paddingBottom: 10, opacity: (inputMode === "database" ? car : manualValid) ? 1 : 0.4 }}>
+              <button type="button" disabled={!car} onClick={goToTuneType} className="r-btn r-btn-primary"
+                style={{ paddingLeft: 28, paddingRight: 28, paddingTop: 10, paddingBottom: 10, opacity: car ? 1 : 0.4 }}>
                 {t.tune.nextTuneType}
               </button>
             </div>
