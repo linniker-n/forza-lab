@@ -24,8 +24,8 @@ interface FH6VideoRuleContext {
 }
 
 const AERO_LEVELS: TuningSetup["aero"]["front"][] = ["min", "low", "medium", "medium-high", "high", "max"]
-const HIGH_CLASSES = new Set<CarClass>(["S2", "R", "X"])
-const MID_HIGH_CLASSES = new Set<CarClass>(["A", "S1"])
+const ROAD_GRIP_TYPES = new Set<TuneType>(["street", "grip", "top_speed"])
+const PRO_SPRING_LBFIN = 457 // 80 kgf/mm
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
@@ -49,6 +49,10 @@ function shiftAero(value: TuningSetup["aero"]["front"], delta: number): TuningSe
 
 function atLeastAero(value: TuningSetup["aero"]["front"], minimum: TuningSetup["aero"]["front"]): TuningSetup["aero"]["front"] {
   return aeroIndex(value) < aeroIndex(minimum) ? minimum : value
+}
+
+function isRoadGripTune(context: FH6VideoRuleContext): boolean {
+  return ROAD_GRIP_TYPES.has(context.tuneType)
 }
 
 function cloneTune(tune: TuningSetup): TuningSetup {
@@ -81,7 +85,7 @@ function tirePressureBar(context: FH6VideoRuleContext): { front: number; rear: n
     return { front: 2.2, rear: 2.15, min: 2.1, max: 2.3 }
   }
   if (context.tuneType === "top_speed") {
-    return { front: 2.1, rear: 2.1, min: 1.9, max: 2.3 }
+    return { front: 2.0, rear: 2.0, min: 1.5, max: 2.0 }
   }
   // Padrão PRO: 2,0 bar F/T fixo para rua/estrada/grip
   return { front: 2.0, rear: 2.0, min: 1.8, max: 2.2 }
@@ -107,8 +111,8 @@ function applyAlignment(tune: TuningSetup, context: FH6VideoRuleContext) {
   }
 
   if (context.tuneType === "top_speed") {
-    tune.alignment.camber_front = -0.3
-    tune.alignment.camber_rear = -0.2
+    tune.alignment.camber_front = 0
+    tune.alignment.camber_rear = 0
     tune.alignment.toe_front = 0
     tune.alignment.toe_rear = 0
     tune.alignment.caster = 7
@@ -148,15 +152,20 @@ function applyBarsSpringsDamping(tune: TuningSetup, context: FH6VideoRuleContext
   tune.damping.bump_front = 3
   tune.damping.bump_rear = 3
 
+  if (isRoadGripTune(context)) {
+    tune.springs.front = PRO_SPRING_LBFIN
+    tune.springs.rear = PRO_SPRING_LBFIN
+    tune.springs.ride_height_front = "max"
+    tune.springs.ride_height_rear = "max"
+    return
+  }
+
   if (context.tuneType === "rally" || context.tuneType === "cross_country") {
     tune.springs.ride_height_front = "max"
     tune.springs.ride_height_rear = "max"
   } else if (context.tuneType === "drag") {
     tune.springs.ride_height_front = "medium-high"
     tune.springs.ride_height_rear = "low"
-  } else if (context.tuneType === "top_speed") {
-    tune.springs.ride_height_front = "low"
-    tune.springs.ride_height_rear = "medium-low"
   } else {
     // Padrão PRO: dianteira no máximo, traseira high
     tune.springs.ride_height_front = "max"
@@ -167,9 +176,15 @@ function applyBarsSpringsDamping(tune: TuningSetup, context: FH6VideoRuleContext
 // ── Aerodinâmica (vídeos 1 e 2 + guia) ──────────────────────────────────────
 // Guia: dianteira SEMPRE no máximo para evitar subesterço em curvas.
 // Traseira: ~250 (medium-high) para equilibrar downforce vs arrasto em retas.
-// Top speed: dianteira "low" (algum controle), traseira ao mínimo para reduzir arrasto.
+// Top speed segue a mesma base: frente no máximo e traseira alta para controle.
 // Drag: minimizar tudo. Speed intent (não top_speed): manter frente, só reduzir traseira.
 function applyAero(tune: TuningSetup, context: FH6VideoRuleContext) {
+  if (isRoadGripTune(context)) {
+    tune.aero.front = "max"
+    tune.aero.rear = "high"
+    return
+  }
+
   if (context.tuneType === "top_speed") {
     // Guia: frente ainda precisa de algum downforce para controle; traseira ao mínimo
     tune.aero.front = "low"
@@ -215,44 +230,39 @@ function applyAero(tune: TuningSetup, context: FH6VideoRuleContext) {
 }
 
 // ── Freios (guia PRO) ────────────────────────────────────────────────────────
-// Equilíbrio: 40% dianteiro / pressão 125% (padrão PRO testado).
+// Equilíbrio: 40-45% dianteiro / pressão 150% (padrão do guia).
 function applyBrakes(tune: TuningSetup, context: FH6VideoRuleContext) {
   tune.brakes.balance = context.tuneType === "top_speed" ? 45 : 40
-  tune.brakes.pressure = 125
+  tune.brakes.pressure = 150
 }
 
 // ── Diferencial (guia PRO) ────────────────────────────────────────────────────
-// Padrão: aceleração 100%, desaceleração 0%. AWD centro 80% traseira.
-function rwdDifferential(context: FH6VideoRuleContext): Differential {
-  if (context.tuneType === "drift") return { rear_accel: 85, rear_decel: 70 }
-  if (context.intent === "control" || context.control === "keyboard") return { rear_accel: 50, rear_decel: 8 }
+// Padrão fixo: aceleração 100%, desaceleração 0%. AWD centro 70% traseira.
+function rwdDifferential(): Differential {
   return { rear_accel: 100, rear_decel: 0 }
 }
 
-function fwdDifferential(context: FH6VideoRuleContext): Differential {
-  const accel = context.intent === "acceleration" || context.tuneType === "drag" ? 95 : 88
-  return { front_accel: accel, front_decel: 3, rear_accel: 0, rear_decel: 0 }
+function fwdDifferential(): Differential {
+  return { front_accel: 100, front_decel: 0, rear_accel: 100, rear_decel: 0 }
 }
 
-function awdDifferential(context: FH6VideoRuleContext): Differential {
-  const center = context.intent === "control" ? 65 : 80  // guia: 80% traseira como padrão
-
+function awdDifferential(): Differential {
   return {
-    front_accel: context.intent === "control" ? 85 : 100,
-    front_decel: context.intent === "control" ? 5 : 0,
-    rear_accel: context.intent === "control" ? 88 : 100,
-    rear_decel: context.intent === "control" ? 8 : 0,
-    center_balance: clamp(center, 62, 85),
+    front_accel: 100,
+    front_decel: 0,
+    rear_accel: 100,
+    rear_decel: 0,
+    center_balance: 70,
   }
 }
 
 function applyDifferential(tune: TuningSetup, context: FH6VideoRuleContext) {
   if (context.drivetrain === "FWD") {
-    tune.differential = fwdDifferential(context)
+    tune.differential = fwdDifferential()
   } else if (context.drivetrain === "AWD") {
-    tune.differential = awdDifferential(context)
+    tune.differential = awdDifferential()
   } else {
-    tune.differential = rwdDifferential(context)
+    tune.differential = rwdDifferential()
   }
 }
 

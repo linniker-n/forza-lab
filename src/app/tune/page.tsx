@@ -203,6 +203,14 @@ function TR({ l, v, mono = true }: { l: string; v: string; mono?: boolean }) {
 }
 
 /* ── Tune result ── */
+function GuideNote({ children }: { children: string }) {
+  return (
+    <p style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.55, marginTop: 10 }}>
+      {children}
+    </p>
+  )
+}
+
 function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset(): void; onBack(): void }) {
   const url = getCarImageUrl(tune.car)
   const [err, setErr] = useState(false)
@@ -485,6 +493,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.tires}</p>
           <TR l={t.tune.frontPressure} v={formatPressure(tune.tuning.tires.front, pUnit)} />
           <TR l={t.tune.rearPressure}  v={formatPressure(tune.tuning.tires.rear,  pUnit)} />
+          <GuideNote>{t.tune.guideNotes.tires}</GuideNote>
         </div>
         <div className="r-card p-5">
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 12 }}>{t.tune.gearbox}</p>
@@ -503,6 +512,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
               </div>
             ))}
           </div>
+          <GuideNote>{t.tune.guideNotes.gearbox}</GuideNote>
         </div>
       </div>
 
@@ -515,11 +525,13 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
           <TR l={t.tune.toeFront}    v={`${tune.tuning.alignment.toe_front}°`} />
           <TR l={t.tune.toeRear}     v={`${tune.tuning.alignment.toe_rear}°`} />
           <TR l={t.tune.caster}      v={`${tune.tuning.alignment.caster}°`} />
+          <GuideNote>{t.tune.guideNotes.alignment}</GuideNote>
         </div>
         <div className="r-card p-5">
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.antirollBars}</p>
           <TR l={t.tune.front} v={String(tune.tuning.antiroll_bars.front)} />
           <TR l={t.tune.rear}  v={String(tune.tuning.antiroll_bars.rear)} />
+          <GuideNote>{t.tune.guideNotes.antirollBars}</GuideNote>
         </div>
       </div>
 
@@ -531,6 +543,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
           <TR l={t.tune.stiffRear}   v={formatSpring(tune.tuning.springs.rear,  spUnit)} />
           <TR l={t.tune.heightFront} v={rideHeight(tune.tuning.springs.ride_height_front)} mono={false} />
           <TR l={t.tune.heightRear}  v={rideHeight(tune.tuning.springs.ride_height_rear)} mono={false} />
+          <GuideNote>{t.tune.guideNotes.springs}</GuideNote>
         </div>
         <div className="r-card p-5">
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.dampers}</p>
@@ -538,6 +551,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
           <TR l={t.tune.reboundRear}  v={String(tune.tuning.damping.rebound_rear)} />
           <TR l={t.tune.bumpFront}    v={String(tune.tuning.damping.bump_front)} />
           <TR l={t.tune.bumpRear}     v={String(tune.tuning.damping.bump_rear)} />
+          <GuideNote>{t.tune.guideNotes.dampers}</GuideNote>
         </div>
       </div>
 
@@ -547,11 +561,13 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.aero}</p>
           <TR l={t.tune.downforceFront} v={aeroLvl(tune.tuning.aero.front)} mono={false} />
           <TR l={t.tune.downforceRear}  v={aeroLvl(tune.tuning.aero.rear)} mono={false} />
+          <GuideNote>{t.tune.guideNotes.aero}</GuideNote>
         </div>
         <div className="r-card p-5">
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{t.tune.brakes}</p>
           <TR l={t.tune.brakeBalance}  v={`${tune.tuning.brakes.balance}%`} />
           <TR l={t.tune.brakePressure} v={`${tune.tuning.brakes.pressure}%`} />
+          <GuideNote>{t.tune.guideNotes.brakes}</GuideNote>
         </div>
       </div>
 
@@ -563,6 +579,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
         <TR l={t.tune.diffRearAccel} v={`${tune.tuning.differential.rear_accel}%`} />
         <TR l={t.tune.diffRearDecel} v={`${tune.tuning.differential.rear_decel}%`} />
         {tune.tuning.differential.center_balance !== undefined && <TR l={t.tune.diffCenter} v={`${tune.tuning.differential.center_balance}%`} />}
+        <GuideNote>{t.tune.guideNotes.differential}</GuideNote>
       </div>
 
       {/* Strengths / Weaknesses */}

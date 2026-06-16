@@ -17,10 +17,6 @@ import { selectPartsPlan, type PartsSelectionPlan } from "./parts"
 import { applyPrecisionModel } from "./precision-model"
 import { buildTune } from "./presets"
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max)
-}
-
 function canUseDrivetrain(car: Car, drivetrain: Drivetrain): boolean {
   return drivetrain === car.drivetrain || car.available_conversions.includes(drivetrain)
 }
