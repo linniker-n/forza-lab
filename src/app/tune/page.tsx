@@ -17,12 +17,22 @@ import { translateParts } from "@/lib/settings/translations"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
 import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
 import { generateTune } from "@/lib/tune-engine/generator"
-import type { Car, CarClass, ControlType, DrivingStyle, GeneratedTune, TuneIntent, TuneRequest, TuneType } from "@/types"
+import type { Car, CarClass, ControlType, Drivetrain, DrivingStyle, GeneratedTune, Parts, TuneIntent, TuneRequest, TuneType, TuningSetup } from "@/types"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { useLanguage } from "@/lib/i18n/context"
 import { useTranslations } from "@/lib/i18n/translations"
 
 type Difficulty = "easy" | "balanced" | "aggressive"
+type CreationMode = "generated" | "player"
+type RideHeightLevel = TuningSetup["springs"]["ride_height_front"]
+type AeroLevel = TuningSetup["aero"]["front"]
+
+interface PlayerTuneDraft {
+  parts: Record<keyof Parts, string>
+  tuning: TuningSetup
+  piEstimate: number
+  notes: string
+}
 
 const TUNE_TYPE_VALUES: { v: TuneType; cls: string }[] = [
   { v: "street",        cls: "tag-street" },
@@ -39,12 +49,138 @@ const DIFFICULTY_VALUES: Difficulty[] = ["easy", "balanced", "aggressive"]
 const STYLE_VALUES: DrivingStyle[] = ["casual", "competitive", "meta"]
 const CONTROL_VALUES: ControlType[] = ["controller", "keyboard", "wheel"]
 const DRIVETRAIN_VALUES: TuneRequest["preferred_drivetrain"][] = ["original", "AWD", "RWD", "FWD"]
+const PART_KEYS: (keyof Parts)[] = ["engine", "platform", "drivetrain", "tires", "aero"]
+const RIDE_OPTS: RideHeightLevel[] = ["low", "medium-low", "medium", "medium-high", "high", "max"]
+const AERO_OPTS: AeroLevel[] = ["min", "low", "medium", "medium-high", "high", "max"]
+const GEAR_KEYS = ["gear_1", "gear_2", "gear_3", "gear_4", "gear_5", "gear_6", "gear_7", "gear_8", "gear_9", "gear_10"] as const
 
 /* ── Score color ── */
 function scoreColor(s: number) {
   if (s >= 8) return "#34d399"
   if (s >= 6) return "#fbbf24"
   return "#64748b"
+}
+
+function selectedDrivetrain(car: Car, preferred: TuneRequest["preferred_drivetrain"]): Drivetrain {
+  return preferred === "original" ? car.drivetrain : preferred
+}
+
+function defaultDifferential(drivetrain: Drivetrain): TuningSetup["differential"] {
+  if (drivetrain === "AWD") {
+    return {
+      front_accel: 100,
+      front_decel: 0,
+      rear_accel: 100,
+      rear_decel: 0,
+      center_balance: 70,
+    }
+  }
+  if (drivetrain === "FWD") {
+    return {
+      front_accel: 100,
+      front_decel: 0,
+      rear_accel: 100,
+      rear_decel: 0,
+    }
+  }
+  return {
+    rear_accel: 100,
+    rear_decel: 0,
+  }
+}
+
+function cloneTuning(tuning: TuningSetup): TuningSetup {
+  return {
+    tires: { ...tuning.tires },
+    gearing: { ...tuning.gearing },
+    alignment: { ...tuning.alignment },
+    antiroll_bars: { ...tuning.antiroll_bars },
+    springs: { ...tuning.springs },
+    damping: { ...tuning.damping },
+    aero: { ...tuning.aero },
+    brakes: { ...tuning.brakes },
+    differential: { ...tuning.differential },
+  }
+}
+
+function partsText(parts: Parts, key: keyof Parts): string {
+  return parts[key].join("\n")
+}
+
+function parsePartsText(value: string): string[] {
+  return value
+    .split(/\r?\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function createPlayerTuneDraft(car: Car, request: TuneRequest): PlayerTuneDraft {
+  const base = generateTune(request, car)
+  const drivetrain = selectedDrivetrain(car, request.preferred_drivetrain)
+  return {
+    parts: {
+      engine: partsText(base.parts, "engine"),
+      platform: partsText(base.parts, "platform"),
+      drivetrain: partsText(base.parts, "drivetrain"),
+      tires: partsText(base.parts, "tires"),
+      aero: partsText(base.parts, "aero"),
+    },
+    tuning: {
+      ...cloneTuning(base.tuning),
+      differential: defaultDifferential(drivetrain),
+    },
+    piEstimate: base.pi_estimate,
+    notes: "",
+  }
+}
+
+function cleanGearing(gearing: TuningSetup["gearing"]): TuningSetup["gearing"] {
+  const clean: TuningSetup["gearing"] = {
+    final_drive: gearing.final_drive,
+    gear_1: gearing.gear_1,
+    gear_2: gearing.gear_2,
+    gear_3: gearing.gear_3,
+    gear_4: gearing.gear_4,
+    gear_5: gearing.gear_5,
+    gear_6: gearing.gear_6,
+  }
+  for (const key of GEAR_KEYS.slice(6)) {
+    const value = gearing[key]
+    if (value !== undefined && Number.isFinite(value)) clean[key] = value
+  }
+  return clean
+}
+
+function cleanDifferential(differential: TuningSetup["differential"], drivetrain: Drivetrain): TuningSetup["differential"] {
+  if (drivetrain === "AWD") {
+    return {
+      front_accel: differential.front_accel ?? 100,
+      front_decel: differential.front_decel ?? 0,
+      rear_accel: differential.rear_accel,
+      rear_decel: differential.rear_decel,
+      center_balance: differential.center_balance ?? 70,
+    }
+  }
+  if (drivetrain === "FWD") {
+    return {
+      front_accel: differential.front_accel ?? 100,
+      front_decel: differential.front_decel ?? 0,
+      rear_accel: differential.rear_accel,
+      rear_decel: differential.rear_decel,
+    }
+  }
+  return {
+    rear_accel: differential.rear_accel,
+    rear_decel: differential.rear_decel,
+  }
+}
+
+function cleanTuning(tuning: TuningSetup, drivetrain: Drivetrain): TuningSetup {
+  return {
+    ...cloneTuning(tuning),
+    gearing: cleanGearing(tuning.gearing),
+    differential: cleanDifferential(tuning.differential, drivetrain),
+  }
 }
 
 /* ── Small car thumbnail in picker ── */
@@ -107,6 +243,91 @@ function TR({ l, v, mono = true }: { l: string; v: string; mono?: boolean }) {
 }
 
 /* ── Tune result ── */
+function ManualSectionTitle({ children }: { children: string }) {
+  return (
+    <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--fh6-teal)", marginTop: 12, marginBottom: 8 }}>
+      {children}
+    </p>
+  )
+}
+
+function ManualNumberField({ label, value, onChange, step = 0.1, min, max }: {
+  label: string
+  value: number
+  onChange(v: number): void
+  step?: number
+  min?: number
+  max?: number
+}) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>{label}</span>
+      <input
+        type="number"
+        className="r-input"
+        style={{ padding: "6px 9px", fontSize: 12, height: 34 }}
+        value={value}
+        step={step}
+        min={min}
+        max={max}
+        onChange={(event) => onChange(Number(event.target.value))}
+      />
+    </label>
+  )
+}
+
+function ManualOptionalNumberField({ label, value, onChange, step = 0.01, min, max }: {
+  label: string
+  value?: number
+  onChange(v: number | undefined): void
+  step?: number
+  min?: number
+  max?: number
+}) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>{label}</span>
+      <input
+        type="number"
+        className="r-input"
+        style={{ padding: "6px 9px", fontSize: 12, height: 34 }}
+        value={value ?? ""}
+        step={step}
+        min={min}
+        max={max}
+        onChange={(event) => {
+          const raw = event.target.value
+          onChange(raw === "" ? undefined : Number(raw))
+        }}
+      />
+    </label>
+  )
+}
+
+function ManualSelectField({ label, value, options, onChange, labels }: {
+  label: string
+  value: string
+  options: readonly string[]
+  onChange(v: string): void
+  labels?: Partial<Record<string, string>>
+}) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>{label}</span>
+      <select
+        className="r-input"
+        style={{ padding: "6px 9px", fontSize: 12, height: 34 }}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>{labels?.[option] ?? option}</option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
 function GuideNote({ children }: { children: string }) {
   return (
     <p style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.55, marginTop: 10 }}>
@@ -575,6 +796,8 @@ function WizardInner() {
   const [ctrl, setCtrl]       = useState<ControlType>("controller")
   const [dt, setDt]           = useState<TuneRequest["preferred_drivetrain"]>("original")
   const [intent, setIntent]   = useState<TuneIntent>("balanced")
+  const [creationMode, setCreationMode] = useState<CreationMode>("generated")
+  const [playerDraft, setPlayerDraft] = useState<PlayerTuneDraft | null>(null)
   const [engineSwap, setEngineSwap] = useState(false)
   const [loading, setLoading] = useState(false)
   const [result, setResult]   = useState<GeneratedTune | null>(null)
@@ -597,10 +820,89 @@ function WizardInner() {
 
   const effectiveBaseClass: CarClass = car?.base_class ?? "D"
   const availableClasses = CLASSES.filter((_, i) => i >= CLASSES.indexOf(effectiveBaseClass))
+  const playerDrivetrain = car ? selectedDrivetrain(car, dt) : "RWD"
 
   function goToTuneType() {
     if (!car) return
     setStep(2)
+  }
+
+  function currentRequest(): TuneRequest | null {
+    if (!car || !tuneType) return null
+    return {
+      car_id: car.id,
+      target_class: cls,
+      tune_type: tuneType,
+      style,
+      control: ctrl,
+      preferred_drivetrain: dt,
+      difficulty: diff,
+      engine_swap: engineSwap,
+      fh6_intent: intent,
+    }
+  }
+
+  function startPlayerTune() {
+    if (!car) return
+    const request = currentRequest()
+    if (!request) return
+    setPlayerDraft(createPlayerTuneDraft(car, request))
+    setStep(4)
+  }
+
+  function updatePlayerPart(key: keyof Parts, value: string) {
+    setPlayerDraft((current) => current ? {
+      ...current,
+      parts: { ...current.parts, [key]: value },
+    } : current)
+  }
+
+  function updatePlayerTuning<K extends keyof TuningSetup>(section: K, patch: Partial<TuningSetup[K]>) {
+    setPlayerDraft((current) => current ? {
+      ...current,
+      tuning: {
+        ...current.tuning,
+        [section]: { ...(current.tuning[section] as object), ...patch } as TuningSetup[K],
+      },
+    } : current)
+  }
+
+  function updatePlayerNotes(notes: string) {
+    setPlayerDraft((current) => current ? { ...current, notes } : current)
+  }
+
+  function updatePlayerPi(piEstimate: number) {
+    setPlayerDraft((current) => current ? { ...current, piEstimate } : current)
+  }
+
+  function createPlayerTune() {
+    if (!car || !tuneType || !playerDraft) return
+    const drivetrain = selectedDrivetrain(car, dt)
+    const carName = `${car.brand} ${car.model}`
+    const typeLabel = t.tune.tuneTypes[tuneType].l
+    const notes = playerDraft.notes.trim()
+    const parts = PART_KEYS.reduce((acc, key) => {
+      acc[key] = parsePartsText(playerDraft.parts[key])
+      return acc
+    }, {} as Parts)
+
+    const tune: GeneratedTune = {
+      car,
+      target_class: cls,
+      tune_type: tuneType,
+      fh6_intent: intent,
+      drivetrain,
+      parts,
+      tuning: cleanTuning(playerDraft.tuning, drivetrain),
+      summary: notes || t.tune.playerTuneSummary(carName, typeLabel),
+      how_to_drive: t.tune.playerTuneHowToDrive,
+      strengths: [t.tune.playerTuneStrength],
+      weaknesses: [t.tune.playerTuneWeakness],
+      warnings: [{ type: "info", message: t.tune.playerTuneWarning }],
+      pi_estimate: Math.round(playerDraft.piEstimate),
+    }
+    setResult(tune)
+    setStep(5)
   }
 
   async function generate() {
@@ -619,24 +921,26 @@ function WizardInner() {
         engine_swap: engineSwap,
         fh6_intent: intent,
       }
+      setPlayerDraft(null)
       setResult(generateTune(request, car))
-      setStep(4)
+      setStep(5)
       void incrementTuneUsage()
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : t.tune.generating)
     } finally { setLoading(false) }
   }
 
-  if (step === 4 && result) return <TuneResult
+  if (step === 5 && result) return <TuneResult
     tune={result}
-    onBack={() => { setStep(3); setResult(null) }}
-    onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false); setIntent("balanced"); setCls("A") }}
+    onBack={() => { setStep(playerDraft ? 4 : 3); setResult(null) }}
+    onReset={() => { setStep(1); setCar(null); setTT(null); setResult(null); setSearch(""); setEngineSwap(false); setIntent("balanced"); setCreationMode("generated"); setPlayerDraft(null); setCls("A") }}
   />
 
   const steps = [
     { n: 1, l: t.tune.step1 },
     { n: 2, l: t.tune.step2 },
     { n: 3, l: t.tune.step3 },
+    ...(creationMode === "player" || step === 4 ? [{ n: 4, l: t.tune.step4 }] : []),
   ]
 
   return (
@@ -769,6 +1073,35 @@ function WizardInner() {
         {/* ── STEP 3 ── */}
         {step === 3 && (
           <div className="space-y-6 anim-up" style={{ animationDelay: "100ms" }}>
+
+            {/* Creation mode */}
+            <div className="space-y-2">
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.creationMode}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {([
+                  { v: "generated" as CreationMode, l: t.tune.modeGenerated, d: t.tune.modeGeneratedDesc },
+                  { v: "player" as CreationMode, l: t.tune.modePlayer, d: t.tune.modePlayerDesc },
+                ]).map((mode) => (
+                  <button
+                    key={mode.v}
+                    type="button"
+                    onClick={() => {
+                      setCreationMode(mode.v)
+                      if (mode.v === "generated") setPlayerDraft(null)
+                    }}
+                    className="r-card text-left p-4 transition-all"
+                    style={{
+                      border: creationMode === mode.v ? "1px solid var(--border-blue)" : undefined,
+                      background: creationMode === mode.v ? "var(--blue-dim)" : undefined,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <p style={{ fontSize: 13, fontWeight: 800, color: "var(--text)" }}>{mode.l}</p>
+                    <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>{mode.d}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* FH6 intent */}
             <div className="space-y-2">
@@ -907,7 +1240,7 @@ function WizardInner() {
 
             <div className="flex justify-between pt-2">
               <button type="button" onClick={() => setStep(2)} className="r-btn r-btn-ghost">{t.tune.back}</button>
-              <button type="button" onClick={generate} disabled={loading} className="r-btn r-btn-primary"
+              <button type="button" onClick={creationMode === "player" ? startPlayerTune : generate} disabled={loading} className="r-btn r-btn-primary"
                 style={{ paddingLeft: 32, paddingRight: 32, paddingTop: 10, paddingBottom: 10, opacity: loading ? 0.7 : 1 }}>
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -915,7 +1248,171 @@ function WizardInner() {
                       style={{ borderColor: "rgba(255,255,255,0.3)", borderTopColor: "#fff" }} />
                     {t.tune.generating}
                   </span>
-                ) : t.tune.generate}
+                ) : creationMode === "player" ? t.tune.nextManualTune : t.tune.generate}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* â”€â”€ STEP 4 â”€â”€ */}
+        {step === 4 && playerDraft && (
+          <div className="space-y-5 anim-up" style={{ animationDelay: "100ms" }}>
+            {car && (
+              <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)" }}>
+                <div className="relative w-20 h-12 rounded overflow-hidden shrink-0" style={{ background: "var(--bg-elevated)" }}>
+                  {getCarImageUrl(car) && (
+                    <Image src={getCarImageUrl(car)} alt="" fill sizes="80px"
+                      className="car-render" style={{ objectFit: "contain" }} />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p style={{ fontSize: 11, color: "var(--text-muted)" }}>{car.brand} Â· {car.year} Â· {playerDrivetrain}</p>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{car.model}</p>
+                </div>
+                <span className={`badge-class badge-${cls}`}>{cls}</span>
+              </div>
+            )}
+
+            <div className="r-card p-4 space-y-4">
+              <ManualSectionTitle>{t.tune.manualParts}</ManualSectionTitle>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {PART_KEYS.map((key) => {
+                  const label = key === "engine" ? t.tune.partEngine : key === "platform" ? t.tune.partPlatform : key === "drivetrain" ? t.tune.partDrivetrain : key === "tires" ? t.tune.partTires : t.tune.partAero
+                  return (
+                    <label key={key} className="flex flex-col gap-1">
+                      <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>{label}</span>
+                      <textarea
+                        className="r-input"
+                        value={playerDraft.parts[key]}
+                        onChange={(event) => updatePlayerPart(key, event.target.value)}
+                        placeholder={t.tune.manualPartPlaceholder}
+                        rows={4}
+                        style={{ minHeight: 92, resize: "vertical", fontSize: 12, lineHeight: 1.45 }}
+                      />
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="r-card p-4 space-y-1">
+              <ManualSectionTitle>{t.tune.manualTuning}</ManualSectionTitle>
+
+              <ManualSectionTitle>{t.tune.tires}</ManualSectionTitle>
+              <div className="grid grid-cols-2 gap-2">
+                <ManualNumberField label={t.tune.frontPressure} value={playerDraft.tuning.tires.front} onChange={(v) => updatePlayerTuning("tires", { front: v })} min={10} max={60} step={0.1} />
+                <ManualNumberField label={t.tune.rearPressure} value={playerDraft.tuning.tires.rear} onChange={(v) => updatePlayerTuning("tires", { rear: v })} min={10} max={60} step={0.1} />
+              </div>
+
+              <ManualSectionTitle>{t.tune.gearbox}</ManualSectionTitle>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <ManualNumberField label={t.tune.finalGear} value={playerDraft.tuning.gearing.final_drive} onChange={(v) => updatePlayerTuning("gearing", { final_drive: v })} min={1} max={7} step={0.01} />
+                {GEAR_KEYS.slice(0, 6).map((key, index) => (
+                  <ManualNumberField
+                    key={key}
+                    label={`${index + 1}Âª`}
+                    value={playerDraft.tuning.gearing[key] ?? 0}
+                    onChange={(v) => updatePlayerTuning("gearing", { [key]: v } as Partial<TuningSetup["gearing"]>)}
+                    min={0.1}
+                    max={8}
+                    step={0.01}
+                  />
+                ))}
+                {GEAR_KEYS.slice(6).map((key, index) => (
+                  <ManualOptionalNumberField
+                    key={key}
+                    label={`${index + 7}Âª`}
+                    value={playerDraft.tuning.gearing[key]}
+                    onChange={(v) => updatePlayerTuning("gearing", { [key]: v } as Partial<TuningSetup["gearing"]>)}
+                    min={0.1}
+                    max={8}
+                    step={0.01}
+                  />
+                ))}
+              </div>
+
+              <ManualSectionTitle>{t.tune.alignment}</ManualSectionTitle>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <ManualNumberField label={t.tune.camberFront} value={playerDraft.tuning.alignment.camber_front} onChange={(v) => updatePlayerTuning("alignment", { camber_front: v })} min={-5} max={5} step={0.1} />
+                <ManualNumberField label={t.tune.camberRear} value={playerDraft.tuning.alignment.camber_rear} onChange={(v) => updatePlayerTuning("alignment", { camber_rear: v })} min={-5} max={5} step={0.1} />
+                <ManualNumberField label={t.tune.toeFront} value={playerDraft.tuning.alignment.toe_front} onChange={(v) => updatePlayerTuning("alignment", { toe_front: v })} min={-5} max={5} step={0.1} />
+                <ManualNumberField label={t.tune.toeRear} value={playerDraft.tuning.alignment.toe_rear} onChange={(v) => updatePlayerTuning("alignment", { toe_rear: v })} min={-5} max={5} step={0.1} />
+                <ManualNumberField label={t.tune.caster} value={playerDraft.tuning.alignment.caster} onChange={(v) => updatePlayerTuning("alignment", { caster: v })} min={0} max={7} step={0.1} />
+              </div>
+
+              <ManualSectionTitle>{t.tune.antirollBars}</ManualSectionTitle>
+              <div className="grid grid-cols-2 gap-2">
+                <ManualNumberField label={t.tune.front} value={playerDraft.tuning.antiroll_bars.front} onChange={(v) => updatePlayerTuning("antiroll_bars", { front: v })} min={1} max={65} step={0.1} />
+                <ManualNumberField label={t.tune.rear} value={playerDraft.tuning.antiroll_bars.rear} onChange={(v) => updatePlayerTuning("antiroll_bars", { rear: v })} min={1} max={65} step={0.1} />
+              </div>
+
+              <ManualSectionTitle>{t.tune.springs}</ManualSectionTitle>
+              <div className="grid grid-cols-2 gap-2">
+                <ManualNumberField label={t.tune.stiffFront} value={playerDraft.tuning.springs.front} onChange={(v) => updatePlayerTuning("springs", { front: v })} min={80} max={1925} step={25} />
+                <ManualNumberField label={t.tune.stiffRear} value={playerDraft.tuning.springs.rear} onChange={(v) => updatePlayerTuning("springs", { rear: v })} min={80} max={1925} step={25} />
+                <ManualSelectField label={t.tune.heightFront} value={playerDraft.tuning.springs.ride_height_front} options={RIDE_OPTS} labels={t.tune.rideHeight} onChange={(v) => updatePlayerTuning("springs", { ride_height_front: v as RideHeightLevel })} />
+                <ManualSelectField label={t.tune.heightRear} value={playerDraft.tuning.springs.ride_height_rear} options={RIDE_OPTS} labels={t.tune.rideHeight} onChange={(v) => updatePlayerTuning("springs", { ride_height_rear: v as RideHeightLevel })} />
+              </div>
+
+              <ManualSectionTitle>{t.tune.dampers}</ManualSectionTitle>
+              <div className="grid grid-cols-2 gap-2">
+                <ManualNumberField label={t.tune.reboundFront} value={playerDraft.tuning.damping.rebound_front} onChange={(v) => updatePlayerTuning("damping", { rebound_front: v })} min={1} max={20} step={0.1} />
+                <ManualNumberField label={t.tune.reboundRear} value={playerDraft.tuning.damping.rebound_rear} onChange={(v) => updatePlayerTuning("damping", { rebound_rear: v })} min={1} max={20} step={0.1} />
+                <ManualNumberField label={t.tune.bumpFront} value={playerDraft.tuning.damping.bump_front} onChange={(v) => updatePlayerTuning("damping", { bump_front: v })} min={1} max={20} step={0.1} />
+                <ManualNumberField label={t.tune.bumpRear} value={playerDraft.tuning.damping.bump_rear} onChange={(v) => updatePlayerTuning("damping", { bump_rear: v })} min={1} max={20} step={0.1} />
+              </div>
+
+              <ManualSectionTitle>{t.tune.aero}</ManualSectionTitle>
+              <div className="grid grid-cols-2 gap-2">
+                <ManualSelectField label={t.tune.downforceFront} value={playerDraft.tuning.aero.front} options={AERO_OPTS} labels={t.tune.aeroLevel} onChange={(v) => updatePlayerTuning("aero", { front: v as AeroLevel })} />
+                <ManualSelectField label={t.tune.downforceRear} value={playerDraft.tuning.aero.rear} options={AERO_OPTS} labels={t.tune.aeroLevel} onChange={(v) => updatePlayerTuning("aero", { rear: v as AeroLevel })} />
+              </div>
+
+              <ManualSectionTitle>{t.tune.brakes}</ManualSectionTitle>
+              <div className="grid grid-cols-2 gap-2">
+                <ManualNumberField label={t.tune.brakeBalance} value={playerDraft.tuning.brakes.balance} onChange={(v) => updatePlayerTuning("brakes", { balance: v })} min={0} max={100} step={1} />
+                <ManualNumberField label={t.tune.brakePressure} value={playerDraft.tuning.brakes.pressure} onChange={(v) => updatePlayerTuning("brakes", { pressure: v })} min={0} max={200} step={1} />
+              </div>
+
+              <ManualSectionTitle>{t.tune.differential}</ManualSectionTitle>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {playerDrivetrain !== "RWD" && (
+                  <>
+                    <ManualNumberField label={t.tune.diffFrontAccel} value={playerDraft.tuning.differential.front_accel ?? 100} onChange={(v) => updatePlayerTuning("differential", { front_accel: v })} min={0} max={100} step={1} />
+                    <ManualNumberField label={t.tune.diffFrontDecel} value={playerDraft.tuning.differential.front_decel ?? 0} onChange={(v) => updatePlayerTuning("differential", { front_decel: v })} min={0} max={100} step={1} />
+                  </>
+                )}
+                <ManualNumberField label={t.tune.diffRearAccel} value={playerDraft.tuning.differential.rear_accel} onChange={(v) => updatePlayerTuning("differential", { rear_accel: v })} min={0} max={100} step={1} />
+                <ManualNumberField label={t.tune.diffRearDecel} value={playerDraft.tuning.differential.rear_decel} onChange={(v) => updatePlayerTuning("differential", { rear_decel: v })} min={0} max={100} step={1} />
+                {playerDrivetrain === "AWD" && (
+                  <ManualNumberField label={t.tune.diffCenter} value={playerDraft.tuning.differential.center_balance ?? 70} onChange={(v) => updatePlayerTuning("differential", { center_balance: v })} min={0} max={100} step={1} />
+                )}
+              </div>
+            </div>
+
+            <div className="r-card p-4 space-y-3">
+              <ManualSectionTitle>{t.tune.manualNotes}</ManualSectionTitle>
+              <div className="grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-3">
+                <ManualNumberField label={t.tune.manualPiEstimate} value={playerDraft.piEstimate} onChange={updatePlayerPi} min={100} max={999} step={1} />
+                <label className="flex flex-col gap-1">
+                  <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>{t.tune.manualNotes}</span>
+                  <textarea
+                    className="r-input"
+                    value={playerDraft.notes}
+                    onChange={(event) => updatePlayerNotes(event.target.value)}
+                    placeholder={t.tune.manualNotesPlaceholder}
+                    rows={3}
+                    style={{ minHeight: 82, resize: "vertical", fontSize: 12, lineHeight: 1.45 }}
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-2">
+              <button type="button" onClick={() => setStep(3)} className="r-btn r-btn-ghost">{t.tune.back}</button>
+              <button type="button" onClick={createPlayerTune} className="r-btn r-btn-primary"
+                style={{ paddingLeft: 32, paddingRight: 32, paddingTop: 10, paddingBottom: 10 }}>
+                {t.tune.createManualTune}
               </button>
             </div>
           </div>
