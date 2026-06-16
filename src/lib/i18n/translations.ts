@@ -81,8 +81,8 @@ const pt = {
     creationMode: "Origem da tune",
     modeGenerated: "Gerar pelo Forza Lab",
     modeGeneratedDesc: "Pecas e ajustes calculados pelo app",
-    modePlayer: "Tune propria",
-    modePlayerDesc: "Pecas e ajustes preenchidos pelo jogador",
+    modePlayer: "Trazer sua tune para compartilhar",
+    modePlayerDesc: "Pecas e ajustes preenchidos por voce",
     nextTuneType: "Próximo — Tipo de Tune",
     swap: "Trocar",
     tuneObjective: "Objetivo FH6",
@@ -272,11 +272,11 @@ const pt = {
     faq: [
       { q: "Posso cancelar quando quiser?",                        a: "Sim. Cancele pelo portal Stripe a qualquer momento. Você mantém o Pro até o fim do período pago." },
       { q: "O que acontece com minhas tunes se eu cancelar?",      a: "Suas tunes salvas ficam na garagem. Só novos saves ficam limitados ao plano Free (5 slots)." },
-      { q: "Como funciona o limite de 3 tunes/dia?",               a: "Cada geração de tune ou diagnóstico conta. O contador reseta à meia-noite." },
+      { q: "Como funciona o limite de 10 tunes/dia?",              a: "Cada geração de tune ou diagnóstico conta. O contador reseta à meia-noite." },
       { q: "Pagamento seguro?",                                    a: "Pagamentos processados pelo Stripe — padrão PCI DSS. Não armazenamos dados de cartão." },
     ],
     freeFeatures: [
-      { label: "3 tunes geradas por dia",           included: true },
+      { label: "10 tunes geradas por dia",          included: true },
       { label: "Garagem com 5 slots",               included: true },
       { label: "Diagnóstico básico",                included: true },
       { label: "Ver comunidade",                    included: true },
@@ -405,7 +405,7 @@ const pt = {
     tune_limit: {
       icon: "⚡",
       title: "Limite diário atingido",
-      body: "Você usou suas 3 tunes gratuitas de hoje. Faça upgrade para Pro e gere tunes ilimitadas todos os dias.",
+      body: "Você usou suas 10 tunes gratuitas de hoje. Faça upgrade para Pro e gere tunes ilimitadas todos os dias.",
       cta: "Desbloquear Pro",
     },
     garage_limit: {
@@ -541,8 +541,8 @@ const en: typeof pt = {
     creationMode: "Tune source",
     modeGenerated: "Generate with Forza Lab",
     modeGeneratedDesc: "Parts and settings calculated by the app",
-    modePlayer: "Player tune",
-    modePlayerDesc: "Parts and settings filled by the player",
+    modePlayer: "Bring your tune to share",
+    modePlayerDesc: "Parts and settings filled by you",
     nextTuneType: "Next — Tune Type",
     swap: "Change",
     tuneObjective: "FH6 Goal",
@@ -732,11 +732,11 @@ const en: typeof pt = {
     faq: [
       { q: "Can I cancel anytime?",                          a: "Yes. Cancel through the Stripe portal at any time. You keep Pro until the end of the paid period." },
       { q: "What happens to my tunes if I cancel?",         a: "Your saved tunes stay in the garage. Only new saves are limited to the Free plan (5 slots)." },
-      { q: "How does the 3 tunes/day limit work?",          a: "Each tune generation or diagnostic counts. The counter resets at midnight." },
+      { q: "How does the 10 tunes/day limit work?",         a: "Each tune generation or diagnostic counts. The counter resets at midnight." },
       { q: "Is payment secure?",                            a: "Payments are processed by Stripe — PCI DSS standard. We do not store card data." },
     ],
     freeFeatures: [
-      { label: "3 tunes generated per day",         included: true },
+      { label: "10 tunes generated per day",        included: true },
       { label: "Garage with 5 slots",               included: true },
       { label: "Basic diagnostics",                 included: true },
       { label: "View community",                    included: true },
@@ -865,7 +865,7 @@ const en: typeof pt = {
     tune_limit: {
       icon: "⚡",
       title: "Daily limit reached",
-      body: "You've used your 3 free tunes for today. Upgrade to Pro and generate unlimited tunes every day.",
+      body: "You've used your 10 free tunes for today. Upgrade to Pro and generate unlimited tunes every day.",
       cta: "Unlock Pro",
     },
     garage_limit: {

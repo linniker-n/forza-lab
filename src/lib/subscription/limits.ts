@@ -1,5 +1,5 @@
 export const FREE_LIMITS = {
-  tunesPerDay:    3,
+  tunesPerDay:    10,
   garageSlots:    5,
   rankingVisible: 3,   // top N visíveis no meta/ranking
 } as const

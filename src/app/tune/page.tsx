@@ -11,6 +11,7 @@ import { getFirebaseDb } from "@/lib/firebase/client"
 import { shareTune } from "@/lib/firebase/community"
 import { loadUserProfile } from "@/lib/firebase/profile"
 import { useSubscription } from "@/lib/subscription/context"
+import { FREE_LIMITS } from "@/lib/subscription/limits"
 import { UpgradeModal } from "@/components/paywall/UpgradeModal"
 import { useSettings } from "@/lib/settings/context"
 import { translateParts } from "@/lib/settings/translations"
@@ -965,7 +966,7 @@ function WizardInner() {
                 : t.tune.remaining}
               {remainingTunes > 0 && (
                 <span style={{ color: remainingTunes <= 1 ? "#fbbf24" : "var(--text)", fontWeight: 700 }}>
-                  {" "}{remainingTunes}/3
+                  {" "}{remainingTunes}/{FREE_LIMITS.tunesPerDay}
                 </span>
               )}
             </p>
@@ -1003,6 +1004,34 @@ function WizardInner() {
         {/* ── STEP 1 ── */}
         {step === 1 && (
           <div className="space-y-4 anim-up" style={{ animationDelay: "100ms" }}>
+            <div className="space-y-2">
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.creationMode}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {([
+                  { v: "generated" as CreationMode, l: t.tune.modeGenerated, d: t.tune.modeGeneratedDesc },
+                  { v: "player" as CreationMode, l: t.tune.modePlayer, d: t.tune.modePlayerDesc },
+                ]).map((mode) => (
+                  <button
+                    key={mode.v}
+                    type="button"
+                    onClick={() => {
+                      setCreationMode(mode.v)
+                      if (mode.v === "generated") setPlayerDraft(null)
+                    }}
+                    className="r-card text-left p-4 transition-all"
+                    style={{
+                      border: creationMode === mode.v ? "1px solid var(--border-blue)" : undefined,
+                      background: creationMode === mode.v ? "var(--blue-dim)" : undefined,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <p style={{ fontSize: 13, fontWeight: 800, color: "var(--text)" }}>{mode.l}</p>
+                    <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>{mode.d}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <input type="text" className="r-input" placeholder={t.tune.searchPlaceholder}
               value={search} onChange={(e) => setSearch(e.target.value)} />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto" style={{ maxHeight: 460 }}>
@@ -1073,36 +1102,6 @@ function WizardInner() {
         {/* ── STEP 3 ── */}
         {step === 3 && (
           <div className="space-y-6 anim-up" style={{ animationDelay: "100ms" }}>
-
-            {/* Creation mode */}
-            <div className="space-y-2">
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.creationMode}</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {([
-                  { v: "generated" as CreationMode, l: t.tune.modeGenerated, d: t.tune.modeGeneratedDesc },
-                  { v: "player" as CreationMode, l: t.tune.modePlayer, d: t.tune.modePlayerDesc },
-                ]).map((mode) => (
-                  <button
-                    key={mode.v}
-                    type="button"
-                    onClick={() => {
-                      setCreationMode(mode.v)
-                      if (mode.v === "generated") setPlayerDraft(null)
-                    }}
-                    className="r-card text-left p-4 transition-all"
-                    style={{
-                      border: creationMode === mode.v ? "1px solid var(--border-blue)" : undefined,
-                      background: creationMode === mode.v ? "var(--blue-dim)" : undefined,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <p style={{ fontSize: 13, fontWeight: 800, color: "var(--text)" }}>{mode.l}</p>
-                    <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 3 }}>{mode.d}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* FH6 intent */}
             <div className="space-y-2">
               <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.tuneObjective}</p>
