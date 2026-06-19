@@ -180,6 +180,19 @@ export interface Parts {
   aero: string[]
 }
 
+export interface PartInsight {
+  name: string
+  category: keyof Parts
+  englishName: string
+  portugueseName: string
+  piImpact: string
+  observation: string
+  piDelta: number
+  tier?: "essential" | "high" | "medium" | "low" | "ballast"
+}
+
+export type PartsDetails = Record<keyof Parts, PartInsight[]>
+
 export interface TuneWarning {
   type: "info" | "warning" | "tip"
   message: string
@@ -192,6 +205,7 @@ export interface GeneratedTune {
   fh6_intent: TuneIntent
   drivetrain: Drivetrain
   parts: Parts
+  part_details?: PartsDetails
   tuning: TuningSetup
   summary: string
   how_to_drive: string

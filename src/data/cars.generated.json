@@ -1,6 +1,6 @@
 {
   "source_url": "https://forza.fandom.com/wiki/Forza_Horizon_6/Cars",
-  "synced_at": "2026-05-18T18:12:43.999Z",
+  "synced_at": "2026-06-19T14:37:19.744Z",
   "count": 618,
   "cars": [
     {
@@ -1740,12 +1740,12 @@
       "base_class": "S1",
       "base_pi": 769,
       "drivetrain": "RWD",
-      "weight_kg": 1241,
-      "power_hp": 671,
-      "torque_nm": 886,
+      "weight_kg": 1595,
+      "power_hp": 611,
+      "torque_nm": 564,
       "aspiration": "NA",
       "car_type": [
-        "sport"
+        "supercar"
       ],
       "recommended_use": [
         "top_speed",
@@ -1754,8 +1754,7 @@
         "rally"
       ],
       "available_conversions": [
-        "AWD",
-        "FWD"
+        "AWD"
       ],
       "meta_score": {
         "street": 7.4,
@@ -1765,11 +1764,12 @@
         "cross_country": 6.2,
         "top_speed": 7.6
       },
-      "notes": "FH6 car oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass ).",
-      "source_url": "https://forza.fandom.com/wiki/Audi_R8_Coupé_V10_GT_RWD",
+      "notes": "Modern Super Cars oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass).",
+      "source_url": "https://forza.fandom.com/wiki/Audi_R8_Coup%C3%A9_V10_GT_RWD",
       "image_url": "https://static.wikia.nocookie.net/forzamotorsport/images/9/96/FH6_Audi_R8_Coupe_V10_GT_RWD.png/revision/latest?cb=20260516171754",
-      "fandom_car_type": "",
-      "unlock": "Autoshow (DLC: Car Pass )",
+      "fandom_car_type": "Modern Super Cars",
+      "country": "Germany",
+      "unlock": "Autoshow (DLC: Car Pass)",
       "rarity": "EPIC",
       "performance": {
         "speed": 7.6,
@@ -6421,19 +6421,21 @@
       }
     },
     {
-      "id": "datsun_269_attacking_the_clock_racing_240z_time_attack_1972",
+      "id": "datsun_269_attacking_the_clock_racing_240z_all_carbon_hill_climb_beast_1972",
       "game": "FH6",
       "brand": "Datsun",
-      "model": "#269 Attacking The Clock Racing 240Z Time Attack",
+      "model": "#269 Attacking the Clock Racing 240Z 'All Carbon Hill Climb Beast'",
       "year": 1972,
       "base_class": "R",
       "base_pi": 951,
       "drivetrain": "RWD",
-      "weight_kg": 999,
-      "power_hp": 600,
-      "torque_nm": 792,
-      "aspiration": "NA",
+      "weight_kg": 1179,
+      "power_hp": 850,
+      "torque_nm": 1100,
+      "aspiration": "Turbo",
       "car_type": [
+        "jdm",
+        "supercar",
         "sport"
       ],
       "recommended_use": [
@@ -6454,12 +6456,14 @@
         "cross_country": 5.4,
         "top_speed": 6.4
       },
-      "notes": "FH6 car oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass ).",
-      "source_url": "https://forza.fandom.com/wiki/Datsun_269_Attacking_The_Clock_Racing_240Z_Time_Attack",
+      "notes": "Extreme Track Toys oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass).",
+      "source_url": "https://forza.fandom.com/wiki/Datsun_269_Attacking_the_Clock_Racing_240Z_%27All_Carbon_Hill_Climb_Beast%27",
       "image_url": "https://static.wikia.nocookie.net/forzamotorsport/images/e/e3/FH6_Datsun_269_Attacking_The_Clock_Racing_240Z_Time_Attack.png/revision/latest?cb=20260516173039",
-      "fandom_car_type": "",
-      "unlock": "Autoshow (DLC: Car Pass )",
+      "fandom_car_type": "Extreme Track Toys",
+      "country": "Japan",
+      "unlock": "Autoshow (DLC: Car Pass)",
       "rarity": "EPIC",
+      "value_cr": 185000,
       "performance": {
         "speed": 6.4,
         "handling": 9.1,
@@ -6726,15 +6730,15 @@
       }
     },
     {
-      "id": "deberti_wrangler_unlimited_2013",
+      "id": "deberti_jeep_wrangler_unlimited_2018",
       "game": "FH6",
       "brand": "DeBerti",
-      "model": "Wrangler Unlimited",
-      "year": 2013,
+      "model": "Jeep Wrangler Unlimited",
+      "year": 2018,
       "base_class": "A",
       "base_pi": 645,
       "drivetrain": "AWD",
-      "weight_kg": 21069,
+      "weight_kg": 2109,
       "power_hp": 707,
       "torque_nm": 881,
       "aspiration": "Supercharged",
@@ -6756,10 +6760,10 @@
         "cross_country": 8.5,
         "top_speed": 4.7
       },
-      "notes": "Extreme Offroad oficial do Forza Wiki. Disponibilidade: Autoshow, Wheelspin.",
-      "source_url": "https://forza.fandom.com/wiki/DeBerti_Wrangler_Unlimited",
+      "notes": "Unlimited Offroad oficial do Forza Wiki. Disponibilidade: Autoshow, Wheelspin.",
+      "source_url": "https://forza.fandom.com/wiki/DeBerti_Jeep_Wrangler_Unlimited",
       "image_url": "https://static.wikia.nocookie.net/forzamotorsport/images/9/94/FH6_DeBerti_Wrangler_Unlimited.png/revision/latest?cb=20260516173047",
-      "fandom_car_type": "Extreme Offroad",
+      "fandom_car_type": "Unlimited Offroad",
       "country": "United States of America",
       "unlock": "Autoshow, Wheelspin",
       "rarity": "EPIC",
@@ -13822,13 +13826,15 @@
       "year": 2008,
       "base_class": "B",
       "base_pi": 514,
-      "drivetrain": "AWD",
-      "weight_kg": 1494,
-      "power_hp": 509,
-      "torque_nm": 672,
+      "drivetrain": "FWD",
+      "weight_kg": 1270,
+      "power_hp": 221,
+      "torque_nm": 214,
       "aspiration": "NA",
       "car_type": [
-        "jdm"
+        "jdm",
+        "sport",
+        "classic"
       ],
       "recommended_use": [
         "top_speed",
@@ -13837,23 +13843,25 @@
         "rally"
       ],
       "available_conversions": [
-        "RWD",
-        "FWD"
+        "AWD",
+        "RWD"
       ],
       "meta_score": {
         "street": 4.6,
         "drag": 4.7,
-        "drift": 3.5,
+        "drift": 2.9,
         "rally": 4.7,
         "cross_country": 5.1,
         "top_speed": 5.7
       },
-      "notes": "FH6 car oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass ).",
+      "notes": "Retro Super Saloons oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass).",
       "source_url": "https://forza.fandom.com/wiki/Honda_Civic_Type_R_(2008)",
-      "image_url": "https://static.wikia.nocookie.net/forzamotorsport/images/9/98/FH6_Honda_Civic_Type_R_2018.png/revision/latest?cb=20260516174800",
-      "fandom_car_type": "",
-      "unlock": "Autoshow (DLC: Car Pass )",
+      "image_url": "https://static.wikia.nocookie.net/forzamotorsport/images/b/b7/FH6_Honda_Civic_Type_R_2008.png/revision/latest?cb=20260516174757",
+      "fandom_car_type": "Retro Super Saloons",
+      "country": "Japan",
+      "unlock": "Autoshow (DLC: Car Pass)",
       "rarity": "RARE",
+      "value_cr": 20000,
       "performance": {
         "speed": 5.7,
         "handling": 4.6,
@@ -15657,13 +15665,13 @@
       "year": 2024,
       "base_class": "S2",
       "base_pi": 900,
-      "drivetrain": "RWD",
-      "weight_kg": 1208,
-      "power_hp": 845,
-      "torque_nm": 1115,
-      "aspiration": "NA",
+      "drivetrain": "AWD",
+      "weight_kg": 2041,
+      "power_hp": 1451,
+      "torque_nm": 1734,
+      "aspiration": "Turbo",
       "car_type": [
-        "sport"
+        "hypercar"
       ],
       "recommended_use": [
         "top_speed",
@@ -15672,23 +15680,24 @@
         "cross_country"
       ],
       "available_conversions": [
-        "AWD",
-        "FWD"
+        "RWD"
       ],
       "meta_score": {
         "street": 8.5,
         "drag": 9.9,
-        "drift": 7,
+        "drift": 5.9,
         "rally": 6.8,
         "cross_country": 7.1,
         "top_speed": 10
       },
-      "notes": "FH6 car oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass ).",
+      "notes": "Hypercars oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass).",
       "source_url": "https://forza.fandom.com/wiki/Koenigsegg_Gemera",
       "image_url": "https://static.wikia.nocookie.net/forzamotorsport/images/4/47/FH6_Koenigsegg_Gemera.png/revision/latest?cb=20260516175053",
-      "fandom_car_type": "",
-      "unlock": "Autoshow (DLC: Car Pass )",
+      "fandom_car_type": "Hypercars",
+      "country": "Sweden",
+      "unlock": "Autoshow (DLC: Car Pass)",
       "rarity": "EPIC",
+      "value_cr": 2000000,
       "performance": {
         "speed": 10,
         "handling": 7.2,
@@ -18140,37 +18149,38 @@
       "year": 1974,
       "base_class": "S1",
       "base_pi": 702,
-      "drivetrain": "AWD",
-      "weight_kg": 1450,
-      "power_hp": 601,
-      "torque_nm": 793,
-      "aspiration": "NA",
+      "drivetrain": "RWD",
+      "weight_kg": 1111,
+      "power_hp": 706,
+      "torque_nm": 607,
+      "aspiration": "Turbo",
       "car_type": [
         "jdm"
       ],
       "recommended_use": [
         "top_speed",
+        "drift",
         "street",
-        "drag",
-        "cross_country"
+        "drag"
       ],
       "available_conversions": [
-        "RWD",
+        "AWD",
         "FWD"
       ],
       "meta_score": {
         "street": 5.5,
         "drag": 5.5,
-        "drift": 4,
+        "drift": 5.8,
         "rally": 4.7,
         "cross_country": 5,
         "top_speed": 7.2
       },
-      "notes": "FH6 car oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass ).",
-      "source_url": "https://forza.fandom.com/wiki/Mazda_123_Mad_Mike_808_Wagon_&#39;FURSTY&#39;",
+      "notes": "Drift Cars oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass).",
+      "source_url": "https://forza.fandom.com/wiki/Mazda_123_Mad_Mike_808_Wagon_%27FURSTY%27",
       "image_url": "https://static.wikia.nocookie.net/forzamotorsport/images/8/8a/FH6_Mazda_123_Mad_Mike_808_Wagon_FURSTY.png/revision/latest?cb=20260516175352",
-      "fandom_car_type": "",
-      "unlock": "Autoshow (DLC: Car Pass )",
+      "fandom_car_type": "Drift Cars",
+      "country": "Japan",
+      "unlock": "Autoshow (DLC: Car Pass)",
       "rarity": "LEGENDARY",
       "performance": {
         "speed": 7.2,
@@ -21956,17 +21966,19 @@
       "id": "nissan_12_skyline_gt_r_bnr32_gr_a_jtc_1990",
       "game": "FH6",
       "brand": "Nissan",
-      "model": "#12 Skyline GT-R (BNR32 Gr. A) JTC",
+      "model": "#12 Skyline GT-R (BNR32 Gr.A) JTC",
       "year": 1990,
       "base_class": "S2",
       "base_pi": 858,
       "drivetrain": "AWD",
-      "weight_kg": 1142,
-      "power_hp": 685,
-      "torque_nm": 904,
-      "aspiration": "NA",
+      "weight_kg": 1261,
+      "power_hp": 641,
+      "torque_nm": 667,
+      "aspiration": "Turbo",
       "car_type": [
-        "jdm"
+        "jdm",
+        "sport",
+        "classic"
       ],
       "recommended_use": [
         "street",
@@ -21986,12 +21998,14 @@
         "cross_country": 5.7,
         "top_speed": 7.3
       },
-      "notes": "FH6 car oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass ).",
-      "source_url": "https://forza.fandom.com/wiki/Nissan_12_Skyline_GT-R_(BNR32_Gr._A)_JTC",
+      "notes": "Retro Racers oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass).",
+      "source_url": "https://forza.fandom.com/wiki/Nissan_12_Skyline_GT-R_(BNR32_Gr.A)_JTC",
       "image_url": "https://static.wikia.nocookie.net/forzamotorsport/images/d/d7/FH6_Nissan_12_Skyline_GT-R_BNR32_Gr._A_JTC.png/revision/latest?cb=20260516180419",
-      "fandom_car_type": "",
-      "unlock": "Autoshow (DLC: Car Pass )",
+      "fandom_car_type": "Retro Racers",
+      "country": "Japan",
+      "unlock": "Autoshow (DLC: Car Pass)",
       "rarity": "LEGENDARY",
+      "value_cr": 1500000,
       "performance": {
         "speed": 7.3,
         "handling": 7.8,
@@ -23568,12 +23582,14 @@
       "base_class": "B",
       "base_pi": 547,
       "drivetrain": "AWD",
-      "weight_kg": 1461,
-      "power_hp": 562,
-      "torque_nm": 742,
-      "aspiration": "NA",
+      "weight_kg": 1560,
+      "power_hp": 276,
+      "torque_nm": 367,
+      "aspiration": "Turbo",
       "car_type": [
-        "jdm"
+        "jdm",
+        "sport",
+        "classic"
       ],
       "recommended_use": [
         "top_speed",
@@ -23588,16 +23604,17 @@
       "meta_score": {
         "street": 5.1,
         "drag": 4.9,
-        "drift": 3.9,
+        "drift": 4.6,
         "rally": 5.3,
         "cross_country": 5.4,
         "top_speed": 6.2
       },
-      "notes": "FH6 car oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass ).",
+      "notes": "Retro Sports Cars oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass).",
       "source_url": "https://forza.fandom.com/wiki/Nissan_Skyline_GT-R_40th_Anniversary",
       "image_url": "https://static.wikia.nocookie.net/forzamotorsport/images/8/8e/FH6_Nissan_Skyline_GT-R_40th_Anniversary.png/revision/latest?cb=20260516180645",
-      "fandom_car_type": "",
-      "unlock": "Autoshow (DLC: Car Pass )",
+      "fandom_car_type": "Retro Sports Cars",
+      "country": "Japan",
+      "unlock": "Autoshow (DLC: Car Pass)",
       "rarity": "LEGENDARY",
       "performance": {
         "speed": 6.2,
@@ -29217,12 +29234,13 @@
       "base_class": "B",
       "base_pi": 596,
       "drivetrain": "AWD",
-      "weight_kg": 1373,
-      "power_hp": 553,
-      "torque_nm": 730,
-      "aspiration": "NA",
+      "weight_kg": 1445,
+      "power_hp": 300,
+      "torque_nm": 400,
+      "aspiration": "Turbo",
       "car_type": [
-        "jdm"
+        "jdm",
+        "sport"
       ],
       "recommended_use": [
         "top_speed",
@@ -29242,11 +29260,12 @@
         "cross_country": 5.6,
         "top_speed": 5.9
       },
-      "notes": "FH6 car oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass ).",
+      "notes": "Super Hot Hatch oficial do Forza Wiki. Disponibilidade: Autoshow (DLC: Car Pass).",
       "source_url": "https://forza.fandom.com/wiki/Toyota_GR_Corolla",
       "image_url": "https://static.wikia.nocookie.net/forzamotorsport/images/5/5c/FH6_Toyota_GR_Corolla.png/revision/latest?cb=20260516181438",
-      "fandom_car_type": "",
-      "unlock": "Autoshow (DLC: Car Pass )",
+      "fandom_car_type": "Super Hot Hatch",
+      "country": "Japan",
+      "unlock": "Autoshow (DLC: Car Pass)",
       "rarity": "RARE",
       "performance": {
         "speed": 5.9,

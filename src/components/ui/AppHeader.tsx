@@ -25,6 +25,7 @@ export function AppHeader() {
 
   const NAV_LINKS = [
     { href: "/tune",        label: t.nav.createTune },
+    { href: "/tutorial",    label: t.nav.tutorial },
     { href: "/community",   label: t.nav.community },
     { href: "/diagnostics", label: t.nav.diagnostics },
     { href: "/calculator",  label: t.nav.calculator },

@@ -14,8 +14,9 @@ import { useSubscription } from "@/lib/subscription/context"
 import { FREE_LIMITS } from "@/lib/subscription/limits"
 import { UpgradeModal } from "@/components/paywall/UpgradeModal"
 import { useSettings } from "@/lib/settings/context"
-import { translateParts } from "@/lib/settings/translations"
+import { translatePart } from "@/lib/settings/translations"
 import { formatPressure, formatSpring } from "@/lib/settings/units"
+import { createPartsDetailsFromParts } from "@/lib/tune-engine/part-knowledge"
 import { getFH6IntentLabel } from "@/lib/tune-engine/fh6-intents"
 import { generateTune } from "@/lib/tune-engine/generator"
 import type { Car, CarClass, ControlType, Drivetrain, DrivingStyle, GeneratedTune, Parts, TuneIntent, TuneRequest, TuneType, TuningSetup } from "@/types"
@@ -113,6 +114,11 @@ function parsePartsText(value: string): string[] {
     .split(/\r?\n|,/)
     .map((item) => item.trim())
     .filter(Boolean)
+}
+
+function formatPiDelta(delta: number): string {
+  if (delta === 0) return "0 PI"
+  return `${delta > 0 ? "+" : ""}${delta} PI`
 }
 
 function createPlayerTuneDraft(car: Car, request: TuneRequest): PlayerTuneDraft {
@@ -353,6 +359,7 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
   const { user } = useAuth()
   const { lang } = useLanguage()
   const t = useTranslations(lang)
+  const partDetails = tune.part_details ?? createPartsDetailsFromParts(tune.parts)
 
   function rideHeight(v: string) {
     return t.tune.rideHeight[v as keyof typeof t.tune.rideHeight] ?? v
@@ -593,24 +600,59 @@ function TuneResult({ tune, onReset, onBack }: { tune: GeneratedTune; onReset():
 
       {/* Parts */}
       <div className="r-card p-5 space-y-4">
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.parts}</p>
-        {Object.entries(tune.parts).map(([cat, items]) =>
-          (items as string[]).length > 0 ? (
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>{t.tune.parts}</p>
+          <Link href="/tutorial" className="r-btn r-btn-ghost" style={{ fontSize: 11, padding: "5px 10px" }}>
+            Tutorial de pecas e PI
+          </Link>
+        </div>
+        {PART_KEYS.map((cat) => {
+          const items = partDetails[cat]
+          return items.length > 0 ? (
             <div key={cat}>
               <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-subtle)", marginBottom: 6 }}>
                 {cat === "engine" ? t.tune.partEngine : cat === "platform" ? t.tune.partPlatform : cat === "drivetrain" ? t.tune.partDrivetrain : cat === "tires" ? t.tune.partTires : t.tune.partAero}
               </p>
-              <ul className="space-y-1">
-                {translateParts(items as string[], partsLang).map((item, j) => (
-                  <li key={j} className="flex items-center gap-2" style={{ fontSize: 12, color: "var(--text)" }}>
-                    <span className="w-1 h-1 rounded-full shrink-0" style={{ background: "var(--blue)" }} />
-                    {item}
+              <ul className="space-y-2">
+                {items.map((item, j) => (
+                  <li key={`${item.name}-${j}`} className="rounded-lg p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p style={{ fontSize: 12, fontWeight: 800, color: "var(--text)", lineHeight: 1.35 }}>
+                          {translatePart(item.name, partsLang)}
+                        </p>
+                        <p style={{ fontSize: 10, color: "var(--text-subtle)", marginTop: 2 }}>
+                          {item.portugueseName} / {item.englishName}
+                        </p>
+                      </div>
+                      <span className="mono-val shrink-0" style={{ fontSize: 10, color: item.piDelta < 0 ? "#34d399" : item.piDelta > 0 ? "#fbbf24" : "var(--blue-bright)" }}>
+                        {formatPiDelta(item.piDelta)}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-[150px_1fr] gap-2 mt-3">
+                      <div>
+                        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-subtle)" }}>
+                          Impacto no PI
+                        </p>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: "var(--blue-bright)", marginTop: 2 }}>
+                          {item.piImpact}
+                        </p>
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-subtle)" }}>
+                          Observacao
+                        </p>
+                        <p style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.55, marginTop: 2 }}>
+                          {item.observation}
+                        </p>
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
             </div>
           ) : null
-        )}
+        })}
       </div>
 
       {/* 1. Tires · 2. Gearbox */}
@@ -894,6 +936,7 @@ function WizardInner() {
       fh6_intent: intent,
       drivetrain,
       parts,
+      part_details: createPartsDetailsFromParts(parts),
       tuning: cleanTuning(playerDraft.tuning, drivetrain),
       summary: notes || t.tune.playerTuneSummary(carName, typeLabel),
       how_to_drive: t.tune.playerTuneHowToDrive,

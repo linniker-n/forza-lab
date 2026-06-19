@@ -1,6 +1,7 @@
-import type { Car, CarClass, Drivetrain, Parts, TuneIntent, TuneType } from "@/types"
+import type { Car, CarClass, Drivetrain, Parts, PartsDetails, TuneIntent, TuneType } from "@/types"
 import type { CarProfile } from "./analyze"
 import { getClassPiLimit } from "./classes"
+import { createPartInsight, emptyPartsDetails } from "./part-knowledge"
 
 // 1 = D/C class, 2 = B/A, 3 = S1/S2, 4 = R/X.
 type Depth = 1 | 2 | 3 | 4
@@ -17,6 +18,7 @@ interface PartCandidate {
 
 export interface PartsSelectionPlan {
   parts: Parts
+  partDetails: PartsDetails
   estimatedPi: number
   piLimit: number
   budgetUsed: number
@@ -440,6 +442,7 @@ export function selectPartsPlan(
   intent: TuneIntent = "balanced",
 ): PartsSelectionPlan {
   const parts = emptyParts()
+  const partDetails = emptyPartsDetails()
   const selected = new Set<string>()
   const skipped: string[] = []
   const notes: string[] = []
@@ -459,6 +462,7 @@ export function selectPartsPlan(
 
     selected.add(part.name)
     parts[part.category].push(part.name)
+    partDetails[part.category].push(createPartInsight(part.name, part.category, part.piCost, part.tier))
     estimatedPi = nextPi
     return true
   }
@@ -527,6 +531,7 @@ export function selectPartsPlan(
 
   return {
     parts,
+    partDetails,
     estimatedPi,
     piLimit,
     budgetUsed: Math.max(0, estimatedPi - startingPi),

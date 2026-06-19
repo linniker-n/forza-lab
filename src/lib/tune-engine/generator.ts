@@ -249,6 +249,7 @@ export function generateTune(request: TuneRequest, car: Car): GeneratedTune {
     fh6_intent:   fh6Intent,
     drivetrain,
     parts,
+    part_details: partsPlan.partDetails,
     tuning,
     summary:    generateSummary(car, request.tune_type, drivetrain, request.style, fh6Intent),
     how_to_drive: generateHowToDrive(request.tune_type, drivetrain, fh6Intent),

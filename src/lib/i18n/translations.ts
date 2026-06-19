@@ -4,6 +4,7 @@ const pt = {
   locale: "pt-BR",
   nav: {
     createTune: "Criar tune",
+    tutorial: "Tutorial",
     community: "Comunidade",
     diagnostics: "Diagnostico",
     calculator: "Calculadora",
@@ -464,6 +465,7 @@ const en: typeof pt = {
   locale: "en-US",
   nav: {
     createTune: "Create Tune",
+    tutorial: "Tutorial",
     community: "Community",
     diagnostics: "Diagnostics",
     calculator: "Calculator",
