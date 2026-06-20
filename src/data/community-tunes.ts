@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-06-20T15:26:26.526Z | Adicionados: ?
+// Last sync: 2026-06-20T17:10:52.730Z | Adicionados: ?
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -224,7 +224,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("a51", "Mclaren 12C", "A", "Pista/Allround", "802029906", "ZVTCJAU"),
   tune("a52", "Mclaren 570S", "A", "Pista/Allround", "687726006", "ZVTCJAU"),
   tune("a53", "Mclaren P1", "A", "Pista/Allround", "162905622", "ZVTCJAU"),
-  tune("a54", "Mercedes-Benz X-Class", "A", "Cross", "225166360", "ZVTCJAU", "É o melhor cross da classe A"),
+  tune("a54", "Mercedes-Benz X-Class", "A", "Cross", "935666170", "Rocklxd", "É o melhor cross da classe A"),
   tune("a55", "Mercedez-Benz 300 SLR", "A", "Rally", "362534392", "Noa Miyako"),
   tune("a56", "Mitsubishi Minicab Time Attack Ω", "A", "Pista/Circuito", "135447903", "ESV Mars"),
   tune("a57", "Nissan 370Z Nismo", "A", "Pista/Allround", "223642031", "LetzeLU"),
@@ -256,7 +256,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_108", "BMW M4 C PBV Ω", "S1", "Pista/Allround", "121494699", "ZVTCJAU", "Muito forte em corridas de baixa/media velocidade"),
   tune("s_109", "Chevrolet Camaro ZL1  2018", "S1", "Pista/Allround", "647606013", "ZVTCJAU"),
   tune("s_110", "Corvette ZR1 2019 Ω", "S1", "Pista/Allround", "849249316", "CybrexzzZ"),
-  tune("s_111", "Corvette E-Ray", "S1", "Pista/Allround", "144199108", "aTTaX Johnson"),
+  tune("s_111", "Corvette E-Ray", "S1", "Pista/Allround", "548427597", "ZVTCJAU"),
   tune("s_112", "Corvette Stingray 2020", "S1", "Pista/Allround", "151256432", "LetzeLU"),
   tune("s_113", "Corvette Z06 2015", "S1", "Pista/Allround", "149676532", "GRT x1Bieel"),
   tune("s_114", "Dodge Dart Ω", "S1", "Cross", "175625992", "ZVTCJAU", "Se conhecer a pista não perde pra ninguem"),
@@ -309,7 +309,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_161", "Mclaren 12C", "S1", "Pista/Allround", "147708012", "SeeyeahBoss"),
   tune("s_162", "Mclaren 620R Ω", "S1", "Pista/Allround", "108102993", "LetzeLU", "S1 AWD mais forte do jogo"),
   tune("s_163", "Mclaren 650S Spider", "S1", "Pista/Allround", "855804525", "CybrexzzZ"),
-  tune("s_164", "Mclaren 765LT", "S1", "Pista/Allround", "812139843", "TheDannny"),
+  tune("s_164", "Mclaren 765LT", "S1", "Pista/Allround", "330117680", "CybrexzzZ"),
   tune("s_165", "Mclaren F1 GT", "S1", "Pista/Allround", "728672792", "CybrexzzZ"),
   tune("s_166", "Mclaren P1", "S1", "Pista/Allround", "160001375", "RcR StriKer"),
   tune("s_167", "Mercedez 190 E EF Ω", "S1", "Pista/Circuito", "153897841", "pyrtti", "Só pra circuito de time attack"),
