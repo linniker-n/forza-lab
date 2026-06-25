@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-06-25T16:12:32.027Z | Adicionados: ?
+// Last sync: 2026-06-25T18:59:06.032Z | Adicionados: ?
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -340,7 +340,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_187", "Toyota Supra WTAC Ω", "S1", "Pista/Circuito", "134394781", "GRT Nicck", "Só é viável em circuitos"),
   tune("s_188", "Toyota Trueno EF Ω", "S1", "Rally", "334051072", "KapienPL"),
   tune("s_189", "Toyota Trueno EF Ω", "S1", "Pista/Sprint", "929950902", "invrtebrate", "PB Ta certo mesmo ele é 795 mesmo"),
-  tune("s_190", "TVR Cerbera", "S1", "Rally", "848296656", "trviis"),
+  tune("s_190", "TVR Cerbera", "S1", "Rally", "502641488", "TheDannny"),
   tune("s_191", "TVR Griffith", "S1", "Pista/Sprint", "155496179", "Noa Miyako", "PB"),
 
   // ── CLASSE S2 ──────────────────────────────────────────────────────────────────────
