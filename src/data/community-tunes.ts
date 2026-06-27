@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-06-27T22:48:22.838Z | Adicionados: ?
+// Last sync: 2026-06-27T23:49:04.574Z | Adicionados: ?
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -81,7 +81,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("b02", "Acura RSX '02", "B", "Pista/Allround", "102892930", "ZVTCJAU"),
   tune("b03", "Alfa Romeu Giulia '65", "B", "Rally", "865696168", "TheDannny"),
   tune("b04", "Cadillac Limousine", "B", "Pista/Allround", "396838580", "TheDannny", "Precisa de transmissão manual com embreagem"),
-  tune("b05", "Chevrolet K-10", "B", "Rally", "156253027", "ZVTCJAU"),
+  tune("b05", "Chevrolet K-10", "B", "Rally", "167116779", "Noa Miyako", "Um monstro na terra mas um tijolo no asfalto"),
   tune("b06", "Chevrolet K-10", "B", "Cross", "655446407", "Spike5483", "Precisa de transmissão manual com embreagem"),
   tune("b07", "Chevrolet Silverado '20", "B", "Cross", "385451454", "Spike5483"),
   tune("b08", "Datsun Roadster", "B", "Rally", "490269753", "Noa Miyako"),
@@ -262,7 +262,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_108", "BMW M4 C PBV Ω", "S1", "Pista/Allround", "121494699", "ZVTCJAU", "Muito forte em corridas de baixa/media velocidade"),
   tune("s_109", "Chevrolet Camaro ZL1  '18", "S1", "Pista/Allround", "647606013", "ZVTCJAU"),
   tune("s_110", "Corvette ZR1 '19 Ω", "S1", "Pista/Allround", "849249316", "CybrexzzZ"),
-  tune("s_111", "Corvette E-Ray", "S1", "Pista/Allround", "548427597", "ZVTCJAU"),
+  tune("s_111", "Corvette E-Ray", "S1", "Pista/Allround", "148231881", "CybrexzzZ"),
   tune("s_112", "Corvette Stingray '20", "S1", "Pista/Allround", "151256432", "LetzeLU"),
   tune("s_113", "Corvette Z06 '23", "S1", "Pista/Allround", "172664127", "KapienPL"),
   tune("s_114", "Corvette Z06 '15", "S1", "Pista/Allround", "149676532", "GRT x1Bieel"),
@@ -271,7 +271,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_117", "Dodge Viper GTS EF Ω", "S1", "Cross/Rally", "991067019", "Rocklxd", "É o melhor overall Cross"),
   tune("s_118", "Dodge Viper SRT '08", "S1", "Pista/Allround", "164415333", "BACKOFF77"),
   tune("s_119", "Dodge Viper SRT '08", "S1", "Pista/Circuito", "155319618", "SlowBakedPanda"),
-  tune("s_120", "Ferrari 296 GTB Ω", "S1", "Pista/Allround", "507860338", "LetzeLU"),
+  tune("s_120", "Ferrari 296 GTB Ω", "S1", "Pista/Allround", "807701065", "ZVTCJAU"),
   tune("s_121", "Ferrari 458 Italia", "S1", "Pista/Allround", "159134851", "Noa Miyako"),
   tune("s_122", "Ferrari 458 S", "S1", "Pista/Allround", "133458941", "LetzeLU"),
   tune("s_123", "Ferrari 488 Pista", "S1", "Pista/Allround", "521623754", "ESV Lawrence"),
@@ -358,7 +358,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_209", "Koenigsegg Gemera Ω", "S2", "Pista/Sprint", "615813756", "NeNeko Miye", "PB"),
   tune("s_210", "Lamborghini SCV12", "S2", "Pista/Allround", "521801083", "Suyunbai98", "É o melhor overall da classe"),
   tune("s_211", "Lamborghini Sesto Elemento Ω", "S2", "Pista/Allround", "787474542", "chickenlin666"),
-  tune("s_212", "Lexus LFA EF Ω", "S2", "Pista/Allround", "771225930", "ESV Mars"),
+  tune("s_212", "Lexus LFA EF Ω", "S2", "Pista/Allround", "145641721", "Ligmaphobia5558", "Talvez de pra considerar muito forte"),
   tune("s_213", "Maserati MC12 Corsa", "S2", "Pista/Allround", "818154755", "nyasmowisher"),
   tune("s_214", "Mazda 787B Ω", "S2", "Pista/Allround", "558127738", "TonyTKS"),
   tune("s_215", "Mazda Furai Ω", "S2", "Pista/Allround", "903797630", "TheDannny"),
