@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-07-01T18:52:22.906Z | Adicionados: ?
+// Last sync: 2026-07-01T20:30:51.186Z | Adicionados: ?
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -364,12 +364,12 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_207", "Hennessey Venom F5", "S2", "Pista/Sprint", "881844498", "SPIRIT8821", "Muito forte em corridas específicas"),
   tune("s_208", "Koenigsegg CCGT", "S2", "Pista/Allround", "966454256", "Noa Miyako"),
   tune("s_209", "Koenigsegg Gemera Ω", "S2", "Pista/Sprint", "615813756", "NeNeko Miye", "PB"),
-  tune("s_210", "Lamborghini SCV12", "S2", "Pista/Allround", "521801083", "Suyunbai98", "É o melhor overall da classe"),
-  tune("s_211", "Lamborghini Sesto Elemento Ω", "S2", "Pista/Allround", "787474542", "chickenlin666"),
+  tune("s_210", "Lamborghini SCV12", "S2", "Pista/Allround", "136100112", "nyasmowisher", "É o melhor overall da classe"),
+  tune("s_211", "Lamborghini Sesto Elemento Ω", "S2", "Pista/Allround", "153244644", "K1Z Howzer"),
   tune("s_212", "Lexus LFA EF Ω", "S2", "Pista/Allround", "145641721", "Ligmaphobia5558", "Talvez de pra considerar muito forte"),
   tune("s_213", "Maserati MC12 Corsa", "S2", "Pista/Allround", "818154755", "nyasmowisher"),
   tune("s_214", "Mazda 787B Ω", "S2", "Pista/Allround", "558127738", "TonyTKS"),
-  tune("s_215", "Mazda Furai Ω", "S2", "Pista/Allround", "903797630", "TheDannny"),
+  tune("s_215", "Mazda Furai Ω", "S2", "Pista/Allround", "125469350", "nyasmowisher"),
   tune("s_216", "Mazda Miata EF Ω", "S2", "Pista/Sprint", "131635218", "Noa Miyako", "PB"),
   tune("s_217", "Mclaren F1 GT", "S2", "Pista/Sprint", "678642145", "Noa Miyako", "PB"),
   tune("s_218", "Mclaren P1", "S2", "Pista/Allround", "184281033", "theEBTwarrior"),
