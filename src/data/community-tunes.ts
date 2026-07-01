@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-07-01T20:30:51.186Z | Adicionados: ?
+// Last sync: 2026-07-01T22:09:51.695Z | Adicionados: ?
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -368,10 +368,10 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_211", "Lamborghini Sesto Elemento Ω", "S2", "Pista/Allround", "153244644", "K1Z Howzer"),
   tune("s_212", "Lexus LFA EF Ω", "S2", "Pista/Allround", "145641721", "Ligmaphobia5558", "Talvez de pra considerar muito forte"),
   tune("s_213", "Maserati MC12 Corsa", "S2", "Pista/Allround", "818154755", "nyasmowisher"),
-  tune("s_214", "Mazda 787B Ω", "S2", "Pista/Allround", "558127738", "TonyTKS"),
+  tune("s_214", "Mazda 787B Ω", "S2", "Pista/Allround", "123528173", "GTR19945037"),
   tune("s_215", "Mazda Furai Ω", "S2", "Pista/Allround", "125469350", "nyasmowisher"),
   tune("s_216", "Mazda Miata EF Ω", "S2", "Pista/Sprint", "131635218", "Noa Miyako", "PB"),
-  tune("s_217", "Mclaren F1 GT", "S2", "Pista/Sprint", "678642145", "Noa Miyako", "PB"),
+  tune("s_217", "Mclaren F1 GT", "S2", "Pista/Sprint", "154542855", "Shinnonsuke", "PB"),
   tune("s_218", "Mclaren P1", "S2", "Pista/Allround", "184281033", "theEBTwarrior"),
   tune("s_219", "Mercedez Amg Black Series", "S2", "Pista/Allround", "391191612", "SlowBakedPanda"),
   tune("s_220", "Mercedez Amg Black Series PBV", "S2", "Pista/Allround", "963417352", "seeyeahBoss"),
