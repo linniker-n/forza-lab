@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-07-05T16:59:14.022Z | Adicionados: ?
+// Last sync: 2026-07-05T18:00:53.734Z | Adicionados: ?
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -261,7 +261,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
 
   // ── CLASSE S1 ──────────────────────────────────────────────────────────────────────
   tune("s_101", "Acura NSX Type S", "S1", "Pista/Allround", "306668167", "LetzeLU"),
-  tune("s_102", "Alfa Romeu 33s", "S1", "Rally", "105829425", "TheDannny"),
+  tune("s_102", "Alfa Romeu 33s", "S1", "Rally", "123200713", "KapienPL"),
   tune("s_103", "Audi #2 Sport Quattro", "S1", "Rally", "180745978", "Jeppe JSV"),
   tune("s_104", "Audi R8 '23 Ω", "S1", "Pista/Allround", "158087264", "zombiejesus52", "Precisa de cambio no mínimo manual, troca a marcha 9,5k rotações"),
   tune("s_105", "Audi R8 LMS", "S1", "Pista/Allround", "127367605", "LetzeLU"),
