@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-07-18T04:33:56.467Z | Adicionados: ?
+// Last sync: 2026-07-18T06:50:09.285Z | Adicionados: ?
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
