@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-07-23T16:21:06.976Z | Adicionados: ?
+// Last sync: 2026-07-23T18:04:01.201Z | Adicionados: ?
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -257,7 +257,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("a78", "Ram 1500 TRX", "A", "Cross", "178231366", "SlowBakedPanda"),
   tune("a79", "Rivian R1T", "A", "Cross", "142401702", "Noa Miyako"),
   tune("a80", "Shelby Cobra", "A", "Pista/Sprint", "104671695", "CYbrexzzZ", "PB"),
-  tune("a81", "Shelby Daytona", "A", "Rally", "145958273", "Rocklxd"),
+  tune("a81", "Shelby Daytona", "A", "Rally", "787011763", "Rocklxd"),
   tune("a82", "Subaru STI '19", "A", "Pista/Allround", "115358635", "SlowBakedPanda"),
   tune("a83", "Toyota 86 '13", "A", "Pista/Sprint", "147767459", "Noa Miyako", "PB Não recomendado para pista molhada"),
   tune("a84", "Toyota Sports 800", "A", "Pista/Sprint", "381108485", "Noa Miyako", "PB Não recomendado para pista molhada"),
