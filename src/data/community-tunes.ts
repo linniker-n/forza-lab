@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-07-24T23:50:34.478Z | Adicionados: ?
+// Last sync: 2026-07-25T01:17:40.574Z | Adicionados: ?
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -248,7 +248,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("a66", "Mazda Mad Mike Ω", "A", "Pista/Sprint", "558256104", "K1Z Bard", "PB"),
   tune("a67", "Mazda RX-3 EF Ω", "A", "Pista/Sprint", "429651888", "GreetedDust8", "PB"),
   tune("a68", "Mclaren 12C", "A", "Pista/Allround", "802029906", "ZVTCJAU"),
-  tune("a69", "Mclaren 570S", "A", "Pista/Allround", "687726006", "ZVTCJAU"),
+  tune("a69", "Mclaren 570S", "A", "Pista/Allround", "575110402", "JinHvJ"),
   tune("a70", "Mclaren P1", "A", "Pista/Allround", "162905622", "ZVTCJAU"),
   tune("a71", "Mercedez-Benz SL 62 '09", "A", "Pista/Allround", "177532937", "LetzeLU"),
   tune("a72", "Mercedes-Benz X-Class", "A", "Cross", "935666170", "Rocklxd", "É o melhor cross da classe A"),
@@ -298,7 +298,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_122", "Ferrari 458 Italia", "S1", "Pista/Allround", "159134851", "Noa Miyako"),
   tune("s_123", "Ferrari 458 S", "S1", "Pista/Allround", "133458941", "LetzeLU"),
   tune("s_124", "Ferrari 488 Pista", "S1", "Pista/Allround", "521623754", "ESV Lawrence"),
-  tune("s_125", "Ferrari Enzo", "S1", "Pista/Allround", "175336217", "GRT Nicck"),
+  tune("s_125", "Ferrari Enzo", "S1", "Pista/Allround", "920727256", "JinHvJ"),
   tune("s_126", "Ferrari F80 Ω", "S1", "Pista/Allround", "182780376", "MSR Mian"),
   tune("s_127", "Ferrari FXX", "S1", "Pista/Allround", "137275636", "CybrexzzZ"),
   tune("s_128", "Ferrari GTB4 Ω", "S1", "Rally", "213957120", "TheDannny"),
