@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: 2026-07-29T22:43:46.781Z | Adicionados: ?
+// Last sync: 2026-07-29T23:48:32.491Z | Adicionados: ?
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"
@@ -298,7 +298,7 @@ export const COMMUNITY_TUNES: SpreadsheetTune[] = [
   tune("s_122", "Ferrari 458 Italia", "S1", "Pista/Allround", "159134851", "Noa Miyako"),
   tune("s_123", "Ferrari 458 S", "S1", "Pista/Allround", "133458941", "LetzeLU"),
   tune("s_124", "Ferrari 488 Pista", "S1", "Pista/Allround", "521623754", "ESV Lawrence"),
-  tune("s_125", "Ferrari Enzo", "S1", "Pista/Allround", "920727256", "JinHvJ"),
+  tune("s_125", "Ferrari Enzo", "S1", "Pista/Allround", "481314534", "JinHvJ"),
   tune("s_126", "Ferrari F80 Ω", "S1", "Pista/Allround", "182780376", "MSR Mian"),
   tune("s_127", "Ferrari FXX", "S1", "Pista/Allround", "137275636", "CybrexzzZ"),
   tune("s_128", "Ferrari GTB4 Ω", "S1", "Rally", "213957120", "TheDannny"),
