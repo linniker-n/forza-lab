@@ -182,7 +182,7 @@ function generateTs(tunes, addDate) {
   })
 
   return `// AUTO-GENERATED — do not edit by hand. Run: npm run sync:sheets
-// Last sync: ${new Date().toISOString()} | Adicionados: ${addDate}
+// Source: Google Sheets | Adicionados: ${addDate}
 
 export type TuneClass = "C" | "B" | "A" | "S1" | "S2" | "R"
 export type TuneTag = "pista" | "sprint" | "circuito" | "rally" | "cross" | "allround"

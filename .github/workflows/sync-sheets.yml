@@ -4,9 +4,14 @@ on:
   # Triggered via webhook from Apps Script (real-time)
   workflow_dispatch:
 
-  # Fallback: roda a cada hora caso o webhook não dispare
+  # Fallback diário. O arquivo gerado é determinístico, então só haverá commit
+  # quando os dados da planilha realmente mudarem.
   schedule:
-    - cron: "0 * * * *"
+    - cron: "17 6 * * *"
+
+concurrency:
+  group: sync-community-tunes
+  cancel-in-progress: true
 
 jobs:
   sync:
